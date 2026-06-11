@@ -32,3 +32,25 @@ The module where the question arose can keep a brief cross-link; the full explan
 ## After expanding
 
 Briefly state what was unclear and which file(s) changed, so the improvement is traceable.
+
+## Presentation style (slide decks)
+
+All slide decks for this project use the house-style toolkit in `deck_toolkit/`. Do
+**not** hand-build decks ad hoc or restate styling each time — read `deck_toolkit/STYLE.md`
+and build with `deck_lib.js` + `render_assets.py`. The canonical reference deck is
+`Survival_Modelling_3D_Imaging_v3.pptx`.
+
+Non-negotiables:
+
+- **Equations and code are rendered to images** (`render_assets.py`), never typed as
+  slide text — PowerPoint substitutes monospace fonts and cannot typeset math.
+- **Palette** comes from `deck_toolkit/themes.json` (default `academic_navy`); to
+  restyle, pass a different theme key to `createDeck({ theme })` and re-render assets.
+  M31 brand colors slot in by adding a theme block — keep the structure, swap the hex.
+- **Type-scale floors** from STYLE.md: body ≥ 18pt, nothing on a content slide below
+  ~14pt, code rendered at 15pt, equations at 30pt.
+- **Fonts:** Georgia headings, Calibri body, monospace code (set per theme).
+- **Fill the slide** — scale code panels and use `callout()` cards instead of leaving
+  large empty regions. No accent underlines beneath titles, no full-width color bars.
+- **QA every deck** by rendering to images and inspecting for overflow/overlap/dead
+  space (use a fresh-eyes subagent for non-trivial decks) before delivering.
