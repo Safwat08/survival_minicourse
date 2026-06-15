@@ -1,0 +1,60 @@
+{
+  "_comment": "House-style palettes for the survival_minicourse deck toolkit. Single source of truth, read by both deck_lib.js and render_assets.py. To add M31 brand colors, copy a block, rename it, and replace the hex values (no '#').",
+  "_fields": {
+    "primary": "dominant dark — title-slide/divider backgrounds, headings, table headers, code background",
+    "accent": "main accent — kickers, accent bars, numbers, arrows",
+    "accentDark": "darker accent — emphasized/takeaway text, callout titles",
+    "body": "default body text",
+    "muted": "captions, footers, secondary notes",
+    "light": "light panel/card fill",
+    "line": "card/table borders",
+    "codeBg": "code panel background (usually = primary)",
+    "codeFg": "code foreground text",
+    "codeComment": "code comments (a light tint of accent)",
+    "white": "page background for content slides",
+    "headFont": "heading font", "bodyFont": "body font", "monoFont": "any native monospace text"
+  },
+
+  "academic_navy": {
+    "label": "Academic Navy + Teal (default) — restrained, conference-talk feel",
+    "primary": "1B2A41", "accent": "1C7293", "accentDark": "0F4C5C",
+    "body": "33415A", "muted": "5B6B7F", "light": "EEF2F7", "line": "CBD5E1",
+    "codeBg": "1B2A41", "codeFg": "E2E8F0", "codeComment": "7FD1DE", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  },
+  "charcoal_amber": {
+    "label": "Charcoal + Amber — neutral, warm accent",
+    "primary": "222B36", "accent": "E0A100", "accentDark": "B97D00",
+    "body": "3A4654", "muted": "6B7785", "light": "F1F3F5", "line": "D2D8DE",
+    "codeBg": "222B36", "codeFg": "E8EBEE", "codeComment": "F0C75A", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  },
+  "forest_moss": {
+    "label": "Forest + Moss — calm, biology-leaning green",
+    "primary": "1C3B2E", "accent": "2E9E6B", "accentDark": "1F6F4A",
+    "body": "354A40", "muted": "6A7B72", "light": "EDF4EF", "line": "CBDAD0",
+    "codeBg": "1C3B2E", "codeFg": "E6EFE9", "codeComment": "8FD9B4", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  },
+  "ocean_teal": {
+    "label": "Ocean — deep blue + bright teal",
+    "primary": "0B3A4F", "accent": "1496B0", "accentDark": "0C6B82",
+    "body": "2E5160", "muted": "5E7B88", "light": "EAF2F5", "line": "C4D8DF",
+    "codeBg": "0B3A4F", "codeFg": "E3EFF3", "codeComment": "7FD0E0", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  },
+  "berry_cream": {
+    "label": "Berry + Cream — distinctive, editorial",
+    "primary": "3F1D2E", "accent": "C24E7D", "accentDark": "8E2F57",
+    "body": "4F3340", "muted": "7E6470", "light": "F5EEF0", "line": "DCC9D1",
+    "codeBg": "3F1D2E", "codeFg": "F0E6EA", "codeComment": "E29DBB", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  },
+  "slate_coral": {
+    "label": "Slate + Coral — modern, friendly accent",
+    "primary": "2B3142", "accent": "EF6F6C", "accentDark": "C44E4B",
+    "body": "41495C", "muted": "6C7689", "light": "EFF1F5", "line": "CDD3DD",
+    "codeBg": "2B3142", "codeFg": "E9ECF2", "codeComment": "F2A6A4", "white": "FFFFFF",
+    "headFont": "Georgia", "bodyFont": "Calibri", "monoFont": "Consolas"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "codeFontSize": 15,
+  "eqFontSize": 30,
+  "code": {
+    "ex_fit": [
+      ["# fit a Cox model (lifelines)", 1],
+      ["from lifelines import CoxPHFitter", 0],
+      ["cph = CoxPHFitter()", 0],
+      ["cph.fit(df, duration_col='T',", 0],
+      ["        event_col='E')", 0],
+      ["cph.print_summary()", 0]
+    ]
+  },
+  "equations": {
+    "ex_surv": "$S(t) = P(T > t) \\qquad h(t) = -\\frac{d}{dt}\\log S(t)$"
+  }
+}

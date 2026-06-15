@@ -1,0 +1,66 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "index.qmd"
+    - "01_background/*.md"
+    - "02_loss_functions/*.md"
+    - "03_metrics/*.md"
+    - "04_packages/*.md"
+    - "06_recipes/*.md"
+
+website:
+  title: "Survival Analysis Mini-Course"
+  description: "A build-along course on survival modelling for 3D medical imaging."
+  reader-mode: true
+  page-navigation: true
+  sidebar:
+    style: docked
+    search: true
+    collapse-level: 1
+    contents:
+      - text: "Home"
+        file: index.qmd
+      - section: "1 · Background"
+        contents:
+          - 01_background/1.1_what_is_survival_analysis.md
+          - 01_background/1.2_censored_data.md
+          - 01_background/1.3_what_is_an_event.md
+          - 01_background/1.4_multi_events_and_competing_risks.md
+          - 01_background/1.5_clinician_goals.md
+      - section: "2 · Loss Functions"
+        contents:
+          - 02_loss_functions/2.1_cox_ph_loss.md
+          - 02_loss_functions/2.2_negative_log_likelihood_loss.md
+          - 02_loss_functions/2.4_deephit_loss.md
+          - 02_loss_functions/2.5_loss_comparison.md
+      - section: "3 · Metrics"
+        contents:
+          - 03_metrics/3.1_c_index.md
+          - 03_metrics/3.2_brier_score.md
+          - 03_metrics/3.3_km_curves.md
+          - 03_metrics/3.4_time_dependent_auc.md
+      - section: "4 · Packages"
+        contents:
+          - 04_packages/4.1_pycox.md
+          - 04_packages/4.2_lifelines.md
+          - 04_packages/4.3_torchsurv.md
+          - 04_packages/4.4_scikit_survival.md
+          - 04_packages/4.5_auton_survival.md
+      - section: "5 · Recipes"
+        contents:
+          - 06_recipes/6.1_pfs_stratification.md
+
+format:
+  html:
+    theme:
+      - cosmo
+      - custom.scss
+    toc: true
+    toc-depth: 3
+    html-math-method: katex
+    code-copy: true
+    code-overflow: wrap
+    fig-cap-location: bottom
+    grid:
+      body-width: 900px

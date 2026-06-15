@@ -1,6 +1,6 @@
 # CLAUDE.md — Survival Mini-Course
 
-Guidance for working on the teaching modules in this directory (`01_background/` through `08_recipes/`, plus `references/`). Merges with the parent `../CLAUDE.md` behavioral guidelines.
+Guidance for working on the teaching modules in this directory (`01_background/` through `06_recipes/`, plus `04_packages/`). Merges with the parent `../CLAUDE.md` behavioral guidelines.
 
 ## Confusion is a defect signal
 
@@ -44,11 +44,14 @@ Non-negotiables:
 
 - **Equations and code are rendered to images** (`render_assets.py`), never typed as
   slide text — PowerPoint substitutes monospace fonts and cannot typeset math.
+- **Every equation defines its symbols** via a `where:` legend (`formula({ where: [...] })`).
+  Never present notation without spelling out each term.
 - **Palette** comes from `deck_toolkit/themes.json` (default `academic_navy`); to
   restyle, pass a different theme key to `createDeck({ theme })` and re-render assets.
   M31 brand colors slot in by adding a theme block — keep the structure, swap the hex.
-- **Type-scale floors** from STYLE.md: body ≥ 18pt, nothing on a content slide below
-  ~14pt, code rendered at 15pt, equations at 30pt.
+- **Type-scale floors** from STYLE.md: body ≥ 20pt, nothing on a content slide below
+  ~14pt, code rendered at 15pt, equations at 30pt. Keep bullets short so they don't
+  wrap past two lines at this size.
 - **Fonts:** Georgia headings, Calibri body, monospace code (set per theme).
 - **Fill the slide** — scale code panels and use `callout()` cards instead of leaving
   large empty regions. No accent underlines beneath titles, no full-width color bars.

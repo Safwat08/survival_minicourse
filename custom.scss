@@ -1,0 +1,42 @@
+/*-- scss:defaults --*/
+// House palette: academic_navy (deck_toolkit/themes.json)
+$primary:      #1B2A41;
+$body-color:   #33415A;
+$link-color:   #1C7293;
+$link-hover-color: #0F4C5C;
+
+$font-family-sans-serif: Calibri, "Helvetica Neue", Arial, sans-serif;
+$headings-font-family:   Georgia, "Times New Roman", serif;
+$font-size-root: 18px;
+
+$code-bg:    #EEF2F7;
+$code-color: #0F4C5C;
+$border-color: #CBD5E1;
+
+/*-- scss:rules --*/
+h1, h2, h3, h4 { color: $primary; }
+
+// Figures: centered, full content width, with a light frame
+figure img, p > img {
+  display: block;
+  margin: 1.2rem auto;
+  max-width: 100%;
+}
+figcaption, .figure-caption {
+  color: #5B6B7F;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+// Tables get the house light fill on the header row
+table thead {
+  background: #EEF2F7;
+}
+
+// Blockquotes (the course uses them heavily for worked examples / asides)
+blockquote {
+  border-left: 4px solid #1C7293;
+  background: #EEF2F7;
+  padding: 0.6rem 1rem;
+  color: #33415A;
+}

@@ -1,0 +1,8 @@
+# Figure generation (module 01) — minimal, no survival deps
+numpy
+matplotlib
+
+# Runnable model code (modules 02-03) and Phase-2 widgets
+lifelines
+scikit-survival
+# pycox          # pulls in torch; needed only for the deep-model lessons

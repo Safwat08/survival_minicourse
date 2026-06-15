@@ -1,5 +1,10 @@
 # Local session tooling / memory state
 .remember/
+.claude/
+
+# Office temp/lock files and corrupted backups
+~$*
+*.bak
 
 # OS / editor cruft
 .DS_Store
@@ -8,3 +13,12 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# Quarto build artifacts
+/_site/
+/.quarto/
+
+# Figure QA previews (regenerate from scripts/make_figures.py)
+assets/figures/_qa/
+
+**/*.quarto_ipynb
