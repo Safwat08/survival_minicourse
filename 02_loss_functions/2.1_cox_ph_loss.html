@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>cox_ph_loss – Survival Analysis Mini-Course</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../02_loss_functions/2.2_negative_log_likelihood_loss.html" rel="next">
+<link href="../01_background/1.5_clinician_goals.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ce601f594cca9228a79be9c8039bd487.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_loss_functions/2.1_cox_ph_loss.html">2 · Loss Functions</a></li><li class="breadcrumb-item"><a href="../02_loss_functions/2.1_cox_ph_loss.html">Cox Proportional Hazards Loss</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Survival Analysis Mini-Course</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">1 · Background</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.1_what_is_survival_analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What is Survival Analysis?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.2_censored_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.3_what_is_an_event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What is an Event?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.4_multi_events_and_competing_risks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multi-Events and Competing Risks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.5_clinician_goals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clinician Goals in Survival Analysis</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">2 · Loss Functions</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.1_cox_ph_loss.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cox Proportional Hazards Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Negative Log-Likelihood Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.4_deephit_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DeepHit Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.5_loss_comparison.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loss Functions Compared</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">3 · Metrics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.1_c_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Concordance Index (C-index)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.2_brier_score.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Brier Score</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.3_km_curves.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Curves</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.4_time_dependent_auc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Dependent AUC</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">4 · Packages</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">5 · Recipes</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../06_recipes/6.1_pfs_stratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#cox-proportional-hazards-loss" id="toc-cox-proportional-hazards-loss" class="nav-link active" data-scroll-target="#cox-proportional-hazards-loss">Cox Proportional Hazards Loss</a>
+  <ul class="collapse">
+  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
+  <ul class="collapse">
+  <li><a href="#why-semi-parametric" id="toc-why-semi-parametric" class="nav-link" data-scroll-target="#why-semi-parametric">Why “semi-parametric”</a></li>
+  <li><a href="#why-model-the-hazard-not-survival" id="toc-why-model-the-hazard-not-survival" class="nav-link" data-scroll-target="#why-model-the-hazard-not-survival">Why model the hazard, not survival?</a></li>
+  </ul></li>
+  <li><a href="#partial-likelihood" id="toc-partial-likelihood" class="nav-link" data-scroll-target="#partial-likelihood">Partial Likelihood</a>
+  <ul class="collapse">
+  <li><a href="#the-idea" id="toc-the-idea" class="nav-link" data-scroll-target="#the-idea">The idea</a></li>
+  <li><a href="#the-loss" id="toc-the-loss" class="nav-link" data-scroll-target="#the-loss">The loss</a></li>
+  <li><a href="#why-partial" id="toc-why-partial" class="nav-link" data-scroll-target="#why-partial">Why “partial”</a></li>
+  </ul></li>
+  <li><a href="#the-proportional-hazards-assumption" id="toc-the-proportional-hazards-assumption" class="nav-link" data-scroll-target="#the-proportional-hazards-assumption">The proportional-hazards assumption</a></li>
+  <li><a href="#in-deep-learning" id="toc-in-deep-learning" class="nav-link" data-scroll-target="#in-deep-learning">In Deep Learning</a></li>
+  <li><a href="#key-takeaways-for-applied-ml-scientists" id="toc-key-takeaways-for-applied-ml-scientists" class="nav-link" data-scroll-target="#key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</a></li>
+  <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_loss_functions/2.1_cox_ph_loss.html">2 · Loss Functions</a></li><li class="breadcrumb-item"><a href="../02_loss_functions/2.1_cox_ph_loss.html">Cox Proportional Hazards Loss</a></li></ol></nav></header>
+
+
+
+
+<section id="cox-proportional-hazards-loss" class="level1">
+<h1>Cox Proportional Hazards Loss</h1>
+<p>The Cox PH loss is the most widely used loss function in survival analysis, based on the <em>partial likelihood</em> introduced by Cox (1972). This page builds it up from the model, then derives the loss, then states the assumption it rests on. If you only need to <em>use</em> it, skip to <a href="#key-takeaways-for-applied-ml-scientists">Key takeaways</a>.</p>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<p>The hazard for patient <span class="math inline">i</span> at time <span class="math inline">t</span> is the baseline hazard scaled by a per-patient multiplier:</p>
+<p><span class="math display">
+\underbrace{h(t \mid x_i)}_{\text{patient } i\text{'s hazard at } t}
+\;=\;
+\underbrace{h_0(t)}_{\text{baseline hazard}}
+\;\times\;
+\underbrace{\exp(\beta^\top x_i)}_{\text{patient's risk multiplier}}
+</span></p>
+<p>Spelling out each symbol:</p>
+<ul>
+<li><strong><span class="math inline">x_i</span></strong> — patient <span class="math inline">i</span>’s <em>covariate vector</em>: their features stacked into a list, e.g.&nbsp;<code>[age, tumor_size, biomarker]</code>. The subscript <span class="math inline">i</span> labels which patient.</li>
+<li><strong><span class="math inline">\beta</span></strong> (beta) — the <em>coefficient vector</em>: one learned weight per feature. Each <span class="math inline">\beta_k</span> says how strongly feature <span class="math inline">k</span> pushes risk up (<span class="math inline">\beta_k &gt; 0</span>) or down (<span class="math inline">\beta_k &lt; 0</span>) — the survival analog of regression coefficients.</li>
+<li><strong><span class="math inline">\beta^\top x_i</span></strong> — the superscript <span class="math inline">\top</span> means <strong>transpose</strong>, turning the product into a <em>dot product</em> <span class="math inline">\beta_1 x_{i1} + \beta_2 x_{i2} + \dots</span> The result is one number: the patient’s <strong>linear predictor</strong> or <strong>risk score</strong> (a log-hazard; see <a href="../01_background/1.5_clinician_goals.html"><code>1.5</code></a>).</li>
+<li><strong><span class="math inline">\exp(\cdot)</span></strong> — the exponential keeps the multiplier positive. <span class="math inline">\exp(\beta^\top x_i)</span> is the <strong>hazard ratio</strong>: how many times higher (<span class="math inline">&gt;1</span>) or lower (<span class="math inline">&lt;1</span>) this patient’s hazard is than baseline. <span class="math inline">\exp(0) = 1</span> means “same as baseline.”</li>
+<li><strong><span class="math inline">h_0(t)</span></strong> — the <strong>baseline hazard</strong>: the risk over time for a patient whose features all sit at the reference (<span class="math inline">\beta^\top x = 0</span>). Left unspecified — see <a href="#why-semi-parametric">Semi-parametric</a> below.</li>
+</ul>
+<blockquote class="blockquote">
+<p><strong>Worked example — reading a risk score.</strong> One standardized biomarker <span class="math inline">x_i = 1.5</span> with coefficient <span class="math inline">\beta = 0.4</span> gives a linear predictor <span class="math inline">\beta^\top x_i = 0.4 \times 1.5 = 0.6</span>. The hazard ratio is <span class="math inline">\exp(0.6) \approx 1.8</span> — patient <span class="math inline">i</span>’s hazard is about <strong>1.8× the baseline</strong> at every time point.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p><strong>Two different T’s.</strong> The superscript <span class="math inline">\top</span> means <em>transpose</em> (a linear-algebra operation). It is <strong>not</strong> the survival time <span class="math inline">T</span> from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a> — same letter, unrelated meaning.</p>
+</blockquote>
+<section id="why-semi-parametric" class="level3">
+<h3 class="anchored" data-anchor-id="why-semi-parametric">Why “semi-parametric”</h3>
+<p>The baseline hazard <span class="math inline">h_0(t)</span> is left <strong>unspecified</strong>, which makes Cox <em>semi-parametric</em> — part parametric, part non-parametric:</p>
+<ul>
+<li>The covariate effect <span class="math inline">\exp(\beta^\top x)</span> is <strong>parametric</strong>: a fixed, finite set of coefficients <span class="math inline">\beta</span>, one per feature.</li>
+<li>The baseline <span class="math inline">h_0(t)</span> is <strong>non-parametric</strong>: an arbitrary function of time with no assumed shape (the same “no equation for the shape” sense as the estimators in <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a>).</li>
+</ul>
+<p>So Cox commits to <em>how covariates scale risk</em> but stays agnostic about <em>the shape of risk over time</em>. Fully parametric alternatives (e.g.&nbsp;the DSM mixture in <a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) instead assume a shape for the time axis too.</p>
+</section>
+<section id="why-model-the-hazard-not-survival" class="level3">
+<h3 class="anchored" data-anchor-id="why-model-the-hazard-not-survival">Why model the hazard, not survival?</h3>
+<p>The lowercase <span class="math inline">h</span> is the <strong>instantaneous hazard</strong> — the <em>rate</em> of the event at <span class="math inline">t</span> given survival so far, the “speedometer” of <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a> — <strong>not</strong> the cumulative hazard <span class="math inline">H(t)=\int_0^t h</span>. Cox models the hazard rather than the survival function <span class="math inline">S(t)</span> for two reasons:</p>
+<ol type="1">
+<li><strong>Clean multiplier.</strong> Covariates enter as a constant factor <span class="math inline">\exp(\beta^\top x)</span> on the baseline. On the survival scale the same effect becomes the messier <span class="math inline">S(t)^{\exp(\beta^\top x)}</span>.</li>
+<li><strong>The baseline cancels.</strong> Because every patient shares the same <span class="math inline">h_0(t)</span>, it drops out of the partial likelihood below — the trick that lets Cox estimate <span class="math inline">\beta</span> without ever specifying the baseline.</li>
+</ol>
+<p>Nothing is lost: <span class="math inline">S(t)</span>, <span class="math inline">h(t)</span>, and <span class="math inline">H(t)</span> are interconvertible (<span class="math inline">S=e^{-H}</span>, <span class="math inline">H=\int h</span>), so the survival curve can be recovered afterward.</p>
+<blockquote class="blockquote">
+<p><strong>How the survival curve is recovered.</strong> The packages’ <code>predict_survival_function</code> call (see the output table in <a href="../01_background/1.5_clinician_goals.html"><code>1.5</code></a>) does this: once <span class="math inline">\beta</span> is fixed, it estimates the dropped baseline non-parametrically from the data (the <strong>Breslow estimator</strong>) and combines it with each patient’s risk, <span class="math inline">S(t\mid x)=S_0(t)^{\exp(\beta^\top x)}</span>. Fit on the hazard scale, then assemble the probability curve afterward.</p>
+</blockquote>
+</section>
+</section>
+<section id="partial-likelihood" class="level2">
+<h2 class="anchored" data-anchor-id="partial-likelihood">Partial Likelihood</h2>
+<section id="the-idea" class="level3">
+<h3 class="anchored" data-anchor-id="the-idea">The idea</h3>
+<p>A <em>full</em> likelihood for survival data would need the baseline hazard <span class="math inline">h_0(t)</span> — the actual shape of risk over time. Cox’s trick is to estimate <span class="math inline">\beta</span> <strong>without ever specifying <span class="math inline">h_0(t)</span></strong>, using only the information that does not depend on it. That reduced quantity is the <em>partial</em> likelihood.</p>
+<p>It works by asking, each time an event occurs: <em>given that exactly one subject failed at this moment, what is the probability it was this particular subject?</em></p>
+<p><span class="math display">
+\underbrace{P\big(i \text{ fails} \mid \text{one failure in } R(t_i)\big)}_{\text{prob. it was patient } i}
+\;=\;
+\frac{\overbrace{\exp(\beta^\top x_i)}^{\text{patient } i\text{'s risk}}}{\underbrace{\sum_{j \in R(t_i)} \exp(\beta^\top x_j)}_{\text{total risk of everyone still at risk}}}
+</span></p>
+<p>This is a <strong>softmax over the risk set</strong>: patient <span class="math inline">i</span>’s own risk scored against the pooled risk of all the candidates, giving <span class="math inline">i</span>’s <em>share</em> of the total. (That softmax form is exactly why the deep-learning version is just a log-softmax loss.)</p>
+<p><strong>The risk set <span class="math inline">R(t_i)</span></strong> is everyone still at risk just before time <span class="math inline">t_i</span>:</p>
+<p><span class="math display">R(t_i) = \{\, j : T_j \ge t_i \,\} \quad\text{— subjects who have neither had the event nor been censored yet.}</span></p>
+<p>Mind the capitalization: <span class="math inline">t_i</span> (lowercase) is a <em>specific moment</em> — when subject <span class="math inline">i</span> had their event — while <span class="math inline">T_j</span> (capital) is subject <span class="math inline">j</span>’s <em>own observed time</em> (the survival time <span class="math inline">T</span> from the <code>(T, δ)</code> notation in <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>). So <span class="math inline">T_j \ge t_i</span> means “<span class="math inline">j</span> was still being followed at the instant <span class="math inline">i</span> failed.” The pool only ever shrinks: a subject drops out of all later risk sets once they have their event or are censored.</p>
+<blockquote class="blockquote">
+<p><strong>Worked example — who’s in the risk set.</strong> If patient <span class="math inline">i</span> fails at <span class="math inline">t_i = 10</span> months: - a patient with <span class="math inline">T_j = 15</span> is <strong>in</strong> the set (still followed at month 10), - a patient with <span class="math inline">T_j = 6</span> is <strong>not</strong> (already left by month 10).</p>
+</blockquote>
+<p><strong>The cancellation.</strong> Each subject’s hazard is <span class="math inline">h_0(t)\exp(\beta^\top x_j)</span>, so the shared <span class="math inline">h_0(t_i)</span> <strong>cancels</strong> between numerator and denominator. That cancellation is exactly what removes the baseline hazard from the estimation.</p>
+</section>
+<section id="the-loss" class="level3">
+<h3 class="anchored" data-anchor-id="the-loss">The loss</h3>
+<p>Multiply the per-event conditional probabilities across all observed events and take the negative log:</p>
+<p><span class="math display">
+L(\beta) = -\!\!\sum_{i\,:\,\delta_i = 1}
+\Big[\,
+\underbrace{\beta^\top x_i}_{\text{patient } i\text{'s log-risk}}
+\;-\;
+\underbrace{\log\!\Big(\textstyle\sum_{j \in R(t_i)} \exp(\beta^\top x_j)\Big)}_{\text{log-total-risk over the risk set}}
+\,\Big]
+</span></p>
+<p>where:</p>
+<ul>
+<li><strong><span class="math inline">\sum_{i:\delta_i=1}</span></strong> — sum over <strong>observed events only</strong> (<span class="math inline">\delta_i = 1</span>). Censored subjects (<span class="math inline">\delta_i = 0</span>) never get their own term.</li>
+<li><strong><span class="math inline">R(t_i)</span></strong> — the risk set, as above.</li>
+</ul>
+<p>A censored subject still appears in the risk sets (denominators) of <em>earlier</em> events, so its follow-up still contributes — it just never supplies a numerator.</p>
+<blockquote class="blockquote">
+<p><strong>Worked example — three patients.</strong> A fails first, then B, while C is censored. The partial likelihood is: <span class="math display">\big[\text{A's softmax over } \{A, B, C\}\big] \;\times\; \big[\text{B's softmax over the shrunken } \{B, C\}\big]</span> C contributes only to denominators, never a numerator.</p>
+</blockquote>
+</section>
+<section id="why-partial" class="level3">
+<h3 class="anchored" data-anchor-id="why-partial">Why “partial”</h3>
+<p>It is <em>partial</em> because it deliberately discards information: it uses only the <strong>order</strong> in which events occur (who failed before whom), not the actual event times — those live in the baseline hazard that was dropped. That is also why a Cox model outputs a <strong>ranking</strong> (a risk score) rather than absolute probabilities, and why its natural evaluation metric is the rank-based <a href="../03_metrics/3.1_c_index.html">C-index</a>.</p>
+</section>
+</section>
+<section id="the-proportional-hazards-assumption" class="level2">
+<h2 class="anchored" data-anchor-id="the-proportional-hazards-assumption">The proportional-hazards assumption</h2>
+<p>Take the model and form the ratio of hazards for two patients <span class="math inline">i</span> and <span class="math inline">j</span>:</p>
+<p><span class="math display">
+\frac{h(t \mid x_i)}{h(t \mid x_j)}
+= \frac{h_0(t)\exp(\beta^\top x_i)}{h_0(t)\exp(\beta^\top x_j)}
+= \frac{\exp(\beta^\top x_i)}{\exp(\beta^\top x_j)}
+</span></p>
+<p>The baseline <span class="math inline">h_0(t)</span> <strong>cancels</strong> (the third cancellation), leaving a ratio with <strong>no <span class="math inline">t</span> in it</strong>. So however the underlying risk moves over time, patient <span class="math inline">i</span> is always the <em>same multiple</em> as risky as patient <span class="math inline">j</span> — their hazard curves are <strong>vertically parallel and never cross</strong>. That constant-ratio property is what “proportional hazards” means, and it is the price Cox pays for not specifying <span class="math inline">h_0(t)</span>.</p>
+<blockquote class="blockquote">
+<p><strong>Worked example — when PH breaks.</strong> A surgery with high <em>early</em> risk (operative complications) but a <em>protective</em> effect later: the treated and untreated hazard curves <strong>cross</strong>. No single constant ratio fits, so PH is violated. This is exactly the limitation flexible models like DeepHit (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) escape by not assuming any hazard form.</p>
+</blockquote>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/figures/2.1_proportional_hazards.svg" class="img-fluid figure-img" alt="Two panels of hazard curves: left shows two non-crossing curves with a constant ratio; right shows two curves that cross."></p>
+<figcaption>Left: proportional hazards — patient B’s hazard is a fixed multiple of A’s, so however the baseline moves the two curves keep a constant ratio and never cross. Right: the surgery case — high early risk that becomes protective later, so the curves cross and no single ratio fits. Cox is mis-specified on the right.</figcaption>
+</figure>
+</div>
+<p>Other properties:</p>
+<ul>
+<li>Does not require specifying the baseline hazard.</li>
+<li>Outputs a log-hazard (risk score), not a probability.</li>
+</ul>
+</section>
+<section id="in-deep-learning" class="level2">
+<h2 class="anchored" data-anchor-id="in-deep-learning">In Deep Learning</h2>
+<p>Replace the linear predictor <span class="math inline">\beta^\top x</span> with a neural-network output <span class="math inline">\varphi(x)</span> — a single scalar log-hazard per subject. The loss is unchanged (negative log partial likelihood). This is <strong>DeepSurv</strong>.</p>
+</section>
+<section id="key-takeaways-for-applied-ml-scientists" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
+<p>If you just need to train and use a Cox model — not derive it — these are the points that matter:</p>
+<ul>
+<li><strong>Output is a risk score, not a probability.</strong> The model emits one number per patient (a log-hazard); higher means higher risk. It’s a <em>ranking</em>. To get actual survival probabilities <span class="math inline">S(t \mid x)</span>, call <code>predict_survival_function</code> (it fills in the baseline via the Breslow estimator).</li>
+<li><strong>The loss is a log-softmax over the risk set.</strong> Each event “competes” against everyone still at risk at that moment. In deep learning you just feed your network’s scalar output into the Cox loss — no need to handle the baseline yourself.</li>
+<li><strong>It assumes proportional hazards.</strong> Relative risk between two patients is constant over time. If a covariate’s effect flips over time (e.g.&nbsp;surgery: harmful early, protective late), Cox is mis-specified — reach for <a href="../02_loss_functions/2.4_deephit_loss.html">DeepHit</a> instead.</li>
+<li><strong>Evaluate with the <a href="../03_metrics/3.1_c_index.html">C-index</a>.</strong> Because the output is a ranking, the natural metric is rank-based concordance, not a probabilistic score.</li>
+<li><strong>Mind the mini-batch approximation.</strong> The exact loss sums over the <em>global</em> risk set; with mini-batches the risk set is restricted to the batch. Use <strong>large batches</strong> to reduce the error, or use <strong><code>CoxCC</code></strong> (Cox case-control), which is built for SGD — instead of the full risk set, it samples a small fixed set of <em>controls</em> (still-at-risk subjects) for each <em>case</em> (the one that failed), so the loss no longer needs every subject in the denominator. Same Cox objective, memory-efficient, mini-batch-friendly.</li>
+</ul>
+</section>
+<section id="implementation" class="level2">
+<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
+<p>The Cox loss is available at every altitude. Pick by how much you own the training loop.</p>
+<p><strong>torchsurv</strong> — raw differentiable loss for a custom PyTorch model (the custom 3D-imaging case; see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.loss <span class="im">import</span> cox</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>log_hz <span class="op">=</span> model(x)                 <span class="co"># network output: one log-hazard per subject</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> cox.neg_partial_log_likelihood(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>pycox</strong> — packaged DeepSurv (<code>CoxPH</code>) or memory-efficient <code>CoxCC</code> (see <a href="../04_packages/4.1_pycox.html"><code>04_packages/4.1_pycox.md</code></a>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pycox.models <span class="im">as</span> models, torchtuples <span class="im">as</span> tt</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> tt.practical.MLPVanilla(in_features, [<span class="dv">64</span>, <span class="dv">64</span>], out_features<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> models.CoxPH(net, tt.optim.Adam)   <span class="co"># or models.CoxCC(net, tt.optim.Adam)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>model.fit(x_train, (durations, events), epochs<span class="op">=</span><span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<blockquote class="blockquote">
+<p><strong><code>CoxPH</code> vs <code>CoxCC</code>.</strong> Both optimize the Cox partial likelihood. <code>CoxPH</code> uses the batch as the risk set; <code>CoxCC</code> approximates the denominator by <em>case-control sampling</em> (a few sampled controls per case), which scales to large datasets and underpins pycox’s non-proportional <code>CoxTime</code> model. See <a href="#key-takeaways-for-applied-ml-scientists">Key takeaways</a>.</p>
+</blockquote>
+<p><strong>lifelines</strong> — classical Cox on tabular data, full statistical summary (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> CoxPHFitter</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>CoxPHFitter().fit(df, duration_col<span class="op">=</span><span class="st">"T"</span>, event_col<span class="op">=</span><span class="st">"E"</span>).print_summary()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>scikit-survival</strong> — regularized/penalized Cox inside an sklearn pipeline (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.linear_model <span class="im">import</span> CoxPHSurvivalAnalysis</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>CoxPHSurvivalAnalysis().fit(X_train, y_train)   <span class="co"># y_train is a structured (event, time) array</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../01_background/1.5_clinician_goals.html" class="pagination-link" aria-label="Clinician Goals in Survival Analysis">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Clinician Goals in Survival Analysis</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html" class="pagination-link" aria-label="Negative Log-Likelihood Loss">
+        <span class="nav-page-text">Negative Log-Likelihood Loss</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

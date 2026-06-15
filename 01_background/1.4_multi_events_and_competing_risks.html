@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>multi_events_and_competing_risks – Survival Analysis Mini-Course</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../01_background/1.5_clinician_goals.html" rel="next">
+<link href="../01_background/1.3_what_is_an_event.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ce601f594cca9228a79be9c8039bd487.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.4_multi_events_and_competing_risks.html">Multi-Events and Competing Risks</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Survival Analysis Mini-Course</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">1 · Background</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.1_what_is_survival_analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What is Survival Analysis?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.2_censored_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.3_what_is_an_event.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What is an Event?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.4_multi_events_and_competing_risks.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Multi-Events and Competing Risks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01_background/1.5_clinician_goals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clinician Goals in Survival Analysis</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">2 · Loss Functions</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.1_cox_ph_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cox Proportional Hazards Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Negative Log-Likelihood Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.4_deephit_loss.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DeepHit Loss</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_loss_functions/2.5_loss_comparison.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loss Functions Compared</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">3 · Metrics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.1_c_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Concordance Index (C-index)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.2_brier_score.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Brier Score</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.3_km_curves.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Curves</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03_metrics/3.4_time_dependent_auc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Dependent AUC</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">4 · Packages</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">5 · Recipes</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../06_recipes/6.1_pfs_stratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#multi-events-and-competing-risks" id="toc-multi-events-and-competing-risks" class="nav-link active" data-scroll-target="#multi-events-and-competing-risks">Multi-Events and Competing Risks</a>
+  <ul class="collapse">
+  <li><a href="#competing-risks" id="toc-competing-risks" class="nav-link" data-scroll-target="#competing-risks">Competing Risks</a>
+  <ul class="collapse">
+  <li><a href="#cumulative-incidence-function-cif" id="toc-cumulative-incidence-function-cif" class="nav-link" data-scroll-target="#cumulative-incidence-function-cif">Cumulative incidence function (CIF)</a></li>
+  </ul></li>
+  <li><a href="#multi-event-survival" id="toc-multi-event-survival" class="nav-link" data-scroll-target="#multi-event-survival">Multi-Event Survival</a></li>
+  <li><a href="#tooling" id="toc-tooling" class="nav-link" data-scroll-target="#tooling">Tooling</a></li>
+  <li><a href="#practical-notes" id="toc-practical-notes" class="nav-link" data-scroll-target="#practical-notes">Practical Notes</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.4_multi_events_and_competing_risks.html">Multi-Events and Competing Risks</a></li></ol></nav></header>
+
+
+
+
+<section id="multi-events-and-competing-risks" class="level1">
+<h1>Multi-Events and Competing Risks</h1>
+<p>In many clinical settings, patients are at risk for more than one event type, and the occurrence of one may preclude the other.</p>
+<section id="competing-risks" class="level2">
+<h2 class="anchored" data-anchor-id="competing-risks">Competing Risks</h2>
+<p>A <strong>competing risk</strong> is an event that prevents the event of interest from occurring. Example: a patient dies before tumor recurrence — death “competes” with recurrence.</p>
+<section id="cumulative-incidence-function-cif" class="level3">
+<h3 class="anchored" data-anchor-id="cumulative-incidence-function-cif">Cumulative incidence function (CIF)</h3>
+<p>The <strong>cumulative incidence function</strong> CIF_k(t) is the probability that a subject experiences event type <em>k</em> on or before time <em>t</em> — i.e.&nbsp;P(T ≤ t <strong>and</strong> event = k). It is the expected fraction of the cohort who have had event <em>k</em> by time <em>t</em>.</p>
+<p>For a single event type, <code>1 - S(t)</code> (where S(t) is the survival probability — the chance of still being event-free past time <em>t</em>) already gives this cumulative probability. Under competing risks it does <strong>not</strong>: <code>1 - S(t)</code> treats a patient removed by a competing event (death) as if they could still later have the event of interest (recurrence), so it <strong>overestimates</strong>. The CIF discounts those patients correctly by weighting each instant by the chance of still being event-free up to then:</p>
+<p><span class="math display">\text{CIF}_k(t) = \int_0^t S(u^-)\, h_k(u)\, du</span></p>
+<p>To have event <em>k</em> at instant <em>u</em> you must (a) survive <strong>all</strong> event types up to <em>u</em> — the overall survival S(u⁻) — and (b) experience event <em>k</em> exactly then — the cause-specific hazard h_k(u). The CIFs of all competing events sum to 1 − S(t), partitioning the total risk among the causes. (For S(t) and h(t), see <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a>.)</p>
+<p>Ignoring competing risks leads to overestimation of the CIF — which is exactly the <code>1 - S(t)</code> error above.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/figures/1.4_cif_vs_oneminuss.svg" class="img-fluid figure-img" alt="Two rising curves; the dashed naive 1 minus S curve sits above the solid CIF curve, with the gap between them shaded."></p>
+<figcaption>With a competing event present, the naive complement <span class="math inline">1-S_1(t)</span> (treating the competing event as censoring) climbs above the true cumulative incidence <span class="math inline">\text{CIF}_1(t)</span>. The shaded gap is the overestimation: the naive curve credits event 1 to patients who were actually removed by the competing event. Use Aalen-Johansen for the CIF.</figcaption>
+</figure>
+</div>
+<section id="how-the-cif-relates-to-st-ht-and-ht" class="level4">
+<h4 class="anchored" data-anchor-id="how-the-cif-relates-to-st-ht-and-ht">How the CIF relates to S(t), h(t), and H(t)</h4>
+<p>The four functions from <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a> plus the CIF split into two pairs — <strong>probabilities</strong> (S and CIF) and the <strong>rate machinery</strong> beneath them (h and H):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>What it is</th>
+<th>Probability?</th>
+<th>Per-cause?</th>
+<th>Over time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S(t) survival</td>
+<td>P(still event-free past <em>t</em>)</td>
+<td>yes</td>
+<td>no</td>
+<td>starts at 1, decreases</td>
+</tr>
+<tr class="even">
+<td>h(t) hazard</td>
+<td>instantaneous <em>rate</em> at <em>t</em></td>
+<td>no — a rate</td>
+<td>—</td>
+<td>rises/falls freely</td>
+</tr>
+<tr class="odd">
+<td>H(t) cumulative hazard</td>
+<td>accumulated rate, ∫₀ᵗ h</td>
+<td>no — a rate total</td>
+<td>—</td>
+<td>starts at 0, increases</td>
+</tr>
+<tr class="even">
+<td>CIF_k(t)</td>
+<td>P(had event <em>k</em> by <em>t</em>)</td>
+<td>yes</td>
+<td>yes (one per cause)</td>
+<td>starts at 0, increases</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>CIF vs S(t)</strong> — the closest pair, both probabilities. With <strong>no</strong> competing risks they are exact complements, CIF(t) = 1 − S(t). With competing risks that breaks: 1 − S(t) lumps all causes together, while CIF_k isolates one, and the per-cause CIFs sum back to it (Σ_k CIF_k(t) = 1 − S(t)).</li>
+<li><strong>CIF vs h(t)/H(t)</strong> — a different <em>type</em> of object: h and H are rates (can exceed 1), not probabilities. They are the engine — CIF_k is <em>built from</em> them via the integral above.</li>
+</ul>
+<p>In one line: S(t) and CIF answer “<em>what fraction</em> of patients?”; h(t) and H(t) answer “<em>how fast / how much accumulated rate</em>?” The CIF is the competing-risks-aware, per-cause version of 1 − S(t).</p>
+</section>
+</section>
+</section>
+<section id="multi-event-survival" class="level2">
+<h2 class="anchored" data-anchor-id="multi-event-survival">Multi-Event Survival</h2>
+<p>These approaches differ in <strong>what they model</strong>, and that decides <strong>what question they answer</strong>:</p>
+<ul>
+<li><strong>Cause-specific hazard models</strong> — fit <em>one hazard model per event type</em>; when modelling event <em>k</em>, every competing event is treated as censoring. Each answers “among patients still event-free, what drives the <em>rate</em> of event <em>k</em>?” Best for understanding <strong>mechanism / etiology</strong>. A single cause-specific hazard does <em>not</em> translate directly into that event’s CIF — you need all of them together to reconstruct incidence.</li>
+<li><strong>Sub-distribution hazard (Fine-Gray)</strong> — a regression model named after Fine &amp; Gray (1999), the competing-risks counterpart of the Cox model (see <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>). It models a <em>modified</em> hazard engineered to have a direct one-to-one link to the CIF (it keeps patients who had a competing event in the at-risk set rather than dropping them). So one model gives that event’s CIF directly. Best for <strong>prediction / prognosis</strong>.</li>
+<li><strong>DeepHit</strong> — a neural network that skips hazards entirely and directly learns the <strong>joint distribution over (which event, when)</strong>, P(event = k, T = t), in discrete time. No proportional-hazards assumption; covariates interact freely, at the cost of more data and tuning. Covered in full — model output, loss, and tuning — in <a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>.</li>
+</ul>
+<blockquote class="blockquote">
+<p>Rule of thumb: <strong>cause-specific = “rate among those still at risk” (etiology); Fine-Gray = “directly model the cumulative incidence” (prediction).</strong> See <a href="#cumulative-incidence-function-cif"><code>1.4</code> above</a> for the CIF itself.</p>
+</blockquote>
+</section>
+<section id="tooling" class="level2">
+<h2 class="anchored" data-anchor-id="tooling">Tooling</h2>
+<p>The tools split along two axes — <strong>descriptive vs.&nbsp;covariate model</strong>, and among models, <strong>how they represent time</strong>. The top row describes a <em>group</em>; the bottom two <em>predict from a patient’s features</em>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Need</th>
+<th>Tool</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Estimate the CIF correctly (descriptive, no covariates)</td>
+<td><code>lifelines.AalenJohansenFitter</code> — see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a></td>
+<td>The competing-risks analogue of Kaplan-Meier; gives the cohort’s CIF curve for exploration/plotting</td>
+</tr>
+<tr class="even">
+<td>Deep competing-risks model (discrete time)</td>
+<td><code>pycox.models.DeepHit</code> — see <a href="../04_packages/4.1_pycox.html"><code>04_packages/4.1_pycox.md</code></a> and <a href="../02_loss_functions/2.4_deephit_loss.html"><code>02_loss_functions/2.4_deephit_loss.md</code></a></td>
+<td>Neural net, distribution-free, bins time into intervals; flexible but needs tuning</td>
+</tr>
+<tr class="odd">
+<td>Deep competing-risks model (parametric mixture)</td>
+<td><code>auton_survival</code> DSM — described in depth in <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a> (with a usage snippet in <a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>)</td>
+<td>Models continuous time as a smooth mixture of parametric curves; fewer tuning knobs than DeepHit</td>
+</tr>
+</tbody>
+</table>
+<p>The Aalen-Johansen estimator is the competing-risks analogue of Kaplan-Meier — use it instead of <code>1 - S(t)</code> for the CIF:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> AalenJohansenFitter</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>ajf <span class="op">=</span> AalenJohansenFitter()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ajf.fit(T, event_observed, event_of_interest<span class="op">=</span><span class="dv">1</span>)   <span class="co"># event labels: 0 = censored, 1, 2, ...</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>ajf.plot()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="practical-notes" class="level2">
+<h2 class="anchored" data-anchor-id="practical-notes">Practical Notes</h2>
+<ul>
+<li>Always check whether competing risks are present in your dataset</li>
+<li>Multi-event models require event-type labels in addition to (T, δ)</li>
+<li>Plain Kaplan-Meier (<code>1 - S(t)</code>) overestimates the CIF under competing risks — use Aalen-Johansen</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../01_background/1.3_what_is_an_event.html" class="pagination-link" aria-label="What is an Event?">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">What is an Event?</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../01_background/1.5_clinician_goals.html" class="pagination-link" aria-label="Clinician Goals in Survival Analysis">
+        <span class="nav-page-text">Clinician Goals in Survival Analysis</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
