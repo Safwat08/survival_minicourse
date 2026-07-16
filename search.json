@@ -6,6 +6,7 @@
     "section": "",
     "text": "Goal: train a model that predicts progression-free survival, then split patients into high- vs low-risk groups whose KM curves separate cleanly.\nThis recipe is the connective tissue between sections — it runs the chain 2.1 + log-rank loss → threshold selection → 3.3 end-to-end.\n\n\nOne composite PFS endpoint per patient — see 1.3:\n\nT — time to the earliest of {progression, death}, else censoring time\nE — 1 if progression or death occurred, 0 if censored\n\nNo event-type labels, no second time. This is not competing risks.\n\n\n\nThe model emits a continuous risk score; higher = worse PFS. For a custom 3D-imaging model you own the forward pass, so use the differentiable Cox loss from torchsurv (see 04_packages/4.3_torchsurv.md). Because stratification is the goal, add the log-rank loss as an auxiliary term (a differentiable relaxation of the log-rank test that rewards separating the risk groups’ survival curves):\nfrom torchsurv.loss import cox\n\nlog_hz = model(x)                                  # one log-hazard per patient\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\nloss = loss + lam * logrank_aux(log_hz, events, times)   # lam ~ 0.1–0.5; aux is your custom smooth log-rank\n(For a tabular baseline, lifelines.CoxPHFitter or sksurv.CoxPHSurvivalAnalysis give the same kind of score — see 2.1.)\nAfter training, get scores for both splits:\nr_train = model(x_train).detach().cpu().numpy().ravel()\nr_test  = model(x_test ).detach().cpu().numpy().ravel()\n\n\n\nThe split happens here, not in the model. Search the threshold that maximizes the log-rank statistic on the training scores — see threshold selection:\nfrom lifelines.statistics import logrank_test\nimport numpy as np\n\nbest_stat, tau = 0, None\nfor c in np.percentile(r_train, range(10, 91)):\n    hi = r_train &gt;= c\n    res = logrank_test(T_train[hi], T_train[~hi], E_train[hi], E_train[~hi])\n    if res.test_statistic &gt; best_stat:\n        best_stat, tau = res.test_statistic, c\ntau is now frozen. A median cutoff (tau = np.median(r_train)) is the safe baseline — see threshold selection.\n\n\n\nThis is the only honest significance test — the cutpoint was never tuned on these patients:\nfrom lifelines import KaplanMeierFitter\nfrom lifelines.plotting import add_at_risk_counts\nimport matplotlib.pyplot as plt\n\nhi = r_test &gt;= tau                                  # frozen tau from Stage 2\n\nres = logrank_test(T_test[hi], T_test[~hi], E_test[hi], E_test[~hi])\nprint(f\"test log-rank p = {res.p_value:.4f}\")       # the money number\n\nax = plt.subplot()\nkm_hi = KaplanMeierFitter().fit(T_test[hi],  E_test[hi],  label=\"High risk\")\nkm_lo = KaplanMeierFitter().fit(T_test[~hi], E_test[~hi], label=\"Low risk\")\nkm_hi.plot_survival_function(ax=ax); km_lo.plot_survival_function(ax=ax)\nadd_at_risk_counts(km_hi, km_lo, ax=ax)\nAlso report the underlying ranking quality — C-index (3.1) and time-dependent AUC (3.4) — so a good split isn’t masking a poorly-discriminating model.\n\n\n\n\nRe-deriving tau on the test set — guarantees an optimistic split that fails on external data. Freeze it on train.\nReporting the training max-log-rank p-value as significance — invalid (multiple testing over candidate cutpoints). Only the held-out p-value counts. See threshold selection.\nTreating PFS as two events — death is already inside PFS; competing risks is a different question. See 1.3 and 1.4.",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -17,6 +18,7 @@
     "section": "",
     "text": "One composite PFS endpoint per patient — see 1.3:\n\nT — time to the earliest of {progression, death}, else censoring time\nE — 1 if progression or death occurred, 0 if censored\n\nNo event-type labels, no second time. This is not competing risks.",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -28,6 +30,7 @@
     "section": "",
     "text": "The model emits a continuous risk score; higher = worse PFS. For a custom 3D-imaging model you own the forward pass, so use the differentiable Cox loss from torchsurv (see 04_packages/4.3_torchsurv.md). Because stratification is the goal, add the log-rank loss as an auxiliary term (a differentiable relaxation of the log-rank test that rewards separating the risk groups’ survival curves):\nfrom torchsurv.loss import cox\n\nlog_hz = model(x)                                  # one log-hazard per patient\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\nloss = loss + lam * logrank_aux(log_hz, events, times)   # lam ~ 0.1–0.5; aux is your custom smooth log-rank\n(For a tabular baseline, lifelines.CoxPHFitter or sksurv.CoxPHSurvivalAnalysis give the same kind of score — see 2.1.)\nAfter training, get scores for both splits:\nr_train = model(x_train).detach().cpu().numpy().ravel()\nr_test  = model(x_test ).detach().cpu().numpy().ravel()",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -39,6 +42,7 @@
     "section": "",
     "text": "The split happens here, not in the model. Search the threshold that maximizes the log-rank statistic on the training scores — see threshold selection:\nfrom lifelines.statistics import logrank_test\nimport numpy as np\n\nbest_stat, tau = 0, None\nfor c in np.percentile(r_train, range(10, 91)):\n    hi = r_train &gt;= c\n    res = logrank_test(T_train[hi], T_train[~hi], E_train[hi], E_train[~hi])\n    if res.test_statistic &gt; best_stat:\n        best_stat, tau = res.test_statistic, c\ntau is now frozen. A median cutoff (tau = np.median(r_train)) is the safe baseline — see threshold selection.",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -50,6 +54,7 @@
     "section": "",
     "text": "This is the only honest significance test — the cutpoint was never tuned on these patients:\nfrom lifelines import KaplanMeierFitter\nfrom lifelines.plotting import add_at_risk_counts\nimport matplotlib.pyplot as plt\n\nhi = r_test &gt;= tau                                  # frozen tau from Stage 2\n\nres = logrank_test(T_test[hi], T_test[~hi], E_test[hi], E_test[~hi])\nprint(f\"test log-rank p = {res.p_value:.4f}\")       # the money number\n\nax = plt.subplot()\nkm_hi = KaplanMeierFitter().fit(T_test[hi],  E_test[hi],  label=\"High risk\")\nkm_lo = KaplanMeierFitter().fit(T_test[~hi], E_test[~hi], label=\"Low risk\")\nkm_hi.plot_survival_function(ax=ax); km_lo.plot_survival_function(ax=ax)\nadd_at_risk_counts(km_hi, km_lo, ax=ax)\nAlso report the underlying ranking quality — C-index (3.1) and time-dependent AUC (3.4) — so a good split isn’t masking a poorly-discriminating model.",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -61,6 +66,7 @@
     "section": "",
     "text": "Re-deriving tau on the test set — guarantees an optimistic split that fails on external data. Freeze it on train.\nReporting the training max-log-rank p-value as significance — invalid (multiple testing over candidate cutpoints). Only the held-out p-value counts. See threshold selection.\nTreating PFS as two events — death is already inside PFS; competing risks is a different question. See 1.3 and 1.4.",
     "crumbs": [
+      "Background",
       "5 · Recipes",
       "Recipe: PFS Risk Stratification"
     ]
@@ -72,6 +78,7 @@
     "section": "",
     "text": "scikit-survival extends scikit-learn to support survival analysis, providing sklearn-compatible estimators for survival data.\n\n\npip install scikit-survival\n\n\n\n\nCox PH (with elastic net regularization)\nSurvival SVM\nGradient boosted survival trees (GBM, GBSG)\nRandom Survival Forests\nFull sklearn pipeline compatibility (cross-validation, grid search, etc.)\nEvaluation metrics: C-index, Brier score, time-dependent AUC\n\n\n\n\nfrom sksurv.linear_model import CoxPHSurvivalAnalysis\nfrom sksurv.ensemble import RandomSurvivalForest\nimport numpy as np\n\n# Structured array format required\ny = np.array([(bool(e), t) for e, t in zip(events, times)],\n             dtype=[(\"event\", bool), (\"time\", float)])\n\nmodel = CoxPHSurvivalAnalysis()\nmodel.fit(X_train, y_train)\nrisk_scores = model.predict(X_test)\n\n\n\n\nClassical ML survival models (tree-based, regularized Cox)\nsklearn-compatible pipelines and cross-validation\nEvaluation metrics (best metrics library in the ecosystem)\nRadiomic feature survival models\n\n\n\n\n\nDocs: scikit-survival.readthedocs.io\nGitHub: github.com/sebp/scikit-survival\nUser Guide: scikit-survival.readthedocs.io/en/stable/user_guide\nAPI Reference: scikit-survival.readthedocs.io/en/stable/api\nPaper: Pölsterl (2020). scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn. JMLR. jmlr.org/papers/v21/20-729.html\n\n\n\n@article{polsterl2020scikit,\n  title   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},\n  author  = {P{\\\"o}lsterl, Sebastian},\n  journal = {Journal of Machine Learning Research},\n  volume  = {21},\n  number  = {212},\n  pages   = {1--6},\n  year    = {2020}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -83,6 +90,7 @@
     "section": "",
     "text": "pip install scikit-survival",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -94,6 +102,7 @@
     "section": "",
     "text": "Cox PH (with elastic net regularization)\nSurvival SVM\nGradient boosted survival trees (GBM, GBSG)\nRandom Survival Forests\nFull sklearn pipeline compatibility (cross-validation, grid search, etc.)\nEvaluation metrics: C-index, Brier score, time-dependent AUC",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -105,6 +114,7 @@
     "section": "",
     "text": "from sksurv.linear_model import CoxPHSurvivalAnalysis\nfrom sksurv.ensemble import RandomSurvivalForest\nimport numpy as np\n\n# Structured array format required\ny = np.array([(bool(e), t) for e, t in zip(events, times)],\n             dtype=[(\"event\", bool), (\"time\", float)])\n\nmodel = CoxPHSurvivalAnalysis()\nmodel.fit(X_train, y_train)\nrisk_scores = model.predict(X_test)",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -116,6 +126,7 @@
     "section": "",
     "text": "Classical ML survival models (tree-based, regularized Cox)\nsklearn-compatible pipelines and cross-validation\nEvaluation metrics (best metrics library in the ecosystem)\nRadiomic feature survival models",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -127,6 +138,7 @@
     "section": "",
     "text": "Docs: scikit-survival.readthedocs.io\nGitHub: github.com/sebp/scikit-survival\nUser Guide: scikit-survival.readthedocs.io/en/stable/user_guide\nAPI Reference: scikit-survival.readthedocs.io/en/stable/api\nPaper: Pölsterl (2020). scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn. JMLR. jmlr.org/papers/v21/20-729.html\n\n\n\n@article{polsterl2020scikit,\n  title   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},\n  author  = {P{\\\"o}lsterl, Sebastian},\n  journal = {Journal of Machine Learning Research},\n  volume  = {21},\n  number  = {212},\n  pages   = {1--6},\n  year    = {2020}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "scikit-survival"
     ]
@@ -138,6 +150,7 @@
     "section": "",
     "text": "lifelines is the most popular Python package for classical survival analysis. It is pure Python, well-documented, and beginner-friendly.\n\n\npip install lifelines\n\n\n\n\nKaplan-Meier estimator\nNelson-Aalen estimator\nCox Proportional Hazards model (with L1/L2 regularization)\nParametric models: Weibull, Log-Normal, Log-Logistic, etc.\nLog-rank test, statistical comparisons\nPlotting utilities\n\n\n\n\nfrom lifelines import KaplanMeierFitter, CoxPHFitter\nimport pandas as pd\n\ndf = pd.DataFrame({\"T\": [...], \"E\": [...], \"feature1\": [...]})\n\n# KM curve\nkmf = KaplanMeierFitter()\nkmf.fit(df[\"T\"], df[\"E\"])\nkmf.plot_survival_function()\n\n# Cox PH\ncph = CoxPHFitter()\ncph.fit(df, duration_col=\"T\", event_col=\"E\")\ncph.print_summary()\n\n\n\n\nExploratory survival analysis\nClassical Cox PH on tabular data\nStatistical testing and visualization\nClinical researchers new to survival analysis\n\n\n\n\n\nDocs: lifelines.readthedocs.io\nGitHub: github.com/CamDavidsonPilon/lifelines\nQuickstart: lifelines.readthedocs.io/en/latest/Quickstart.html\nAPI Reference: lifelines.readthedocs.io/en/latest/References.html\nPaper / Citation: Davidson-Pilon (2019). lifelines: survival analysis in Python. JOSS. doi:10.21105/joss.01317\n\n\n\n@article{davidson2019lifelines,\n  title   = {lifelines: survival analysis in Python},\n  author  = {Davidson-Pilon, Cameron},\n  journal = {Journal of Open Source Software},\n  volume  = {4},\n  number  = {40},\n  pages   = {1317},\n  year    = {2019},\n  doi     = {10.21105/joss.01317}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -149,6 +162,7 @@
     "section": "",
     "text": "pip install lifelines",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -160,6 +174,7 @@
     "section": "",
     "text": "Kaplan-Meier estimator\nNelson-Aalen estimator\nCox Proportional Hazards model (with L1/L2 regularization)\nParametric models: Weibull, Log-Normal, Log-Logistic, etc.\nLog-rank test, statistical comparisons\nPlotting utilities",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -171,6 +186,7 @@
     "section": "",
     "text": "from lifelines import KaplanMeierFitter, CoxPHFitter\nimport pandas as pd\n\ndf = pd.DataFrame({\"T\": [...], \"E\": [...], \"feature1\": [...]})\n\n# KM curve\nkmf = KaplanMeierFitter()\nkmf.fit(df[\"T\"], df[\"E\"])\nkmf.plot_survival_function()\n\n# Cox PH\ncph = CoxPHFitter()\ncph.fit(df, duration_col=\"T\", event_col=\"E\")\ncph.print_summary()",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -182,6 +198,7 @@
     "section": "",
     "text": "Exploratory survival analysis\nClassical Cox PH on tabular data\nStatistical testing and visualization\nClinical researchers new to survival analysis",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -193,6 +210,7 @@
     "section": "",
     "text": "Docs: lifelines.readthedocs.io\nGitHub: github.com/CamDavidsonPilon/lifelines\nQuickstart: lifelines.readthedocs.io/en/latest/Quickstart.html\nAPI Reference: lifelines.readthedocs.io/en/latest/References.html\nPaper / Citation: Davidson-Pilon (2019). lifelines: survival analysis in Python. JOSS. doi:10.21105/joss.01317\n\n\n\n@article{davidson2019lifelines,\n  title   = {lifelines: survival analysis in Python},\n  author  = {Davidson-Pilon, Cameron},\n  journal = {Journal of Open Source Software},\n  volume  = {4},\n  number  = {40},\n  pages   = {1317},\n  year    = {2019},\n  doi     = {10.21105/joss.01317}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "lifelines"
     ]
@@ -204,6 +222,7 @@
     "section": "",
     "text": "Standard ROC-AUC applies to a fixed binary outcome. Time-dependent AUC extends it to survival data by re-defining who counts as a “case” and a “control” at each time point t — turning a single number into a curve over time. Where the C-index gives one global discrimination score, this shows when the model discriminates well.\n\n\nAt a chosen time t, split patients into cases and controls, then ask the same concordance question as the C-index:\n\n\\text{AUC}(t) \\;=\\; P\\big(\\,\n\\underbrace{r_i &gt; r_j}_{\\text{model scores case riskier}}\n\\;\\big|\\;\n\\underbrace{i \\text{ is a case at } t}_{\\text{has had the event}},\\;\n\\underbrace{j \\text{ is a control at } t}_{\\text{still event-free at } t}\n\\,\\big)\n\nwhere r_i is the risk score. The split itself comes in two flavors:\n\nCumulative/Dynamic (most common): cases = everyone who had the event by t (T_i \\le t, \\delta_i = 1); controls = everyone still event-free at t (T_j &gt; t).\nIncident/Dynamic: cases = only those whose event falls in a narrow window around t (T_i \\in [t-\\Delta, t]); controls as above. Useful for “how well does the model flag risk right now?”\n\n\nWorked example — AUC at t = 12 (cumulative/dynamic). Five patients, evaluated at month 12: | Patient | Time T | Event | Role at t=12 | Risk r | |—|—|—|—|—| | A | 6 | 1 | case (failed by 12) | 0.9 | | B | 9 | 1 | case (failed by 12) | 0.5 | | C | 18 | 1 | control (event-free at 12) | 0.4 | | D | 20 | 0 | control (event-free at 12) | 0.2 |\nCompare each case against each control (4 case–control pairs); count those where the case is scored riskier: - A(0.9) &gt; C(0.4) ✓, A(0.9) &gt; D(0.2) ✓, B(0.5) &gt; C(0.4) ✓, B(0.5) &gt; D(0.2) ✓ → 4/4\n\\text{AUC}(12) = 1.0 — at this horizon the model perfectly separates those who have failed from those still at risk. Computing it at t = 8 instead (only A is a case) would probe a different, earlier horizon.\n\n\n\n\nA weighted average of \\text{AUC}(t) over a range of times, using the event density as weights, collapses the curve into a single summary comparable to the C-index:\n\n\\overline{\\text{AUC}} \\;=\\; \\frac{\\int_{t_{\\min}}^{t_{\\max}} \\text{AUC}(t)\\, w(t)\\, dt}{\\int_{t_{\\min}}^{t_{\\max}} w(t)\\, dt}\n\n\n\n\nWhy a single C-index can mislead. Both models might share a similar average, but the curve shows when each discriminates: the teal model stays high across horizons, while the coral one starts strong and sags at long horizons — predictions degrade far out. The C-index hides that; \\text{AUC}(t) exposes it.\n\n\n\n\n\n\nUse it when the time horizon matters. If a clinical decision is made at “2 years,” report \\text{AUC}(2 yr) directly instead of a horizon-agnostic C-index. The horizon you pick here is the natural one for the Youden threshold cutoff.\nIt diagnoses when a model is good. A flat-high AUC curve is robust; one that sags at long horizons tells you predictions degrade far out — something a single C-index hides.\nCumulative/Dynamic is the default; reach for Incident/Dynamic only when you specifically care about risk in a window rather than cumulative risk.\nSame IPCW time-window caveat as Brier (below) — evaluation times must stay inside observed follow-up.\n\n\n\n\nscikit-survival — cumulative/dynamic AUC over a vector of time horizons (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import cumulative_dynamic_auc\nimport numpy as np\n\ntimes = np.percentile(time_test[event_test], [25, 50, 75])     # within follow-up range\nauc, mean_auc = cumulative_dynamic_auc(y_train, y_test, risk_scores, times)\ntorchsurv — AUC as a PyTorch metric for in-loop, time-resolved monitoring (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.metrics.auc import Auc\nauc = Auc()(log_hz, events, times, new_time=eval_times)\n\nSame time-window caveat as Brier. Both rely on IPCW censoring weights, so evaluation times must stay inside the observed follow-up. The time horizon you pick here is also the natural one for the 03_metrics/3.3_km_curves.md#choosing-a-risk-threshold cutoff.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Time-Dependent AUC"
     ]
@@ -215,6 +234,7 @@
     "section": "",
     "text": "At a chosen time t, split patients into cases and controls, then ask the same concordance question as the C-index:\n\n\\text{AUC}(t) \\;=\\; P\\big(\\,\n\\underbrace{r_i &gt; r_j}_{\\text{model scores case riskier}}\n\\;\\big|\\;\n\\underbrace{i \\text{ is a case at } t}_{\\text{has had the event}},\\;\n\\underbrace{j \\text{ is a control at } t}_{\\text{still event-free at } t}\n\\,\\big)\n\nwhere r_i is the risk score. The split itself comes in two flavors:\n\nCumulative/Dynamic (most common): cases = everyone who had the event by t (T_i \\le t, \\delta_i = 1); controls = everyone still event-free at t (T_j &gt; t).\nIncident/Dynamic: cases = only those whose event falls in a narrow window around t (T_i \\in [t-\\Delta, t]); controls as above. Useful for “how well does the model flag risk right now?”\n\n\nWorked example — AUC at t = 12 (cumulative/dynamic). Five patients, evaluated at month 12: | Patient | Time T | Event | Role at t=12 | Risk r | |—|—|—|—|—| | A | 6 | 1 | case (failed by 12) | 0.9 | | B | 9 | 1 | case (failed by 12) | 0.5 | | C | 18 | 1 | control (event-free at 12) | 0.4 | | D | 20 | 0 | control (event-free at 12) | 0.2 |\nCompare each case against each control (4 case–control pairs); count those where the case is scored riskier: - A(0.9) &gt; C(0.4) ✓, A(0.9) &gt; D(0.2) ✓, B(0.5) &gt; C(0.4) ✓, B(0.5) &gt; D(0.2) ✓ → 4/4\n\\text{AUC}(12) = 1.0 — at this horizon the model perfectly separates those who have failed from those still at risk. Computing it at t = 8 instead (only A is a case) would probe a different, earlier horizon.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Time-Dependent AUC"
     ]
@@ -226,6 +246,7 @@
     "section": "",
     "text": "A weighted average of \\text{AUC}(t) over a range of times, using the event density as weights, collapses the curve into a single summary comparable to the C-index:\n\n\\overline{\\text{AUC}} \\;=\\; \\frac{\\int_{t_{\\min}}^{t_{\\max}} \\text{AUC}(t)\\, w(t)\\, dt}{\\int_{t_{\\min}}^{t_{\\max}} w(t)\\, dt}\n\n\n\n\nWhy a single C-index can mislead. Both models might share a similar average, but the curve shows when each discriminates: the teal model stays high across horizons, while the coral one starts strong and sags at long horizons — predictions degrade far out. The C-index hides that; \\text{AUC}(t) exposes it.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Time-Dependent AUC"
     ]
@@ -237,6 +258,7 @@
     "section": "",
     "text": "Use it when the time horizon matters. If a clinical decision is made at “2 years,” report \\text{AUC}(2 yr) directly instead of a horizon-agnostic C-index. The horizon you pick here is the natural one for the Youden threshold cutoff.\nIt diagnoses when a model is good. A flat-high AUC curve is robust; one that sags at long horizons tells you predictions degrade far out — something a single C-index hides.\nCumulative/Dynamic is the default; reach for Incident/Dynamic only when you specifically care about risk in a window rather than cumulative risk.\nSame IPCW time-window caveat as Brier (below) — evaluation times must stay inside observed follow-up.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Time-Dependent AUC"
     ]
@@ -248,6 +270,7 @@
     "section": "",
     "text": "scikit-survival — cumulative/dynamic AUC over a vector of time horizons (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import cumulative_dynamic_auc\nimport numpy as np\n\ntimes = np.percentile(time_test[event_test], [25, 50, 75])     # within follow-up range\nauc, mean_auc = cumulative_dynamic_auc(y_train, y_test, risk_scores, times)\ntorchsurv — AUC as a PyTorch metric for in-loop, time-resolved monitoring (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.metrics.auc import Auc\nauc = Auc()(log_hz, events, times, new_time=eval_times)\n\nSame time-window caveat as Brier. Both rely on IPCW censoring weights, so evaluation times must stay inside the observed follow-up. The time horizon you pick here is also the natural one for the 03_metrics/3.3_km_curves.md#choosing-a-risk-threshold cutoff.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Time-Dependent AUC"
     ]
@@ -259,6 +282,7 @@
     "section": "",
     "text": "The Brier score measures calibration — how close a model’s predicted survival probabilities are to what actually happened. It is the complement of the C-index: where the C-index only checks the ordering of patients, the Brier score checks whether the predicted numbers are right.\n\n\nAt a fixed time t, the Brier score is the mean squared error between the predicted survival probability and the observed outcome:\n\nBS(t) \\;=\\; \\frac{1}{n}\\sum_{i=1}^{n}\\Big(\n\\underbrace{S(t \\mid x_i)}_{\\text{predicted prob. of surviving past } t}\n\\;-\\;\n\\underbrace{\\mathbf{1}(T_i &gt; t)}_{\\text{1 if actually survived past } t,\\ \\text{else } 0}\n\\Big)^2\n\nThe indicator \\mathbf{1}(T_i &gt; t) is the ground truth: 1 if subject i was still event-free at t, 0 if the event had already happened. A perfect model predicts S(t \\mid x_i) = 1 for survivors and 0 for those who failed, giving BS(t) = 0.\n\nWorked example — one time point. Evaluate at t = 12 months for three patients who all survived past 12 (so each ground-truth indicator is 1): | Patient | Predicted S(12) | Truth \\mathbf{1}(T&gt;12) | Squared error | |—|—|—|—| | A | 0.9 | 1 | 0.01 | | B | 0.6 | 1 | 0.16 | | C | 0.8 | 1 | 0.04 |\nBS(12) = (0.01 + 0.16 + 0.04)/3 \\approx 0.07. Patient B hurts the score most — the model under-predicted a survivor’s chances.\n\n\n\n\nThe raw score above breaks for censored subjects: if subject i is censored before t, the indicator \\mathbf{1}(T_i &gt; t) is unknown. The IPCW-corrected Brier score handles this by reweighting each subject by the inverse probability of being uncensored, w_i:\n\nBS_{\\text{IPCW}}(t) \\;=\\; \\frac{1}{n}\\sum_{i=1}^{n} w_i \\,\\Big( S(t \\mid x_i) - \\mathbf{1}(T_i &gt; t) \\Big)^2\n\nSubjects who are less likely to be observed get more weight, so the censored data don’t bias the estimate. This is the version the packages compute.\n\n\n\nA single time point only tells part of the story. The IBS averages BS(t) across a time range [t_{\\min}, t_{\\max}]:\n\nIBS \\;=\\; \\frac{1}{t_{\\max} - t_{\\min}} \\int_{t_{\\min}}^{t_{\\max}} BS(t)\\, dt\n\nThis is the standard one-number summary of calibration across the whole follow-up.\n\n\n\nBS(t) over follow-up: lower is better. A useful model (teal) stays well under both the covariate-free Kaplan-Meier baseline (coral) and the uninformative 0.25 line. The shaded area under the model curve, averaged over the window, is the integrated Brier score (IBS).\n\n\n\n\n\n\nLower is better: 0 = perfect, 0.25 = uninformative (a coin-flip predicting 0.5 everywhere).\nAlways compare against the Kaplan–Meier baseline (a covariate-free model, see 3.3) — a useful model must beat it.\n\n\n\n\n\nIt’s your calibration check. Report it alongside the C-index: discrimination and calibration. A model can ace one and fail the other.\nUse the IPCW version with any real (censored) data — the raw score is biased. The packages do this for you, but they need the training survival arrays to estimate the censoring weights.\nKeep evaluation times inside the follow-up window (see pitfall below) — this is the single most common way to get a meaningless Brier score.\nPrefer the IBS for model selection, individual BS(t) values for diagnosing when calibration breaks down.\n\n\n\n\nscikit-survival is the reference implementation. Both functions take the training and test structured arrays (for the IPCW censoring estimate) plus the model’s predicted survival probabilities S(t) at each evaluation time (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import brier_score, integrated_brier_score\nimport numpy as np\n\ntimes = np.percentile(time_test[event_test], [25, 50, 75])      # stay inside the followed-up range\nsurv_prob = np.row_stack([fn(times) for fn in model.predict_survival_function(X_test)])\n\nt, bs = brier_score(y_train, y_test, surv_prob, times)          # BS at each time\nibs   = integrated_brier_score(y_train, y_test, surv_prob, times)  # single summary\ntorchsurv provides a differentiable/GPU version for in-loop evaluation (see 04_packages/4.3_torchsurv.md); auton-survival reports IBS with bootstrapped confidence intervals (see 04_packages/4.5_auton_survival.md).\n\nPitfall — evaluation times. Choosing times beyond the last observed event makes the IPCW weights explode and the score meaningless. Keep evaluation times strictly inside the follow-up window, and never let times include the maximum follow-up time.\n\n\nBrier complements, not replaces, the C-index. A model can rank perfectly (high C-index) yet be badly calibrated (high Brier), and vice versa. Report both — discrimination and calibration. See 3.1.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -270,6 +294,7 @@
     "section": "",
     "text": "At a fixed time t, the Brier score is the mean squared error between the predicted survival probability and the observed outcome:\n\nBS(t) \\;=\\; \\frac{1}{n}\\sum_{i=1}^{n}\\Big(\n\\underbrace{S(t \\mid x_i)}_{\\text{predicted prob. of surviving past } t}\n\\;-\\;\n\\underbrace{\\mathbf{1}(T_i &gt; t)}_{\\text{1 if actually survived past } t,\\ \\text{else } 0}\n\\Big)^2\n\nThe indicator \\mathbf{1}(T_i &gt; t) is the ground truth: 1 if subject i was still event-free at t, 0 if the event had already happened. A perfect model predicts S(t \\mid x_i) = 1 for survivors and 0 for those who failed, giving BS(t) = 0.\n\nWorked example — one time point. Evaluate at t = 12 months for three patients who all survived past 12 (so each ground-truth indicator is 1): | Patient | Predicted S(12) | Truth \\mathbf{1}(T&gt;12) | Squared error | |—|—|—|—| | A | 0.9 | 1 | 0.01 | | B | 0.6 | 1 | 0.16 | | C | 0.8 | 1 | 0.04 |\nBS(12) = (0.01 + 0.16 + 0.04)/3 \\approx 0.07. Patient B hurts the score most — the model under-predicted a survivor’s chances.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -281,6 +306,7 @@
     "section": "",
     "text": "The raw score above breaks for censored subjects: if subject i is censored before t, the indicator \\mathbf{1}(T_i &gt; t) is unknown. The IPCW-corrected Brier score handles this by reweighting each subject by the inverse probability of being uncensored, w_i:\n\nBS_{\\text{IPCW}}(t) \\;=\\; \\frac{1}{n}\\sum_{i=1}^{n} w_i \\,\\Big( S(t \\mid x_i) - \\mathbf{1}(T_i &gt; t) \\Big)^2\n\nSubjects who are less likely to be observed get more weight, so the censored data don’t bias the estimate. This is the version the packages compute.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -292,6 +318,7 @@
     "section": "",
     "text": "A single time point only tells part of the story. The IBS averages BS(t) across a time range [t_{\\min}, t_{\\max}]:\n\nIBS \\;=\\; \\frac{1}{t_{\\max} - t_{\\min}} \\int_{t_{\\min}}^{t_{\\max}} BS(t)\\, dt\n\nThis is the standard one-number summary of calibration across the whole follow-up.\n\n\n\nBS(t) over follow-up: lower is better. A useful model (teal) stays well under both the covariate-free Kaplan-Meier baseline (coral) and the uninformative 0.25 line. The shaded area under the model curve, averaged over the window, is the integrated Brier score (IBS).",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -303,6 +330,7 @@
     "section": "",
     "text": "Lower is better: 0 = perfect, 0.25 = uninformative (a coin-flip predicting 0.5 everywhere).\nAlways compare against the Kaplan–Meier baseline (a covariate-free model, see 3.3) — a useful model must beat it.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -314,6 +342,7 @@
     "section": "",
     "text": "It’s your calibration check. Report it alongside the C-index: discrimination and calibration. A model can ace one and fail the other.\nUse the IPCW version with any real (censored) data — the raw score is biased. The packages do this for you, but they need the training survival arrays to estimate the censoring weights.\nKeep evaluation times inside the follow-up window (see pitfall below) — this is the single most common way to get a meaningless Brier score.\nPrefer the IBS for model selection, individual BS(t) values for diagnosing when calibration breaks down.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -325,6 +354,7 @@
     "section": "",
     "text": "scikit-survival is the reference implementation. Both functions take the training and test structured arrays (for the IPCW censoring estimate) plus the model’s predicted survival probabilities S(t) at each evaluation time (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import brier_score, integrated_brier_score\nimport numpy as np\n\ntimes = np.percentile(time_test[event_test], [25, 50, 75])      # stay inside the followed-up range\nsurv_prob = np.row_stack([fn(times) for fn in model.predict_survival_function(X_test)])\n\nt, bs = brier_score(y_train, y_test, surv_prob, times)          # BS at each time\nibs   = integrated_brier_score(y_train, y_test, surv_prob, times)  # single summary\ntorchsurv provides a differentiable/GPU version for in-loop evaluation (see 04_packages/4.3_torchsurv.md); auton-survival reports IBS with bootstrapped confidence intervals (see 04_packages/4.5_auton_survival.md).\n\nPitfall — evaluation times. Choosing times beyond the last observed event makes the IPCW weights explode and the score meaningless. Keep evaluation times strictly inside the follow-up window, and never let times include the maximum follow-up time.\n\n\nBrier complements, not replaces, the C-index. A model can rank perfectly (high C-index) yet be badly calibrated (high Brier), and vice versa. Report both — discrimination and calibration. See 3.1.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Brier Score"
     ]
@@ -336,6 +366,7 @@
     "section": "",
     "text": "Modules 2.1–2.4 each cover one loss in depth. This page is the cross-cutting view: how they trade off, what they assume, what they output, and how to pick one. Use it as a cheat-sheet; follow the links for the full treatment of any single loss.\nThe three families:\n\nCox PH (2.1) — ranks subjects via the partial likelihood; leaves the baseline hazard unspecified.\nParametric / discrete NLL (2.2) — writes the time distribution down explicitly and maximizes its likelihood.\nDeepHit (2.4) — a discrete joint distribution over time and event type; likelihood + ranking, competing risks native.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nLoss\nWhat it optimizes\nPrimary output\nKey assumption\nCompeting risks\nTypical package\n\n\n\n\nCox PH (DeepSurv)\nRanking — order of events (partial likelihood)\nRisk score (log-hazard); S(t) via Breslow\nProportional hazards\nNo (single event)\nlifelines, scikit-survival, pycox, torchsurv\n\n\nParametric NLL\nLikelihood under a chosen distribution\nFull S(t) + distribution parameters\nA distributional form (Weibull, …)\nNo¹\nlifelines, torchsurv\n\n\nDiscrete-time NLL\nLikelihood over binned hazards\nHazard/PMF per time bin → S(t)\nTime binning (no PH, no distribution)\nNo¹\npycox (LogisticHazard, MTLR, PMF), Nnet-survival\n\n\nDeepHit\nLikelihood + ranking (weighted)\nDiscrete joint PMF over (time, event) → S(t), CIF\nNone (no PH, no distribution); binning\nYes, native\npycox (DeepHit, DeepHitSingle)\n\n\nDSM (parametric, deep)\nLikelihood under a mixture of distributions\nFull S(t), CIF\nMixture of parametric shapes\nYes\nauton-survival\n\n\n\n¹ Single-event by default; the same likelihood machinery extends to competing risks (DeepHit, DSM).\n\n\n\nThe same trade-off as the tables, in one picture. Left-to-right: how much structure the loss imposes on time (rigid PH/distribution → fully flexible). Bottom-to-top: what it outputs (a bare risk-score ranking → an absolute, calibrated S(t) and CIF). Cox sits bottom-left (rigid, ranking); DeepHit/DSM sit top-right (flexible, full probabilities).\n\n\n\n\n\nThe core trade-off in survival modeling is how much structure you impose on time. More structure → fewer parameters, smoother extrapolation, but wrong if the assumption is violated.\n\n\n\n\n\n\n\n\n\nLoss\nProportional hazards?\nDistributional shape?\nTime axis\n\n\n\n\nCox PH\nRequired\nNone (baseline free)\nContinuous, order only\n\n\nParametric NLL\nImplied by the chosen family\nFixed (you pick it)\nContinuous, closed-form\n\n\nDiscrete-time NLL\nNot required\nNone\nDiscrete bins\n\n\nDeepHit\nNot required\nNone\nDiscrete bins\n\n\nDSM\nNot required\nMixture (flexible)\nContinuous, closed-form\n\n\n\n\nReading this table. Cox buys freedom on the shape of risk over time (no distribution) by paying with the proportional-hazards constraint (see 2.1). Parametric NLL is the mirror image: it drops PH but commits to a distributional shape (2.2). DeepHit and discrete-time NLL drop both — at the cost of discretizing time and needing more data.\n\n\n\n\nWhat a loss produces dictates how you evaluate it.\n\n\n\nLoss\nOutput type\nExtrapolate past last event?\nNatural metric\n\n\n\n\nCox PH\nRanking (risk score)\nNo (baseline ends with data)\nC-index (rank-based)\n\n\nParametric NLL\nAbsolute S(t) probabilities\nYes (formula continues)\nBrier score, calibration, likelihood\n\n\nDiscrete-time NLL\nS(t) on the bin grid\nNo (limited to grid)\nC-index, Brier (binned)\n\n\nDeepHit\nS(t) + cause-specific CIF\nNo (limited to grid)\nC-index + Brier\n\n\nDSM\nAbsolute S(t), CIF\nYes\nC-index, Brier, calibration\n\n\n\n\nRanking vs. probability. A risk score (Cox) only orders patients — evaluate with the rank-based C-index. A probability model (parametric NLL, DeepHit, DSM) predicts an absolute S(t) — also check calibration (do 70%-survival predictions actually survive 70% of the time?) and the Brier score.\n\n\n\n\nThe deep-learning literature mostly varies within these families:\n\n\n\nFamily\nVariant\nWhat changes\n\n\n\n\nCox\nCoxPH / DeepSurv\nPlain deep Cox\n\n\n\nCoxCC\nCase-control sampling — SGD-friendly, large data (2.1)\n\n\n\nCoxTime\nDrops proportional hazards (time-dependent effects)\n\n\nNLL (parametric)\nWeibull AFT\nSingle parametric distribution per subject\n\n\n\nDSM\nMixture of distributions; competing risks\n\n\nNLL (discrete)\nLogisticHazard / Nnet-survival\nHazard per bin\n\n\n\nMTLR\nMulti-task logistic regression over bins\n\n\n\nPMF\nDirectly models the per-bin probability mass\n\n\nDeepHit\nDeepHitSingle\nOne event type\n\n\n\nDeepHit\nCompeting risks\n\n\n\n\n\n\nWalk down these questions in order; the first “yes” usually points to your loss.\n\nAre there competing risks (multiple mutually exclusive event types)? → DeepHit (2.4) or DSM. See 1.4.\nDo you need absolute, calibrated S(t) — or to extrapolate beyond follow-up? → Parametric NLL (2.2) or DSM.\nDo you suspect non-proportional hazards (effects that flip or fade over time)? → DeepHit, discrete-time NLL, or CoxTime — avoid plain Cox.\nOtherwise — you just need a solid risk ranking? → Cox PH (2.1). It’s the default for a reason: no distributional assumption, strong baseline, well-tooled.\n\n\nRule of thumb. Start with Cox for a ranking baseline. Move to a parametric/discrete NLL when you need real probabilities or non-PH flexibility. Reach for DeepHit/DSM when competing risks are in play.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -347,6 +378,7 @@
     "section": "",
     "text": "Loss\nWhat it optimizes\nPrimary output\nKey assumption\nCompeting risks\nTypical package\n\n\n\n\nCox PH (DeepSurv)\nRanking — order of events (partial likelihood)\nRisk score (log-hazard); S(t) via Breslow\nProportional hazards\nNo (single event)\nlifelines, scikit-survival, pycox, torchsurv\n\n\nParametric NLL\nLikelihood under a chosen distribution\nFull S(t) + distribution parameters\nA distributional form (Weibull, …)\nNo¹\nlifelines, torchsurv\n\n\nDiscrete-time NLL\nLikelihood over binned hazards\nHazard/PMF per time bin → S(t)\nTime binning (no PH, no distribution)\nNo¹\npycox (LogisticHazard, MTLR, PMF), Nnet-survival\n\n\nDeepHit\nLikelihood + ranking (weighted)\nDiscrete joint PMF over (time, event) → S(t), CIF\nNone (no PH, no distribution); binning\nYes, native\npycox (DeepHit, DeepHitSingle)\n\n\nDSM (parametric, deep)\nLikelihood under a mixture of distributions\nFull S(t), CIF\nMixture of parametric shapes\nYes\nauton-survival\n\n\n\n¹ Single-event by default; the same likelihood machinery extends to competing risks (DeepHit, DSM).\n\n\n\nThe same trade-off as the tables, in one picture. Left-to-right: how much structure the loss imposes on time (rigid PH/distribution → fully flexible). Bottom-to-top: what it outputs (a bare risk-score ranking → an absolute, calibrated S(t) and CIF). Cox sits bottom-left (rigid, ranking); DeepHit/DSM sit top-right (flexible, full probabilities).",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -358,6 +390,7 @@
     "section": "",
     "text": "The core trade-off in survival modeling is how much structure you impose on time. More structure → fewer parameters, smoother extrapolation, but wrong if the assumption is violated.\n\n\n\n\n\n\n\n\n\nLoss\nProportional hazards?\nDistributional shape?\nTime axis\n\n\n\n\nCox PH\nRequired\nNone (baseline free)\nContinuous, order only\n\n\nParametric NLL\nImplied by the chosen family\nFixed (you pick it)\nContinuous, closed-form\n\n\nDiscrete-time NLL\nNot required\nNone\nDiscrete bins\n\n\nDeepHit\nNot required\nNone\nDiscrete bins\n\n\nDSM\nNot required\nMixture (flexible)\nContinuous, closed-form\n\n\n\n\nReading this table. Cox buys freedom on the shape of risk over time (no distribution) by paying with the proportional-hazards constraint (see 2.1). Parametric NLL is the mirror image: it drops PH but commits to a distributional shape (2.2). DeepHit and discrete-time NLL drop both — at the cost of discretizing time and needing more data.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -369,6 +402,7 @@
     "section": "",
     "text": "What a loss produces dictates how you evaluate it.\n\n\n\nLoss\nOutput type\nExtrapolate past last event?\nNatural metric\n\n\n\n\nCox PH\nRanking (risk score)\nNo (baseline ends with data)\nC-index (rank-based)\n\n\nParametric NLL\nAbsolute S(t) probabilities\nYes (formula continues)\nBrier score, calibration, likelihood\n\n\nDiscrete-time NLL\nS(t) on the bin grid\nNo (limited to grid)\nC-index, Brier (binned)\n\n\nDeepHit\nS(t) + cause-specific CIF\nNo (limited to grid)\nC-index + Brier\n\n\nDSM\nAbsolute S(t), CIF\nYes\nC-index, Brier, calibration\n\n\n\n\nRanking vs. probability. A risk score (Cox) only orders patients — evaluate with the rank-based C-index. A probability model (parametric NLL, DeepHit, DSM) predicts an absolute S(t) — also check calibration (do 70%-survival predictions actually survive 70% of the time?) and the Brier score.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -380,6 +414,7 @@
     "section": "",
     "text": "The deep-learning literature mostly varies within these families:\n\n\n\nFamily\nVariant\nWhat changes\n\n\n\n\nCox\nCoxPH / DeepSurv\nPlain deep Cox\n\n\n\nCoxCC\nCase-control sampling — SGD-friendly, large data (2.1)\n\n\n\nCoxTime\nDrops proportional hazards (time-dependent effects)\n\n\nNLL (parametric)\nWeibull AFT\nSingle parametric distribution per subject\n\n\n\nDSM\nMixture of distributions; competing risks\n\n\nNLL (discrete)\nLogisticHazard / Nnet-survival\nHazard per bin\n\n\n\nMTLR\nMulti-task logistic regression over bins\n\n\n\nPMF\nDirectly models the per-bin probability mass\n\n\nDeepHit\nDeepHitSingle\nOne event type\n\n\n\nDeepHit\nCompeting risks",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -391,6 +426,7 @@
     "section": "",
     "text": "Walk down these questions in order; the first “yes” usually points to your loss.\n\nAre there competing risks (multiple mutually exclusive event types)? → DeepHit (2.4) or DSM. See 1.4.\nDo you need absolute, calibrated S(t) — or to extrapolate beyond follow-up? → Parametric NLL (2.2) or DSM.\nDo you suspect non-proportional hazards (effects that flip or fade over time)? → DeepHit, discrete-time NLL, or CoxTime — avoid plain Cox.\nOtherwise — you just need a solid risk ranking? → Cox PH (2.1). It’s the default for a reason: no distributional assumption, strong baseline, well-tooled.\n\n\nRule of thumb. Start with Cox for a ranking baseline. Move to a parametric/discrete NLL when you need real probabilities or non-PH flexibility. Reach for DeepHit/DSM when competing risks are in play.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Loss Functions Compared"
     ]
@@ -402,6 +438,7 @@
     "section": "",
     "text": "The NLL loss is used in fully parametric survival models, where the survival-time distribution is written down explicitly (unlike Cox, which leaves the baseline hazard unspecified — see 2.1). You choose a distribution, the model predicts its parameters, and the loss is the negative log-likelihood of the observed data under that distribution.\n\n\nParametric models are fit by maximum likelihood: choose the parameters that make the data you actually observed most probable. The likelihood is that probability, read as a function of the model’s parameters.\nEach subject i (with observed time T_i and event indicator \\delta_i — 1 = event seen, 0 = censored; the (T, δ) notation from 1.2) contributes one factor, depending on what we saw:\n\nEvent observed (\\delta_i = 1): we know it happened at T_i → contribute the density f(T_i \\mid x_i).\nCensored (\\delta_i = 0): we only know they lasted past T_i → contribute the survival probability S(T_i \\mid x_i).\n\nAssuming subjects are independent, the full likelihood is the product over everyone:\n\n\\mathcal{L} \\;=\\; \\prod_i \\; f(T_i \\mid x_i)^{\\,\\delta_i}\\; S(T_i \\mid x_i)^{\\,1-\\delta_i}\n\nThe exponents \\delta_i and 1-\\delta_i are a switch: each subject’s factor is either f (event) or S (censored), never both — one exponent is always 0, and anything to the power 0 is 1.\n\n\n\nTwo standard moves turn that product into a trainable loss — the same two steps Cox applies to its partial likelihood in 2.1:\n\nTake the log → the log-likelihood. The log of a product is a sum of logs, so \\log \\mathcal{L} = \\sum_i \\ell_i. The log is monotonic (it doesn’t move the maximizer), it turns an underflow-prone product of tiny probabilities into a stable sum, and it yields cleaner gradients.\nNegate → the negative log-likelihood. Optimizers minimize, so flip the sign: maximizing \\log \\mathcal{L} is the same as minimizing -\\log \\mathcal{L}. That negative is the loss, NLL.\n\nThe per-subject log-likelihood term and the total loss:\n\n\\ell_i \\;=\\;\n\\underbrace{\\delta_i \\,\\log f(T_i \\mid x_i)}_{\\text{event seen: density at } T_i}\n\\;+\\;\n\\underbrace{(1-\\delta_i)\\,\\log S(T_i \\mid x_i)}_{\\text{censored: survived past } T_i}\n\n\nL \\;=\\; -\\sum_i \\ell_i \\quad\\text{(the negative log-likelihood, summed over all subjects)}\n\n\nThe recipe is the same as Cox. Both losses are negative log-likelihoods of a product: write the likelihood as a product → take the log to get a sum → negate to get a loss. The only difference is which product. Cox uses a partial likelihood — one softmax factor per event, built so the baseline hazard cancels (2.1). NLL uses the full likelihood — one f-or-S factor per subject, which is why it needs a distribution but, in return, predicts absolute probabilities.\n\nSpelling out the two functions, both derived from the chosen distribution:\n\nf(t \\mid x_i) — the probability density function (PDF): the instantaneous likelihood that the event lands exactly at time t. Used when the event is observed, because we know the precise time it happened.\nS(t \\mid x_i) — the survival function: the probability of surviving beyond t, i.e. S(t) = P(T &gt; t). Used when the subject is censored, because all we know is that the event hadn’t happened yet by T_i.\n\n\nWhy the split? An observed event gives you a point on the time axis — score it with the density f. A censored subject gives you only a lower bound (“at least this long”) — score it with the survival probability S of having lasted that long. Using S for censored subjects is how parametric models extract information from incomplete follow-up instead of discarding it.\n\n\nWorked example — two subjects. - Patient A has the event at T_A = 8 months (\\delta_A = 1): contributes \\log f(8 \\mid x_A) — “how likely was an event right at month 8?” - Patient B is censored at T_B = 12 months (\\delta_B = 0): contributes \\log S(12 \\mid x_B) — “how likely was surviving past month 12?”\nThe total loss is -[\\log f(8\\mid x_A) + \\log S(12 \\mid x_B)].\n\n\n\n\nThe choice of distribution fixes the shape the hazard is allowed to take over time. Pick the one whose flexibility matches your domain.\n\n\n\n\n\n\n\n\nDistribution\nHazard shape it allows\nPick it when…\n\n\n\n\nExponential\nConstant (flat)\nRisk doesn’t change with time — “memoryless.” Rarely realistic, but the simplest baseline.\n\n\nWeibull\nMonotone — steadily rising or falling\nRisk only ever increases (e.g. aging/wear) or only ever decreases (e.g. early post-op recovery). Most common parametric default.\n\n\nLog-normal\nNon-monotone — rises then falls\nRisk peaks at some time then declines (e.g. a complication that’s most likely mid-follow-up).\n\n\nLog-logistic\nNon-monotone, with closed-form S(t)\nSame hump shape as log-normal, but S(t) and f(t) have clean formulas — cheaper to compute and differentiate.\n\n\n\n\nWhat “monotone hazard” means. Monotone = moves in one direction only. A Weibull hazard either climbs the whole time or falls the whole time; it can’t peak and reverse. Non-monotone distributions (log-normal, log-logistic) can rise then fall — needed whenever risk has a hump.\n\n\n\n\nChoosing a distribution is choosing the shape its hazard is allowed to take. Exponential is flat (memoryless); Weibull is monotone — rising (k&gt;1) or falling (k&lt;1) but never both; log-normal (and log-logistic) can rise then fall. Pick the family whose flexibility matches your domain.\n\n\n\n\n\nA neural network supplies the distribution instead of a fixed-coefficient model. There are two distinct flavors — the Implementation section gives code for each:\n1. Parametric — predict distribution parameters. The network maps each patient x to the parameters of a chosen distribution (e.g. a Weibull’s shape k and scale \\lambda), so every patient gets their own curve. Plug those into the closed-form f and S above and minimize the NLL.\n\n“Parameterize the distribution” means exactly this: the net’s outputs are the distribution’s parameters, as a function of the input.\nExample model: Deep Survival Machines (DSM) — predicts a mixture of parametric distributions (see 2.4 and 04_packages/4.5_auton_survival.md).\n\n2. Discrete-time — predict a hazard per time bin. The continuous time axis is chopped into bins, and the network predicts the conditional event probability (a discrete hazard) in each bin. The NLL is then a sum of per-bin Bernoulli terms. This sidesteps choosing a parametric family at all.\n\nExample models: Nnet-survival (Gensheimer & Narasimhan, 2019), pycox’s LogisticHazard, and MTLR.\n\n\nNote — Nnet-survival is a discrete-time model, not a parametric one. It predicts a hazard rate per follow-up interval; it does not fit a Weibull/log-normal shape. It belongs to flavor 2 above. (It’s a real, published model — PeerJ 2019, repo.)\n\n\n\n\nIf you just need to train and use an NLL model — not derive it — these are the points that matter:\n\nOutput is an absolute probability, not a ranking. Unlike Cox (2.1), an NLL model predicts a full survival curve S(t \\mid x) — real probabilities you can read off at any time. That’s the reason to choose it: you need “what’s the chance this patient survives 2 years?”, not just “who’s higher-risk?”\nYou owe one modeling decision Cox doesn’t ask for. Either pick a distribution (parametric flavor — Weibull, log-normal, …) or bin the time axis (discrete flavor). Choose the parametric flavor when you trust a hazard shape and want smooth extrapolation; choose discrete-time when you’d rather not commit to a shape and have enough data to fit per-bin hazards.\nParametric models extrapolate; discrete ones don’t. A fitted Weibull keeps going past your last observed event (the formula is defined everywhere); a discrete-time model only predicts within its bin grid. Need long-horizon predictions beyond follow-up → parametric.\nEvaluate calibration, not just discrimination. Because the output is a probability, the C-index alone isn’t enough — also check the Brier score and a calibration curve (do 70%-survival predictions actually survive ~70% of the time?). A model can rank well yet be badly calibrated.\nThe distributional assumption is the risk. A wrong family biases the whole S(t). Sanity-check the fit against a non-parametric Kaplan–Meier curve before trusting the numbers; if no standard shape fits, switch to the discrete flavor or DeepHit.\nCensoring is handled by the loss itself. You don’t drop or impute censored subjects — they enter through the S(T_i) term automatically. Just pass (times, events) correctly.\n\nFor how NLL stacks up against the other losses, see 2.5.\n\n\n\nThe two flavors map to two kinds of API call.\ntorchsurv — parametric Weibull AFT loss for a custom model; the network predicts log-shape and log-scale (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.loss import weibull\n\nlog_params = model(x)             # network predicts log shape & log scale per subject\nloss = weibull.neg_log_likelihood(log_params, events, times)\npycox — discrete-time NLL models; the continuous time axis is binned first via a label transform (see 04_packages/4.1_pycox.md):\nimport pycox.models as models\n# LogisticHazard / PMF / MTLR all minimise a discrete-time NLL\nlabtrans = models.LogisticHazard.label_transform(num_durations=20)\ny_train = labtrans.fit_transform(durations, events)\nmodel = models.LogisticHazard(net, optimizer, duration_index=labtrans.cuts)\nlifelines — classical parametric fitters, one per distribution (see 04_packages/4.2_lifelines.md):\nfrom lifelines import WeibullFitter, LogNormalFitter, WeibullAFTFitter\nWeibullFitter().fit(T, E)                          # univariate\nWeibullAFTFitter().fit(df, \"T\", \"E\")               # with covariates\n\nParametric vs. Cox. Parametric NLL gives you a full predicted S(t) and can extrapolate beyond the last observed event — at the cost of a distributional assumption Cox avoids. Use it when you need absolute event probabilities, not just a ranking. For a side-by-side of all the losses, see 2.5.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -413,6 +450,7 @@
     "section": "",
     "text": "Parametric models are fit by maximum likelihood: choose the parameters that make the data you actually observed most probable. The likelihood is that probability, read as a function of the model’s parameters.\nEach subject i (with observed time T_i and event indicator \\delta_i — 1 = event seen, 0 = censored; the (T, δ) notation from 1.2) contributes one factor, depending on what we saw:\n\nEvent observed (\\delta_i = 1): we know it happened at T_i → contribute the density f(T_i \\mid x_i).\nCensored (\\delta_i = 0): we only know they lasted past T_i → contribute the survival probability S(T_i \\mid x_i).\n\nAssuming subjects are independent, the full likelihood is the product over everyone:\n\n\\mathcal{L} \\;=\\; \\prod_i \\; f(T_i \\mid x_i)^{\\,\\delta_i}\\; S(T_i \\mid x_i)^{\\,1-\\delta_i}\n\nThe exponents \\delta_i and 1-\\delta_i are a switch: each subject’s factor is either f (event) or S (censored), never both — one exponent is always 0, and anything to the power 0 is 1.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -424,6 +462,7 @@
     "section": "",
     "text": "Two standard moves turn that product into a trainable loss — the same two steps Cox applies to its partial likelihood in 2.1:\n\nTake the log → the log-likelihood. The log of a product is a sum of logs, so \\log \\mathcal{L} = \\sum_i \\ell_i. The log is monotonic (it doesn’t move the maximizer), it turns an underflow-prone product of tiny probabilities into a stable sum, and it yields cleaner gradients.\nNegate → the negative log-likelihood. Optimizers minimize, so flip the sign: maximizing \\log \\mathcal{L} is the same as minimizing -\\log \\mathcal{L}. That negative is the loss, NLL.\n\nThe per-subject log-likelihood term and the total loss:\n\n\\ell_i \\;=\\;\n\\underbrace{\\delta_i \\,\\log f(T_i \\mid x_i)}_{\\text{event seen: density at } T_i}\n\\;+\\;\n\\underbrace{(1-\\delta_i)\\,\\log S(T_i \\mid x_i)}_{\\text{censored: survived past } T_i}\n\n\nL \\;=\\; -\\sum_i \\ell_i \\quad\\text{(the negative log-likelihood, summed over all subjects)}\n\n\nThe recipe is the same as Cox. Both losses are negative log-likelihoods of a product: write the likelihood as a product → take the log to get a sum → negate to get a loss. The only difference is which product. Cox uses a partial likelihood — one softmax factor per event, built so the baseline hazard cancels (2.1). NLL uses the full likelihood — one f-or-S factor per subject, which is why it needs a distribution but, in return, predicts absolute probabilities.\n\nSpelling out the two functions, both derived from the chosen distribution:\n\nf(t \\mid x_i) — the probability density function (PDF): the instantaneous likelihood that the event lands exactly at time t. Used when the event is observed, because we know the precise time it happened.\nS(t \\mid x_i) — the survival function: the probability of surviving beyond t, i.e. S(t) = P(T &gt; t). Used when the subject is censored, because all we know is that the event hadn’t happened yet by T_i.\n\n\nWhy the split? An observed event gives you a point on the time axis — score it with the density f. A censored subject gives you only a lower bound (“at least this long”) — score it with the survival probability S of having lasted that long. Using S for censored subjects is how parametric models extract information from incomplete follow-up instead of discarding it.\n\n\nWorked example — two subjects. - Patient A has the event at T_A = 8 months (\\delta_A = 1): contributes \\log f(8 \\mid x_A) — “how likely was an event right at month 8?” - Patient B is censored at T_B = 12 months (\\delta_B = 0): contributes \\log S(12 \\mid x_B) — “how likely was surviving past month 12?”\nThe total loss is -[\\log f(8\\mid x_A) + \\log S(12 \\mid x_B)].",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -435,6 +474,7 @@
     "section": "",
     "text": "The choice of distribution fixes the shape the hazard is allowed to take over time. Pick the one whose flexibility matches your domain.\n\n\n\n\n\n\n\n\nDistribution\nHazard shape it allows\nPick it when…\n\n\n\n\nExponential\nConstant (flat)\nRisk doesn’t change with time — “memoryless.” Rarely realistic, but the simplest baseline.\n\n\nWeibull\nMonotone — steadily rising or falling\nRisk only ever increases (e.g. aging/wear) or only ever decreases (e.g. early post-op recovery). Most common parametric default.\n\n\nLog-normal\nNon-monotone — rises then falls\nRisk peaks at some time then declines (e.g. a complication that’s most likely mid-follow-up).\n\n\nLog-logistic\nNon-monotone, with closed-form S(t)\nSame hump shape as log-normal, but S(t) and f(t) have clean formulas — cheaper to compute and differentiate.\n\n\n\n\nWhat “monotone hazard” means. Monotone = moves in one direction only. A Weibull hazard either climbs the whole time or falls the whole time; it can’t peak and reverse. Non-monotone distributions (log-normal, log-logistic) can rise then fall — needed whenever risk has a hump.\n\n\n\n\nChoosing a distribution is choosing the shape its hazard is allowed to take. Exponential is flat (memoryless); Weibull is monotone — rising (k&gt;1) or falling (k&lt;1) but never both; log-normal (and log-logistic) can rise then fall. Pick the family whose flexibility matches your domain.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -446,6 +486,7 @@
     "section": "",
     "text": "A neural network supplies the distribution instead of a fixed-coefficient model. There are two distinct flavors — the Implementation section gives code for each:\n1. Parametric — predict distribution parameters. The network maps each patient x to the parameters of a chosen distribution (e.g. a Weibull’s shape k and scale \\lambda), so every patient gets their own curve. Plug those into the closed-form f and S above and minimize the NLL.\n\n“Parameterize the distribution” means exactly this: the net’s outputs are the distribution’s parameters, as a function of the input.\nExample model: Deep Survival Machines (DSM) — predicts a mixture of parametric distributions (see 2.4 and 04_packages/4.5_auton_survival.md).\n\n2. Discrete-time — predict a hazard per time bin. The continuous time axis is chopped into bins, and the network predicts the conditional event probability (a discrete hazard) in each bin. The NLL is then a sum of per-bin Bernoulli terms. This sidesteps choosing a parametric family at all.\n\nExample models: Nnet-survival (Gensheimer & Narasimhan, 2019), pycox’s LogisticHazard, and MTLR.\n\n\nNote — Nnet-survival is a discrete-time model, not a parametric one. It predicts a hazard rate per follow-up interval; it does not fit a Weibull/log-normal shape. It belongs to flavor 2 above. (It’s a real, published model — PeerJ 2019, repo.)",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -457,6 +498,7 @@
     "section": "",
     "text": "If you just need to train and use an NLL model — not derive it — these are the points that matter:\n\nOutput is an absolute probability, not a ranking. Unlike Cox (2.1), an NLL model predicts a full survival curve S(t \\mid x) — real probabilities you can read off at any time. That’s the reason to choose it: you need “what’s the chance this patient survives 2 years?”, not just “who’s higher-risk?”\nYou owe one modeling decision Cox doesn’t ask for. Either pick a distribution (parametric flavor — Weibull, log-normal, …) or bin the time axis (discrete flavor). Choose the parametric flavor when you trust a hazard shape and want smooth extrapolation; choose discrete-time when you’d rather not commit to a shape and have enough data to fit per-bin hazards.\nParametric models extrapolate; discrete ones don’t. A fitted Weibull keeps going past your last observed event (the formula is defined everywhere); a discrete-time model only predicts within its bin grid. Need long-horizon predictions beyond follow-up → parametric.\nEvaluate calibration, not just discrimination. Because the output is a probability, the C-index alone isn’t enough — also check the Brier score and a calibration curve (do 70%-survival predictions actually survive ~70% of the time?). A model can rank well yet be badly calibrated.\nThe distributional assumption is the risk. A wrong family biases the whole S(t). Sanity-check the fit against a non-parametric Kaplan–Meier curve before trusting the numbers; if no standard shape fits, switch to the discrete flavor or DeepHit.\nCensoring is handled by the loss itself. You don’t drop or impute censored subjects — they enter through the S(T_i) term automatically. Just pass (times, events) correctly.\n\nFor how NLL stacks up against the other losses, see 2.5.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -468,6 +510,7 @@
     "section": "",
     "text": "The two flavors map to two kinds of API call.\ntorchsurv — parametric Weibull AFT loss for a custom model; the network predicts log-shape and log-scale (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.loss import weibull\n\nlog_params = model(x)             # network predicts log shape & log scale per subject\nloss = weibull.neg_log_likelihood(log_params, events, times)\npycox — discrete-time NLL models; the continuous time axis is binned first via a label transform (see 04_packages/4.1_pycox.md):\nimport pycox.models as models\n# LogisticHazard / PMF / MTLR all minimise a discrete-time NLL\nlabtrans = models.LogisticHazard.label_transform(num_durations=20)\ny_train = labtrans.fit_transform(durations, events)\nmodel = models.LogisticHazard(net, optimizer, duration_index=labtrans.cuts)\nlifelines — classical parametric fitters, one per distribution (see 04_packages/4.2_lifelines.md):\nfrom lifelines import WeibullFitter, LogNormalFitter, WeibullAFTFitter\nWeibullFitter().fit(T, E)                          # univariate\nWeibullAFTFitter().fit(df, \"T\", \"E\")               # with covariates\n\nParametric vs. Cox. Parametric NLL gives you a full predicted S(t) and can extrapolate beyond the last observed event — at the cost of a distributional assumption Cox avoids. Use it when you need absolute event probabilities, not just a ranking. For a side-by-side of all the losses, see 2.5.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Negative Log-Likelihood Loss"
     ]
@@ -479,6 +522,7 @@
     "section": "",
     "text": "Survival models translate imaging and clinical data into actionable outputs for clinicians.\n\n\nA continuous score that ranks patients by their estimated risk. Higher score = higher hazard. Used to compare patients or cohorts.\n\nOutput of Cox PH (the proportional-hazards model defined in 2.1): a linear predictor, i.e. a log-hazard ratio — the number \\beta^\\top x. It is the log of the hazard ratio \\exp(\\beta^\\top x) (how many times the patient’s hazard is vs. baseline), so it is centered at 0: positive = higher risk, negative = lower. “Linear predictor”, “risk score”, and “log-hazard ratio” all name this same number (see 2.1).\nOutput of deep models (e.g. DeepSurv, the neural Cox of 2.1): a scalar risk score per patient — i.e. one single number for each patient (not a list or a curve), the network’s \\varphi(x) standing in for the linear \\beta^\\top x. Like the linear predictor it only ranks patients; it is not a probability. For absolute probabilities you need a full S(t) curve — see “Event Probability by Time” below.\n\nSymbols used above (all defined in full where the concept lives):\n\n\n\nSymbol\nMeaning\nDefined in\n\n\n\n\nx\nthe patient’s covariate vector — their features stacked into a list, e.g. [age, tumor_size, biomarker]\n2.1\n\n\n\\beta\nthe coefficient vector — one learned weight per feature\n2.1\n\n\n\\beta^\\top x\nthe linear predictor — the dot product \\beta_1 x_1 + \\beta_2 x_2 + \\dots, a single number (\\top = transpose, not the survival time T)\n2.1\n\n\n\\exp(\\beta^\\top x)\nthe hazard ratio — how many times the patient’s hazard is vs. baseline (&gt;1 higher, &lt;1 lower)\n2.1\n\n\n\\varphi(x)\nthe neural-network risk score that replaces \\beta^\\top x in deep models\n2.1 (In Deep Learning)\n\n\nS(t)\nthe survival function — P(still event-free past time t)\n1.1\n\n\n\n\n\n\nDivides patients into risk groups (e.g., low / intermediate / high) using a threshold on the risk score. Enables: - Treatment escalation for high-risk patients - Active surveillance for low-risk patients\nSee 03_metrics/ for methods to select the cutoff.\n\n\n\nEstimates the probability that a patient experiences the event by a specific time point — e.g., “60% probability of recurrence within 2 years.”\n\nDerived from the survival function: P(T ≤ t) = 1 - S(t)\nMore clinically interpretable than a raw risk score\n\n\n\n\nEach goal maps to a distinct prediction method — knowing which one a package exposes tells you what the model can actually deliver.\n\n\n\nGoal\nOutput\nExample call\n\n\n\n\nRisk score\nscalar per patient\nmodel.predict(X) (scikit-survival); cph.predict_partial_hazard(df) (lifelines); log_hz = model(x) (torchsurv)\n\n\nEvent probability by time\nfull S(t) curve\nmodel.predict_surv_df(x) (pycox); model.predict_survival_function(X) (scikit-survival / lifelines)\n\n\nRisk at fixed horizons\nP(event by t)\nmodel.predict_risk(features, t=[8, 12, 16]) (auton-survival)\n\n\nRisk stratification\ngroup label\nthreshold the risk score — see 03_metrics/\n\n\n\nSee 04_packages/ for each package’s full API.\n\nA risk score alone cannot answer “what’s my 2-year recurrence probability?” Cox-style models give a ranking (risk score); you need a model that emits S(t) — parametric, discrete-time, or a calibrated Cox baseline — for absolute probabilities. Choose the model by the question the clinician is asking.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Clinician Goals in Survival Analysis"
     ]
@@ -490,6 +534,7 @@
     "section": "",
     "text": "A continuous score that ranks patients by their estimated risk. Higher score = higher hazard. Used to compare patients or cohorts.\n\nOutput of Cox PH (the proportional-hazards model defined in 2.1): a linear predictor, i.e. a log-hazard ratio — the number \\beta^\\top x. It is the log of the hazard ratio \\exp(\\beta^\\top x) (how many times the patient’s hazard is vs. baseline), so it is centered at 0: positive = higher risk, negative = lower. “Linear predictor”, “risk score”, and “log-hazard ratio” all name this same number (see 2.1).\nOutput of deep models (e.g. DeepSurv, the neural Cox of 2.1): a scalar risk score per patient — i.e. one single number for each patient (not a list or a curve), the network’s \\varphi(x) standing in for the linear \\beta^\\top x. Like the linear predictor it only ranks patients; it is not a probability. For absolute probabilities you need a full S(t) curve — see “Event Probability by Time” below.\n\nSymbols used above (all defined in full where the concept lives):\n\n\n\nSymbol\nMeaning\nDefined in\n\n\n\n\nx\nthe patient’s covariate vector — their features stacked into a list, e.g. [age, tumor_size, biomarker]\n2.1\n\n\n\\beta\nthe coefficient vector — one learned weight per feature\n2.1\n\n\n\\beta^\\top x\nthe linear predictor — the dot product \\beta_1 x_1 + \\beta_2 x_2 + \\dots, a single number (\\top = transpose, not the survival time T)\n2.1\n\n\n\\exp(\\beta^\\top x)\nthe hazard ratio — how many times the patient’s hazard is vs. baseline (&gt;1 higher, &lt;1 lower)\n2.1\n\n\n\\varphi(x)\nthe neural-network risk score that replaces \\beta^\\top x in deep models\n2.1 (In Deep Learning)\n\n\nS(t)\nthe survival function — P(still event-free past time t)\n1.1",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Clinician Goals in Survival Analysis"
     ]
@@ -501,6 +546,7 @@
     "section": "",
     "text": "Divides patients into risk groups (e.g., low / intermediate / high) using a threshold on the risk score. Enables: - Treatment escalation for high-risk patients - Active surveillance for low-risk patients\nSee 03_metrics/ for methods to select the cutoff.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Clinician Goals in Survival Analysis"
     ]
@@ -512,6 +558,7 @@
     "section": "",
     "text": "Estimates the probability that a patient experiences the event by a specific time point — e.g., “60% probability of recurrence within 2 years.”\n\nDerived from the survival function: P(T ≤ t) = 1 - S(t)\nMore clinically interpretable than a raw risk score",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Clinician Goals in Survival Analysis"
     ]
@@ -523,6 +570,7 @@
     "section": "",
     "text": "Each goal maps to a distinct prediction method — knowing which one a package exposes tells you what the model can actually deliver.\n\n\n\nGoal\nOutput\nExample call\n\n\n\n\nRisk score\nscalar per patient\nmodel.predict(X) (scikit-survival); cph.predict_partial_hazard(df) (lifelines); log_hz = model(x) (torchsurv)\n\n\nEvent probability by time\nfull S(t) curve\nmodel.predict_surv_df(x) (pycox); model.predict_survival_function(X) (scikit-survival / lifelines)\n\n\nRisk at fixed horizons\nP(event by t)\nmodel.predict_risk(features, t=[8, 12, 16]) (auton-survival)\n\n\nRisk stratification\ngroup label\nthreshold the risk score — see 03_metrics/\n\n\n\nSee 04_packages/ for each package’s full API.\n\nA risk score alone cannot answer “what’s my 2-year recurrence probability?” Cox-style models give a ranking (risk score); you need a model that emits S(t) — parametric, discrete-time, or a calibrated Cox baseline — for absolute probabilities. Choose the model by the question the clinician is asking.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Clinician Goals in Survival Analysis"
     ]
@@ -534,6 +582,7 @@
     "section": "",
     "text": "An event is the outcome of interest whose time of occurrence is being modeled. Events must be clearly defined and unambiguous before analysis.\n\n\n\n\n\nEvent\nDefinition\n\n\n\n\nOverall survival (OS)\nDeath from any cause\n\n\nDisease-free survival (DFS)\nRecurrence or death\n\n\nProgression-free survival (PFS)\nDisease progression or death\n\n\nLocal recurrence\nTumor recurrence at primary site\n\n\n\n\n\n\nThe examples above fall into two broad families — recurrence and death — each with finer subtypes that define different endpoints.\n\n\nReappearance of cancer after treatment. By location:\n\nLocal recurrence — at the original tumor site\nRegional recurrence — in nearby lymph nodes\nDistant recurrence / metastasis — in other organs\n\nRecurrence endpoints drive disease-free survival (DFS) and recurrence-free survival (RFS) analyses.\n\n\n\n\nOverall survival (OS) — time from treatment to death from any cause. The gold-standard endpoint in oncology trials: unambiguous, no cause-of-death judgment needed.\nCancer-specific survival (CSS) — time to death attributed to the cancer. More targeted, but requires accurate cause-of-death records and is subject to misclassification.\n\n\n\n\n\n\n\n\n\n\n\n\nEndpoint\nPros\nCons\n\n\n\n\nOS\nUnambiguous\nRequires long follow-up\n\n\nDFS / RFS\nEarlier signal\nRecurrence detection depends on imaging schedule\n\n\nPFS\nUsable in trials\nProgression criteria can vary\n\n\n\n\n\n\n\n\nBinary: Either happened or didn’t\nIrreversible: Once it occurs, the clock stops\nPrecisely timestamped: Date of scan, pathology report, or death record\n\n\n\n\nSome endpoints bundle several sub-events into one event. PFS is the canonical example:\n\nPFS event = progression OR death, whichever comes first.\n\nThis stays a single binary indicator — you do not create a second event or a second time:\n\n\n\n\n\n\n\nField\nRule\n\n\n\n\nT\ntime to the earliest of {progression, death}; if neither, the censoring time\n\n\nδ\n1 if progression or death occurred; 0 if censored\n\n\n\nBecause death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you genuinely need to distinguish event types — that is the competing-risks design in 1.4_multi_events_and_competing_risks.md, and it uses one time plus an event-type label, still never two times per patient.\nFor an end-to-end stratification pipeline built on a composite PFS endpoint, see 06_recipes/6.1_pfs_stratification.md.\n\n\n\nA subject either experiences the event (δ=1) or is censored (δ=0) — never both.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -545,6 +594,7 @@
     "section": "",
     "text": "Event\nDefinition\n\n\n\n\nOverall survival (OS)\nDeath from any cause\n\n\nDisease-free survival (DFS)\nRecurrence or death\n\n\nProgression-free survival (PFS)\nDisease progression or death\n\n\nLocal recurrence\nTumor recurrence at primary site",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -556,6 +606,7 @@
     "section": "",
     "text": "The examples above fall into two broad families — recurrence and death — each with finer subtypes that define different endpoints.\n\n\nReappearance of cancer after treatment. By location:\n\nLocal recurrence — at the original tumor site\nRegional recurrence — in nearby lymph nodes\nDistant recurrence / metastasis — in other organs\n\nRecurrence endpoints drive disease-free survival (DFS) and recurrence-free survival (RFS) analyses.\n\n\n\n\nOverall survival (OS) — time from treatment to death from any cause. The gold-standard endpoint in oncology trials: unambiguous, no cause-of-death judgment needed.\nCancer-specific survival (CSS) — time to death attributed to the cancer. More targeted, but requires accurate cause-of-death records and is subject to misclassification.\n\n\n\n\n\n\n\n\n\n\n\n\nEndpoint\nPros\nCons\n\n\n\n\nOS\nUnambiguous\nRequires long follow-up\n\n\nDFS / RFS\nEarlier signal\nRecurrence detection depends on imaging schedule\n\n\nPFS\nUsable in trials\nProgression criteria can vary",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -567,6 +618,7 @@
     "section": "",
     "text": "Binary: Either happened or didn’t\nIrreversible: Once it occurs, the clock stops\nPrecisely timestamped: Date of scan, pathology report, or death record",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -578,6 +630,7 @@
     "section": "",
     "text": "Some endpoints bundle several sub-events into one event. PFS is the canonical example:\n\nPFS event = progression OR death, whichever comes first.\n\nThis stays a single binary indicator — you do not create a second event or a second time:\n\n\n\n\n\n\n\nField\nRule\n\n\n\n\nT\ntime to the earliest of {progression, death}; if neither, the censoring time\n\n\nδ\n1 if progression or death occurred; 0 if censored\n\n\n\nBecause death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you genuinely need to distinguish event types — that is the competing-risks design in 1.4_multi_events_and_competing_risks.md, and it uses one time plus an event-type label, still never two times per patient.\nFor an end-to-end stratification pipeline built on a composite PFS endpoint, see 06_recipes/6.1_pfs_stratification.md.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -589,6 +642,7 @@
     "section": "",
     "text": "A subject either experiences the event (δ=1) or is censored (δ=0) — never both.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is an Event?"
     ]
@@ -600,6 +654,7 @@
     "section": "",
     "text": "Survival analysis models the time until an event of interest occurs. Unlike standard regression, the outcome is not just whether the event happened, but when.\n\n\n\nSurvival function S(t): Probability of surviving beyond time t — P(T &gt; t)\nHazard function h(t): Instantaneous rate of the event at time t, given survival up to t\nCumulative hazard H(t): Integral of the hazard over time\n\n\n\nThese two are easy to confuse. The difference is rate at an instant versus total accumulated so far:\n\nHazard h(t) is a speedometer: given you’ve survived up to t, how fast is the event happening right now, at this exact moment? It is a rate (events per unit time), not a probability — it can even exceed 1.\nCumulative hazard H(t) is an odometer: how much total risk has piled up between time 0 and time t? It is the running total of all those instantaneous rates.\n\nThey are tied together by integration, and the survival function follows directly:\nH(t) = \\int_0^t h(u)\\,du \\qquad\\qquad S(t) = e^{-H(t)}\n(Odometer = integral of the speedometer.)\n\n\n\nThe three functions are one object viewed three ways. A post-surgery hazard spikes early (complications), falls as the patient recovers, then drifts up. Integrating it gives the cumulative hazard; exponentiating the negative of that gives the survival curve.\n\n\n\n\n\n\nStandard regression cannot handle: - Censored observations — subjects who haven’t experienced the event yet - Time-varying risk — the hazard may change over time. The instantaneous rate h(t) need not be constant: after major surgery, for example, the hazard of death is high in the first days (complications), then drops steeply as the patient recovers. Standard regression predicts a single fixed number and cannot say “risk is high now but low later”; survival analysis models the whole h(t) curve.\n\n\n\nYou rarely compute S(t) and H(t) by hand. They can be estimated directly from the data — non-parametrically, meaning without assuming any equation for their shape. The two standard estimators come from lifelines (see 04_packages/4.2_lifelines.md):\nfrom lifelines import KaplanMeierFitter, NelsonAalenFitter\n\nKaplanMeierFitter().fit(T, E)      # estimates S(t)  — the survival function\nNelsonAalenFitter().fit(T, E)      # estimates H(t)  — the cumulative hazard\nHere T is each subject’s observed time and E is the event indicator — the (T, δ) notation introduced in 1.2. The Kaplan-Meier estimator is the workhorse of survival analysis; it gets a full treatment in 3.3.\n\n\n\nThe Kaplan-Meier estimate of S(t) is a step function: it holds flat between events and drops at each observed event. Censored subjects (ticks) leave the at-risk set without causing a drop. Full treatment in 3.3.\n\n\nThese are the descriptive baseline — they summarise a whole group. Linking individual patient features (covariates) to risk is the job of the models in 02_loss_functions/.\n\n\n\nIn 3D imaging, survival analysis connects imaging biomarkers (radiomic or deep features) to time-to-event outcomes such as recurrence or death.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is Survival Analysis?"
     ]
@@ -611,6 +666,7 @@
     "section": "",
     "text": "Survival function S(t): Probability of surviving beyond time t — P(T &gt; t)\nHazard function h(t): Instantaneous rate of the event at time t, given survival up to t\nCumulative hazard H(t): Integral of the hazard over time\n\n\n\nThese two are easy to confuse. The difference is rate at an instant versus total accumulated so far:\n\nHazard h(t) is a speedometer: given you’ve survived up to t, how fast is the event happening right now, at this exact moment? It is a rate (events per unit time), not a probability — it can even exceed 1.\nCumulative hazard H(t) is an odometer: how much total risk has piled up between time 0 and time t? It is the running total of all those instantaneous rates.\n\nThey are tied together by integration, and the survival function follows directly:\nH(t) = \\int_0^t h(u)\\,du \\qquad\\qquad S(t) = e^{-H(t)}\n(Odometer = integral of the speedometer.)\n\n\n\nThe three functions are one object viewed three ways. A post-surgery hazard spikes early (complications), falls as the patient recovers, then drifts up. Integrating it gives the cumulative hazard; exponentiating the negative of that gives the survival curve.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is Survival Analysis?"
     ]
@@ -622,6 +678,7 @@
     "section": "",
     "text": "Standard regression cannot handle: - Censored observations — subjects who haven’t experienced the event yet - Time-varying risk — the hazard may change over time. The instantaneous rate h(t) need not be constant: after major surgery, for example, the hazard of death is high in the first days (complications), then drops steeply as the patient recovers. Standard regression predicts a single fixed number and cannot say “risk is high now but low later”; survival analysis models the whole h(t) curve.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is Survival Analysis?"
     ]
@@ -633,6 +690,7 @@
     "section": "",
     "text": "You rarely compute S(t) and H(t) by hand. They can be estimated directly from the data — non-parametrically, meaning without assuming any equation for their shape. The two standard estimators come from lifelines (see 04_packages/4.2_lifelines.md):\nfrom lifelines import KaplanMeierFitter, NelsonAalenFitter\n\nKaplanMeierFitter().fit(T, E)      # estimates S(t)  — the survival function\nNelsonAalenFitter().fit(T, E)      # estimates H(t)  — the cumulative hazard\nHere T is each subject’s observed time and E is the event indicator — the (T, δ) notation introduced in 1.2. The Kaplan-Meier estimator is the workhorse of survival analysis; it gets a full treatment in 3.3.\n\n\n\nThe Kaplan-Meier estimate of S(t) is a step function: it holds flat between events and drops at each observed event. Censored subjects (ticks) leave the at-risk set without causing a drop. Full treatment in 3.3.\n\n\nThese are the descriptive baseline — they summarise a whole group. Linking individual patient features (covariates) to risk is the job of the models in 02_loss_functions/.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is Survival Analysis?"
     ]
@@ -644,6 +702,7 @@
     "section": "",
     "text": "In 3D imaging, survival analysis connects imaging biomarkers (radiomic or deep features) to time-to-event outcomes such as recurrence or death.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "What is Survival Analysis?"
     ]
@@ -651,30 +710,22 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Survival Analysis Mini-Course",
+    "title": "Survival Analysis",
     "section": "",
-    "text": "A build-along course that takes survival analysis from first principles to a working 3D-imaging pipeline. Each section defines its terms before using them, glosses notation on first appearance, and cross-links to the section that owns each concept.",
+    "text": "Mini Course\n  \n  A build-along course taking time-to-event modelling from first principles to a working 3D-imaging pipeline.\n  \n    Start the course →\n    GitHub repository\nCourse outline",
     "crumbs": [
-      "Home"
-    ]
-  },
-  {
-    "objectID": "index.html#the-path",
-    "href": "index.html#the-path",
-    "title": "Survival Analysis Mini-Course",
-    "section": "The path",
-    "text": "The path\n\nBackground — what survival analysis is, censoring, events, competing risks, and what clinicians actually want out of a model.\nLoss functions — Cox partial likelihood, the discrete-time negative log-likelihood, DeepHit, and how they compare.\nMetrics — C-index, Brier score, Kaplan-Meier curves, time-dependent AUC.\nPackages — pycox, lifelines, torchsurv, scikit-survival, auton-survival, routed by how much of the training loop you own.\nRecipes — end-to-end PFS risk stratification.",
-    "crumbs": [
+      "Background",
       "Home"
     ]
   },
   {
     "objectID": "index.html#how-to-read-it",
     "href": "index.html#how-to-read-it",
-    "title": "Survival Analysis Mini-Course",
+    "title": "Survival Analysis",
     "section": "How to read it",
     "text": "How to read it\nStart at the top and follow the cross-links. Notation is introduced once, where the concept lives, and referenced everywhere else — so if a symbol is unfamiliar, the link beside it points to its definition.\nFigures throughout are generated deterministically from scripts/make_figures.py; the synthetic examples are chosen for clarity, and the runnable model code targets the built-in GBSG2 dataset.",
     "crumbs": [
+      "Background",
       "Home"
     ]
   },
@@ -685,6 +736,7 @@
     "section": "",
     "text": "Censoring occurs when the exact event time is unknown for some subjects. It is the defining challenge of survival analysis.\n\n\n\nRight censoring (most common): Subject exits before the event — lost to follow-up, or study ends\nLeft censoring: Event occurred before observation began\nInterval censoring: Event is known to have occurred within a time window\n\n\n\n\nDiscarding censored observations introduces bias. Survival models account for censoring by treating censored subjects as contributing information up to their last known follow-up time.\n\n\n\nEach subject is followed from entry to their last-seen time. A filled dot marks an observed event (\\delta=1); an arrow marks a censored subject (\\delta=0) — either lost to follow-up or still event-free when the study ends. The censored subjects are not discarded: their follow-up still counts up to the arrow.\n\n\n\n\n\nEach subject has: - T — observed time (event time or censoring time) - δ — event indicator (1 = event occurred, 0 = censored). In code this is usually a column or array named E or event — the two notations refer to the same thing.\n\n\n\nThe same two columns, but the expected container differs per package — a frequent source of silent bugs:\n\n\n\n\n\n\n\nPackage\nFormat\n\n\n\n\nlifelines\ntwo columns in a DataFrame: duration_col=\"T\", event_col=\"E\"\n\n\npycox / torchsurv\nparallel arrays/tensors: (durations, events)\n\n\nscikit-survival\na single structured array, event first, as bool\n\n\n\n# scikit-survival's required structured-array format\nimport numpy as np\ny = np.array([(bool(e), t) for e, t in zip(events, times)],\n             dtype=[(\"event\", bool), (\"time\", float)])\nGetting δ backwards (treating censored as events) silently corrupts every downstream estimate — verify the indicator convention before fitting. See 04_packages/4.4_scikit_survival.md.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Censored Data"
     ]
@@ -696,6 +748,7 @@
     "section": "",
     "text": "Right censoring (most common): Subject exits before the event — lost to follow-up, or study ends\nLeft censoring: Event occurred before observation began\nInterval censoring: Event is known to have occurred within a time window",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Censored Data"
     ]
@@ -707,6 +760,7 @@
     "section": "",
     "text": "Discarding censored observations introduces bias. Survival models account for censoring by treating censored subjects as contributing information up to their last known follow-up time.\n\n\n\nEach subject is followed from entry to their last-seen time. A filled dot marks an observed event (\\delta=1); an arrow marks a censored subject (\\delta=0) — either lost to follow-up or still event-free when the study ends. The censored subjects are not discarded: their follow-up still counts up to the arrow.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Censored Data"
     ]
@@ -718,6 +772,7 @@
     "section": "",
     "text": "Each subject has: - T — observed time (event time or censoring time) - δ — event indicator (1 = event occurred, 0 = censored). In code this is usually a column or array named E or event — the two notations refer to the same thing.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Censored Data"
     ]
@@ -729,6 +784,7 @@
     "section": "",
     "text": "The same two columns, but the expected container differs per package — a frequent source of silent bugs:\n\n\n\n\n\n\n\nPackage\nFormat\n\n\n\n\nlifelines\ntwo columns in a DataFrame: duration_col=\"T\", event_col=\"E\"\n\n\npycox / torchsurv\nparallel arrays/tensors: (durations, events)\n\n\nscikit-survival\na single structured array, event first, as bool\n\n\n\n# scikit-survival's required structured-array format\nimport numpy as np\ny = np.array([(bool(e), t) for e, t in zip(events, times)],\n             dtype=[(\"event\", bool), (\"time\", float)])\nGetting δ backwards (treating censored as events) silently corrupts every downstream estimate — verify the indicator convention before fitting. See 04_packages/4.4_scikit_survival.md.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Censored Data"
     ]
@@ -740,6 +796,7 @@
     "section": "",
     "text": "In many clinical settings, patients are at risk for more than one event type, and the occurrence of one may preclude the other.\n\n\nA competing risk is an event that prevents the event of interest from occurring. Example: a patient dies before tumor recurrence — death “competes” with recurrence.\n\n\nThe cumulative incidence function CIF_k(t) is the probability that a subject experiences event type k on or before time t — i.e. P(T ≤ t and event = k). It is the expected fraction of the cohort who have had event k by time t.\nFor a single event type, 1 - S(t) (where S(t) is the survival probability — the chance of still being event-free past time t) already gives this cumulative probability. Under competing risks it does not: 1 - S(t) treats a patient removed by a competing event (death) as if they could still later have the event of interest (recurrence), so it overestimates. The CIF discounts those patients correctly by weighting each instant by the chance of still being event-free up to then:\n\\text{CIF}_k(t) = \\int_0^t S(u^-)\\, h_k(u)\\, du\nTo have event k at instant u you must (a) survive all event types up to u — the overall survival S(u⁻) — and (b) experience event k exactly then — the cause-specific hazard h_k(u). The CIFs of all competing events sum to 1 − S(t), partitioning the total risk among the causes. (For S(t) and h(t), see 1.1.)\nIgnoring competing risks leads to overestimation of the CIF — which is exactly the 1 - S(t) error above.\n\n\n\nWith a competing event present, the naive complement 1-S_1(t) (treating the competing event as censoring) climbs above the true cumulative incidence \\text{CIF}_1(t). The shaded gap is the overestimation: the naive curve credits event 1 to patients who were actually removed by the competing event. Use Aalen-Johansen for the CIF.\n\n\n\n\nThe four functions from 1.1 plus the CIF split into two pairs — probabilities (S and CIF) and the rate machinery beneath them (h and H):\n\n\n\n\n\n\n\n\n\n\nFunction\nWhat it is\nProbability?\nPer-cause?\nOver time\n\n\n\n\nS(t) survival\nP(still event-free past t)\nyes\nno\nstarts at 1, decreases\n\n\nh(t) hazard\ninstantaneous rate at t\nno — a rate\n—\nrises/falls freely\n\n\nH(t) cumulative hazard\naccumulated rate, ∫₀ᵗ h\nno — a rate total\n—\nstarts at 0, increases\n\n\nCIF_k(t)\nP(had event k by t)\nyes\nyes (one per cause)\nstarts at 0, increases\n\n\n\n\nCIF vs S(t) — the closest pair, both probabilities. With no competing risks they are exact complements, CIF(t) = 1 − S(t). With competing risks that breaks: 1 − S(t) lumps all causes together, while CIF_k isolates one, and the per-cause CIFs sum back to it (Σ_k CIF_k(t) = 1 − S(t)).\nCIF vs h(t)/H(t) — a different type of object: h and H are rates (can exceed 1), not probabilities. They are the engine — CIF_k is built from them via the integral above.\n\nIn one line: S(t) and CIF answer “what fraction of patients?”; h(t) and H(t) answer “how fast / how much accumulated rate?” The CIF is the competing-risks-aware, per-cause version of 1 − S(t).\n\n\n\n\n\nThese approaches differ in what they model, and that decides what question they answer:\n\nCause-specific hazard models — fit one hazard model per event type; when modelling event k, every competing event is treated as censoring. Each answers “among patients still event-free, what drives the rate of event k?” Best for understanding mechanism / etiology. A single cause-specific hazard does not translate directly into that event’s CIF — you need all of them together to reconstruct incidence.\nSub-distribution hazard (Fine-Gray) — a regression model named after Fine & Gray (1999), the competing-risks counterpart of the Cox model (see 2.1). It models a modified hazard engineered to have a direct one-to-one link to the CIF (it keeps patients who had a competing event in the at-risk set rather than dropping them). So one model gives that event’s CIF directly. Best for prediction / prognosis.\nDeepHit — a neural network that skips hazards entirely and directly learns the joint distribution over (which event, when), P(event = k, T = t), in discrete time. No proportional-hazards assumption; covariates interact freely, at the cost of more data and tuning. Covered in full — model output, loss, and tuning — in 2.4.\n\n\nRule of thumb: cause-specific = “rate among those still at risk” (etiology); Fine-Gray = “directly model the cumulative incidence” (prediction). See 1.4 above for the CIF itself.\n\n\n\n\nThe tools split along two axes — descriptive vs. covariate model, and among models, how they represent time. The top row describes a group; the bottom two predict from a patient’s features.\n\n\n\nNeed\nTool\nWhat it is\n\n\n\n\nEstimate the CIF correctly (descriptive, no covariates)\nlifelines.AalenJohansenFitter — see 04_packages/4.2_lifelines.md\nThe competing-risks analogue of Kaplan-Meier; gives the cohort’s CIF curve for exploration/plotting\n\n\nDeep competing-risks model (discrete time)\npycox.models.DeepHit — see 04_packages/4.1_pycox.md and 02_loss_functions/2.4_deephit_loss.md\nNeural net, distribution-free, bins time into intervals; flexible but needs tuning\n\n\nDeep competing-risks model (parametric mixture)\nauton_survival DSM — described in depth in 04_packages/4.5_auton_survival.md (with a usage snippet in 2.4)\nModels continuous time as a smooth mixture of parametric curves; fewer tuning knobs than DeepHit\n\n\n\nThe Aalen-Johansen estimator is the competing-risks analogue of Kaplan-Meier — use it instead of 1 - S(t) for the CIF:\nfrom lifelines import AalenJohansenFitter\najf = AalenJohansenFitter()\najf.fit(T, event_observed, event_of_interest=1)   # event labels: 0 = censored, 1, 2, ...\najf.plot()\n\n\n\n\nAlways check whether competing risks are present in your dataset\nMulti-event models require event-type labels in addition to (T, δ)\nPlain Kaplan-Meier (1 - S(t)) overestimates the CIF under competing risks — use Aalen-Johansen",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Multi-Events and Competing Risks"
     ]
@@ -751,6 +808,7 @@
     "section": "",
     "text": "A competing risk is an event that prevents the event of interest from occurring. Example: a patient dies before tumor recurrence — death “competes” with recurrence.\n\n\nThe cumulative incidence function CIF_k(t) is the probability that a subject experiences event type k on or before time t — i.e. P(T ≤ t and event = k). It is the expected fraction of the cohort who have had event k by time t.\nFor a single event type, 1 - S(t) (where S(t) is the survival probability — the chance of still being event-free past time t) already gives this cumulative probability. Under competing risks it does not: 1 - S(t) treats a patient removed by a competing event (death) as if they could still later have the event of interest (recurrence), so it overestimates. The CIF discounts those patients correctly by weighting each instant by the chance of still being event-free up to then:\n\\text{CIF}_k(t) = \\int_0^t S(u^-)\\, h_k(u)\\, du\nTo have event k at instant u you must (a) survive all event types up to u — the overall survival S(u⁻) — and (b) experience event k exactly then — the cause-specific hazard h_k(u). The CIFs of all competing events sum to 1 − S(t), partitioning the total risk among the causes. (For S(t) and h(t), see 1.1.)\nIgnoring competing risks leads to overestimation of the CIF — which is exactly the 1 - S(t) error above.\n\n\n\nWith a competing event present, the naive complement 1-S_1(t) (treating the competing event as censoring) climbs above the true cumulative incidence \\text{CIF}_1(t). The shaded gap is the overestimation: the naive curve credits event 1 to patients who were actually removed by the competing event. Use Aalen-Johansen for the CIF.\n\n\n\n\nThe four functions from 1.1 plus the CIF split into two pairs — probabilities (S and CIF) and the rate machinery beneath them (h and H):\n\n\n\n\n\n\n\n\n\n\nFunction\nWhat it is\nProbability?\nPer-cause?\nOver time\n\n\n\n\nS(t) survival\nP(still event-free past t)\nyes\nno\nstarts at 1, decreases\n\n\nh(t) hazard\ninstantaneous rate at t\nno — a rate\n—\nrises/falls freely\n\n\nH(t) cumulative hazard\naccumulated rate, ∫₀ᵗ h\nno — a rate total\n—\nstarts at 0, increases\n\n\nCIF_k(t)\nP(had event k by t)\nyes\nyes (one per cause)\nstarts at 0, increases\n\n\n\n\nCIF vs S(t) — the closest pair, both probabilities. With no competing risks they are exact complements, CIF(t) = 1 − S(t). With competing risks that breaks: 1 − S(t) lumps all causes together, while CIF_k isolates one, and the per-cause CIFs sum back to it (Σ_k CIF_k(t) = 1 − S(t)).\nCIF vs h(t)/H(t) — a different type of object: h and H are rates (can exceed 1), not probabilities. They are the engine — CIF_k is built from them via the integral above.\n\nIn one line: S(t) and CIF answer “what fraction of patients?”; h(t) and H(t) answer “how fast / how much accumulated rate?” The CIF is the competing-risks-aware, per-cause version of 1 − S(t).",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Multi-Events and Competing Risks"
     ]
@@ -762,6 +820,7 @@
     "section": "",
     "text": "These approaches differ in what they model, and that decides what question they answer:\n\nCause-specific hazard models — fit one hazard model per event type; when modelling event k, every competing event is treated as censoring. Each answers “among patients still event-free, what drives the rate of event k?” Best for understanding mechanism / etiology. A single cause-specific hazard does not translate directly into that event’s CIF — you need all of them together to reconstruct incidence.\nSub-distribution hazard (Fine-Gray) — a regression model named after Fine & Gray (1999), the competing-risks counterpart of the Cox model (see 2.1). It models a modified hazard engineered to have a direct one-to-one link to the CIF (it keeps patients who had a competing event in the at-risk set rather than dropping them). So one model gives that event’s CIF directly. Best for prediction / prognosis.\nDeepHit — a neural network that skips hazards entirely and directly learns the joint distribution over (which event, when), P(event = k, T = t), in discrete time. No proportional-hazards assumption; covariates interact freely, at the cost of more data and tuning. Covered in full — model output, loss, and tuning — in 2.4.\n\n\nRule of thumb: cause-specific = “rate among those still at risk” (etiology); Fine-Gray = “directly model the cumulative incidence” (prediction). See 1.4 above for the CIF itself.",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Multi-Events and Competing Risks"
     ]
@@ -773,6 +832,7 @@
     "section": "",
     "text": "The tools split along two axes — descriptive vs. covariate model, and among models, how they represent time. The top row describes a group; the bottom two predict from a patient’s features.\n\n\n\nNeed\nTool\nWhat it is\n\n\n\n\nEstimate the CIF correctly (descriptive, no covariates)\nlifelines.AalenJohansenFitter — see 04_packages/4.2_lifelines.md\nThe competing-risks analogue of Kaplan-Meier; gives the cohort’s CIF curve for exploration/plotting\n\n\nDeep competing-risks model (discrete time)\npycox.models.DeepHit — see 04_packages/4.1_pycox.md and 02_loss_functions/2.4_deephit_loss.md\nNeural net, distribution-free, bins time into intervals; flexible but needs tuning\n\n\nDeep competing-risks model (parametric mixture)\nauton_survival DSM — described in depth in 04_packages/4.5_auton_survival.md (with a usage snippet in 2.4)\nModels continuous time as a smooth mixture of parametric curves; fewer tuning knobs than DeepHit\n\n\n\nThe Aalen-Johansen estimator is the competing-risks analogue of Kaplan-Meier — use it instead of 1 - S(t) for the CIF:\nfrom lifelines import AalenJohansenFitter\najf = AalenJohansenFitter()\najf.fit(T, event_observed, event_of_interest=1)   # event labels: 0 = censored, 1, 2, ...\najf.plot()",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Multi-Events and Competing Risks"
     ]
@@ -784,6 +844,7 @@
     "section": "",
     "text": "Always check whether competing risks are present in your dataset\nMulti-event models require event-type labels in addition to (T, δ)\nPlain Kaplan-Meier (1 - S(t)) overestimates the CIF under competing risks — use Aalen-Johansen",
     "crumbs": [
+      "Background",
       "1 · Background",
       "Multi-Events and Competing Risks"
     ]
@@ -795,6 +856,7 @@
     "section": "",
     "text": "The Cox PH loss is the most widely used loss function in survival analysis, based on the partial likelihood introduced by Cox (1972). This page builds it up from the model, then derives the loss, then states the assumption it rests on. If you only need to use it, skip to Key takeaways.\n\n\nThe hazard for patient i at time t is the baseline hazard scaled by a per-patient multiplier:\n\n\\underbrace{h(t \\mid x_i)}_{\\text{patient } i\\text{'s hazard at } t}\n\\;=\\;\n\\underbrace{h_0(t)}_{\\text{baseline hazard}}\n\\;\\times\\;\n\\underbrace{\\exp(\\beta^\\top x_i)}_{\\text{patient's risk multiplier}}\n\nSpelling out each symbol:\n\nx_i — patient i’s covariate vector: their features stacked into a list, e.g. [age, tumor_size, biomarker]. The subscript i labels which patient.\n\\beta (beta) — the coefficient vector: one learned weight per feature. Each \\beta_k says how strongly feature k pushes risk up (\\beta_k &gt; 0) or down (\\beta_k &lt; 0) — the survival analog of regression coefficients.\n\\beta^\\top x_i — the superscript \\top means transpose, turning the product into a dot product \\beta_1 x_{i1} + \\beta_2 x_{i2} + \\dots The result is one number: the patient’s linear predictor or risk score (a log-hazard; see 1.5).\n\\exp(\\cdot) — the exponential keeps the multiplier positive. \\exp(\\beta^\\top x_i) is the hazard ratio: how many times higher (&gt;1) or lower (&lt;1) this patient’s hazard is than baseline. \\exp(0) = 1 means “same as baseline.”\nh_0(t) — the baseline hazard: the risk over time for a patient whose features all sit at the reference (\\beta^\\top x = 0). Left unspecified — see Semi-parametric below.\n\n\nWorked example — reading a risk score. One standardized biomarker x_i = 1.5 with coefficient \\beta = 0.4 gives a linear predictor \\beta^\\top x_i = 0.4 \\times 1.5 = 0.6. The hazard ratio is \\exp(0.6) \\approx 1.8 — patient i’s hazard is about 1.8× the baseline at every time point.\n\n\nTwo different T’s. The superscript \\top means transpose (a linear-algebra operation). It is not the survival time T from 1.2 — same letter, unrelated meaning.\n\n\n\nThe baseline hazard h_0(t) is left unspecified, which makes Cox semi-parametric — part parametric, part non-parametric:\n\nThe covariate effect \\exp(\\beta^\\top x) is parametric: a fixed, finite set of coefficients \\beta, one per feature.\nThe baseline h_0(t) is non-parametric: an arbitrary function of time with no assumed shape (the same “no equation for the shape” sense as the estimators in 1.1).\n\nSo Cox commits to how covariates scale risk but stays agnostic about the shape of risk over time. Fully parametric alternatives (e.g. the DSM mixture in 2.4) instead assume a shape for the time axis too.\n\n\n\nThe lowercase h is the instantaneous hazard — the rate of the event at t given survival so far, the “speedometer” of 1.1 — not the cumulative hazard H(t)=\\int_0^t h. Cox models the hazard rather than the survival function S(t) for two reasons:\n\nClean multiplier. Covariates enter as a constant factor \\exp(\\beta^\\top x) on the baseline. On the survival scale the same effect becomes the messier S(t)^{\\exp(\\beta^\\top x)}.\nThe baseline cancels. Because every patient shares the same h_0(t), it drops out of the partial likelihood below — the trick that lets Cox estimate \\beta without ever specifying the baseline.\n\nNothing is lost: S(t), h(t), and H(t) are interconvertible (S=e^{-H}, H=\\int h), so the survival curve can be recovered afterward.\n\nHow the survival curve is recovered. The packages’ predict_survival_function call (see the output table in 1.5) does this: once \\beta is fixed, it estimates the dropped baseline non-parametrically from the data (the Breslow estimator) and combines it with each patient’s risk, S(t\\mid x)=S_0(t)^{\\exp(\\beta^\\top x)}. Fit on the hazard scale, then assemble the probability curve afterward.\n\n\n\n\n\n\n\nA full likelihood for survival data would need the baseline hazard h_0(t) — the actual shape of risk over time. Cox’s trick is to estimate \\beta without ever specifying h_0(t), using only the information that does not depend on it. That reduced quantity is the partial likelihood.\nIt works by asking, each time an event occurs: given that exactly one subject failed at this moment, what is the probability it was this particular subject?\n\n\\underbrace{P\\big(i \\text{ fails} \\mid \\text{one failure in } R(t_i)\\big)}_{\\text{prob. it was patient } i}\n\\;=\\;\n\\frac{\\overbrace{\\exp(\\beta^\\top x_i)}^{\\text{patient } i\\text{'s risk}}}{\\underbrace{\\sum_{j \\in R(t_i)} \\exp(\\beta^\\top x_j)}_{\\text{total risk of everyone still at risk}}}\n\nThis is a softmax over the risk set: patient i’s own risk scored against the pooled risk of all the candidates, giving i’s share of the total. (That softmax form is exactly why the deep-learning version is just a log-softmax loss.)\nThe risk set R(t_i) is everyone still at risk just before time t_i:\nR(t_i) = \\{\\, j : T_j \\ge t_i \\,\\} \\quad\\text{— subjects who have neither had the event nor been censored yet.}\nMind the capitalization: t_i (lowercase) is a specific moment — when subject i had their event — while T_j (capital) is subject j’s own observed time (the survival time T from the (T, δ) notation in 1.2). So T_j \\ge t_i means “j was still being followed at the instant i failed.” The pool only ever shrinks: a subject drops out of all later risk sets once they have their event or are censored.\n\nWorked example — who’s in the risk set. If patient i fails at t_i = 10 months: - a patient with T_j = 15 is in the set (still followed at month 10), - a patient with T_j = 6 is not (already left by month 10).\n\nThe cancellation. Each subject’s hazard is h_0(t)\\exp(\\beta^\\top x_j), so the shared h_0(t_i) cancels between numerator and denominator. That cancellation is exactly what removes the baseline hazard from the estimation.\n\n\n\nMultiply the per-event conditional probabilities across all observed events and take the negative log:\n\nL(\\beta) = -\\!\\!\\sum_{i\\,:\\,\\delta_i = 1}\n\\Big[\\,\n\\underbrace{\\beta^\\top x_i}_{\\text{patient } i\\text{'s log-risk}}\n\\;-\\;\n\\underbrace{\\log\\!\\Big(\\textstyle\\sum_{j \\in R(t_i)} \\exp(\\beta^\\top x_j)\\Big)}_{\\text{log-total-risk over the risk set}}\n\\,\\Big]\n\nwhere:\n\n\\sum_{i:\\delta_i=1} — sum over observed events only (\\delta_i = 1). Censored subjects (\\delta_i = 0) never get their own term.\nR(t_i) — the risk set, as above.\n\nA censored subject still appears in the risk sets (denominators) of earlier events, so its follow-up still contributes — it just never supplies a numerator.\n\nWorked example — three patients. A fails first, then B, while C is censored. The partial likelihood is: \\big[\\text{A's softmax over } \\{A, B, C\\}\\big] \\;\\times\\; \\big[\\text{B's softmax over the shrunken } \\{B, C\\}\\big] C contributes only to denominators, never a numerator.\n\n\n\n\nIt is partial because it deliberately discards information: it uses only the order in which events occur (who failed before whom), not the actual event times — those live in the baseline hazard that was dropped. That is also why a Cox model outputs a ranking (a risk score) rather than absolute probabilities, and why its natural evaluation metric is the rank-based C-index.\n\n\n\n\nTake the model and form the ratio of hazards for two patients i and j:\n\n\\frac{h(t \\mid x_i)}{h(t \\mid x_j)}\n= \\frac{h_0(t)\\exp(\\beta^\\top x_i)}{h_0(t)\\exp(\\beta^\\top x_j)}\n= \\frac{\\exp(\\beta^\\top x_i)}{\\exp(\\beta^\\top x_j)}\n\nThe baseline h_0(t) cancels (the third cancellation), leaving a ratio with no t in it. So however the underlying risk moves over time, patient i is always the same multiple as risky as patient j — their hazard curves are vertically parallel and never cross. That constant-ratio property is what “proportional hazards” means, and it is the price Cox pays for not specifying h_0(t).\n\nWorked example — when PH breaks. A surgery with high early risk (operative complications) but a protective effect later: the treated and untreated hazard curves cross. No single constant ratio fits, so PH is violated. This is exactly the limitation flexible models like DeepHit (2.4) escape by not assuming any hazard form.\n\n\n\n\nLeft: proportional hazards — patient B’s hazard is a fixed multiple of A’s, so however the baseline moves the two curves keep a constant ratio and never cross. Right: the surgery case — high early risk that becomes protective later, so the curves cross and no single ratio fits. Cox is mis-specified on the right.\n\n\nOther properties:\n\nDoes not require specifying the baseline hazard.\nOutputs a log-hazard (risk score), not a probability.\n\n\n\n\nReplace the linear predictor \\beta^\\top x with a neural-network output \\varphi(x) — a single scalar log-hazard per subject. The loss is unchanged (negative log partial likelihood). This is DeepSurv.\n\n\n\nIf you just need to train and use a Cox model — not derive it — these are the points that matter:\n\nOutput is a risk score, not a probability. The model emits one number per patient (a log-hazard); higher means higher risk. It’s a ranking. To get actual survival probabilities S(t \\mid x), call predict_survival_function (it fills in the baseline via the Breslow estimator).\nThe loss is a log-softmax over the risk set. Each event “competes” against everyone still at risk at that moment. In deep learning you just feed your network’s scalar output into the Cox loss — no need to handle the baseline yourself.\nIt assumes proportional hazards. Relative risk between two patients is constant over time. If a covariate’s effect flips over time (e.g. surgery: harmful early, protective late), Cox is mis-specified — reach for DeepHit instead.\nEvaluate with the C-index. Because the output is a ranking, the natural metric is rank-based concordance, not a probabilistic score.\nMind the mini-batch approximation. The exact loss sums over the global risk set; with mini-batches the risk set is restricted to the batch. Use large batches to reduce the error, or use CoxCC (Cox case-control), which is built for SGD — instead of the full risk set, it samples a small fixed set of controls (still-at-risk subjects) for each case (the one that failed), so the loss no longer needs every subject in the denominator. Same Cox objective, memory-efficient, mini-batch-friendly.\n\n\n\n\nThe Cox loss is available at every altitude. Pick by how much you own the training loop.\ntorchsurv — raw differentiable loss for a custom PyTorch model (the custom 3D-imaging case; see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.loss import cox\n\nlog_hz = model(x)                 # network output: one log-hazard per subject\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\npycox — packaged DeepSurv (CoxPH) or memory-efficient CoxCC (see 04_packages/4.1_pycox.md):\nimport pycox.models as models, torchtuples as tt\nnet = tt.practical.MLPVanilla(in_features, [64, 64], out_features=1)\nmodel = models.CoxPH(net, tt.optim.Adam)   # or models.CoxCC(net, tt.optim.Adam)\nmodel.fit(x_train, (durations, events), epochs=100)\n\nCoxPH vs CoxCC. Both optimize the Cox partial likelihood. CoxPH uses the batch as the risk set; CoxCC approximates the denominator by case-control sampling (a few sampled controls per case), which scales to large datasets and underpins pycox’s non-proportional CoxTime model. See Key takeaways.\n\nlifelines — classical Cox on tabular data, full statistical summary (see 04_packages/4.2_lifelines.md):\nfrom lifelines import CoxPHFitter\nCoxPHFitter().fit(df, duration_col=\"T\", event_col=\"E\").print_summary()\nscikit-survival — regularized/penalized Cox inside an sklearn pipeline (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.linear_model import CoxPHSurvivalAnalysis\nCoxPHSurvivalAnalysis().fit(X_train, y_train)   # y_train is a structured (event, time) array",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -806,6 +868,7 @@
     "section": "",
     "text": "The hazard for patient i at time t is the baseline hazard scaled by a per-patient multiplier:\n\n\\underbrace{h(t \\mid x_i)}_{\\text{patient } i\\text{'s hazard at } t}\n\\;=\\;\n\\underbrace{h_0(t)}_{\\text{baseline hazard}}\n\\;\\times\\;\n\\underbrace{\\exp(\\beta^\\top x_i)}_{\\text{patient's risk multiplier}}\n\nSpelling out each symbol:\n\nx_i — patient i’s covariate vector: their features stacked into a list, e.g. [age, tumor_size, biomarker]. The subscript i labels which patient.\n\\beta (beta) — the coefficient vector: one learned weight per feature. Each \\beta_k says how strongly feature k pushes risk up (\\beta_k &gt; 0) or down (\\beta_k &lt; 0) — the survival analog of regression coefficients.\n\\beta^\\top x_i — the superscript \\top means transpose, turning the product into a dot product \\beta_1 x_{i1} + \\beta_2 x_{i2} + \\dots The result is one number: the patient’s linear predictor or risk score (a log-hazard; see 1.5).\n\\exp(\\cdot) — the exponential keeps the multiplier positive. \\exp(\\beta^\\top x_i) is the hazard ratio: how many times higher (&gt;1) or lower (&lt;1) this patient’s hazard is than baseline. \\exp(0) = 1 means “same as baseline.”\nh_0(t) — the baseline hazard: the risk over time for a patient whose features all sit at the reference (\\beta^\\top x = 0). Left unspecified — see Semi-parametric below.\n\n\nWorked example — reading a risk score. One standardized biomarker x_i = 1.5 with coefficient \\beta = 0.4 gives a linear predictor \\beta^\\top x_i = 0.4 \\times 1.5 = 0.6. The hazard ratio is \\exp(0.6) \\approx 1.8 — patient i’s hazard is about 1.8× the baseline at every time point.\n\n\nTwo different T’s. The superscript \\top means transpose (a linear-algebra operation). It is not the survival time T from 1.2 — same letter, unrelated meaning.\n\n\n\nThe baseline hazard h_0(t) is left unspecified, which makes Cox semi-parametric — part parametric, part non-parametric:\n\nThe covariate effect \\exp(\\beta^\\top x) is parametric: a fixed, finite set of coefficients \\beta, one per feature.\nThe baseline h_0(t) is non-parametric: an arbitrary function of time with no assumed shape (the same “no equation for the shape” sense as the estimators in 1.1).\n\nSo Cox commits to how covariates scale risk but stays agnostic about the shape of risk over time. Fully parametric alternatives (e.g. the DSM mixture in 2.4) instead assume a shape for the time axis too.\n\n\n\nThe lowercase h is the instantaneous hazard — the rate of the event at t given survival so far, the “speedometer” of 1.1 — not the cumulative hazard H(t)=\\int_0^t h. Cox models the hazard rather than the survival function S(t) for two reasons:\n\nClean multiplier. Covariates enter as a constant factor \\exp(\\beta^\\top x) on the baseline. On the survival scale the same effect becomes the messier S(t)^{\\exp(\\beta^\\top x)}.\nThe baseline cancels. Because every patient shares the same h_0(t), it drops out of the partial likelihood below — the trick that lets Cox estimate \\beta without ever specifying the baseline.\n\nNothing is lost: S(t), h(t), and H(t) are interconvertible (S=e^{-H}, H=\\int h), so the survival curve can be recovered afterward.\n\nHow the survival curve is recovered. The packages’ predict_survival_function call (see the output table in 1.5) does this: once \\beta is fixed, it estimates the dropped baseline non-parametrically from the data (the Breslow estimator) and combines it with each patient’s risk, S(t\\mid x)=S_0(t)^{\\exp(\\beta^\\top x)}. Fit on the hazard scale, then assemble the probability curve afterward.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -817,6 +880,7 @@
     "section": "",
     "text": "A full likelihood for survival data would need the baseline hazard h_0(t) — the actual shape of risk over time. Cox’s trick is to estimate \\beta without ever specifying h_0(t), using only the information that does not depend on it. That reduced quantity is the partial likelihood.\nIt works by asking, each time an event occurs: given that exactly one subject failed at this moment, what is the probability it was this particular subject?\n\n\\underbrace{P\\big(i \\text{ fails} \\mid \\text{one failure in } R(t_i)\\big)}_{\\text{prob. it was patient } i}\n\\;=\\;\n\\frac{\\overbrace{\\exp(\\beta^\\top x_i)}^{\\text{patient } i\\text{'s risk}}}{\\underbrace{\\sum_{j \\in R(t_i)} \\exp(\\beta^\\top x_j)}_{\\text{total risk of everyone still at risk}}}\n\nThis is a softmax over the risk set: patient i’s own risk scored against the pooled risk of all the candidates, giving i’s share of the total. (That softmax form is exactly why the deep-learning version is just a log-softmax loss.)\nThe risk set R(t_i) is everyone still at risk just before time t_i:\nR(t_i) = \\{\\, j : T_j \\ge t_i \\,\\} \\quad\\text{— subjects who have neither had the event nor been censored yet.}\nMind the capitalization: t_i (lowercase) is a specific moment — when subject i had their event — while T_j (capital) is subject j’s own observed time (the survival time T from the (T, δ) notation in 1.2). So T_j \\ge t_i means “j was still being followed at the instant i failed.” The pool only ever shrinks: a subject drops out of all later risk sets once they have their event or are censored.\n\nWorked example — who’s in the risk set. If patient i fails at t_i = 10 months: - a patient with T_j = 15 is in the set (still followed at month 10), - a patient with T_j = 6 is not (already left by month 10).\n\nThe cancellation. Each subject’s hazard is h_0(t)\\exp(\\beta^\\top x_j), so the shared h_0(t_i) cancels between numerator and denominator. That cancellation is exactly what removes the baseline hazard from the estimation.\n\n\n\nMultiply the per-event conditional probabilities across all observed events and take the negative log:\n\nL(\\beta) = -\\!\\!\\sum_{i\\,:\\,\\delta_i = 1}\n\\Big[\\,\n\\underbrace{\\beta^\\top x_i}_{\\text{patient } i\\text{'s log-risk}}\n\\;-\\;\n\\underbrace{\\log\\!\\Big(\\textstyle\\sum_{j \\in R(t_i)} \\exp(\\beta^\\top x_j)\\Big)}_{\\text{log-total-risk over the risk set}}\n\\,\\Big]\n\nwhere:\n\n\\sum_{i:\\delta_i=1} — sum over observed events only (\\delta_i = 1). Censored subjects (\\delta_i = 0) never get their own term.\nR(t_i) — the risk set, as above.\n\nA censored subject still appears in the risk sets (denominators) of earlier events, so its follow-up still contributes — it just never supplies a numerator.\n\nWorked example — three patients. A fails first, then B, while C is censored. The partial likelihood is: \\big[\\text{A's softmax over } \\{A, B, C\\}\\big] \\;\\times\\; \\big[\\text{B's softmax over the shrunken } \\{B, C\\}\\big] C contributes only to denominators, never a numerator.\n\n\n\n\nIt is partial because it deliberately discards information: it uses only the order in which events occur (who failed before whom), not the actual event times — those live in the baseline hazard that was dropped. That is also why a Cox model outputs a ranking (a risk score) rather than absolute probabilities, and why its natural evaluation metric is the rank-based C-index.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -828,6 +892,7 @@
     "section": "",
     "text": "Take the model and form the ratio of hazards for two patients i and j:\n\n\\frac{h(t \\mid x_i)}{h(t \\mid x_j)}\n= \\frac{h_0(t)\\exp(\\beta^\\top x_i)}{h_0(t)\\exp(\\beta^\\top x_j)}\n= \\frac{\\exp(\\beta^\\top x_i)}{\\exp(\\beta^\\top x_j)}\n\nThe baseline h_0(t) cancels (the third cancellation), leaving a ratio with no t in it. So however the underlying risk moves over time, patient i is always the same multiple as risky as patient j — their hazard curves are vertically parallel and never cross. That constant-ratio property is what “proportional hazards” means, and it is the price Cox pays for not specifying h_0(t).\n\nWorked example — when PH breaks. A surgery with high early risk (operative complications) but a protective effect later: the treated and untreated hazard curves cross. No single constant ratio fits, so PH is violated. This is exactly the limitation flexible models like DeepHit (2.4) escape by not assuming any hazard form.\n\n\n\n\nLeft: proportional hazards — patient B’s hazard is a fixed multiple of A’s, so however the baseline moves the two curves keep a constant ratio and never cross. Right: the surgery case — high early risk that becomes protective later, so the curves cross and no single ratio fits. Cox is mis-specified on the right.\n\n\nOther properties:\n\nDoes not require specifying the baseline hazard.\nOutputs a log-hazard (risk score), not a probability.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -839,6 +904,7 @@
     "section": "",
     "text": "Replace the linear predictor \\beta^\\top x with a neural-network output \\varphi(x) — a single scalar log-hazard per subject. The loss is unchanged (negative log partial likelihood). This is DeepSurv.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -850,6 +916,7 @@
     "section": "",
     "text": "If you just need to train and use a Cox model — not derive it — these are the points that matter:\n\nOutput is a risk score, not a probability. The model emits one number per patient (a log-hazard); higher means higher risk. It’s a ranking. To get actual survival probabilities S(t \\mid x), call predict_survival_function (it fills in the baseline via the Breslow estimator).\nThe loss is a log-softmax over the risk set. Each event “competes” against everyone still at risk at that moment. In deep learning you just feed your network’s scalar output into the Cox loss — no need to handle the baseline yourself.\nIt assumes proportional hazards. Relative risk between two patients is constant over time. If a covariate’s effect flips over time (e.g. surgery: harmful early, protective late), Cox is mis-specified — reach for DeepHit instead.\nEvaluate with the C-index. Because the output is a ranking, the natural metric is rank-based concordance, not a probabilistic score.\nMind the mini-batch approximation. The exact loss sums over the global risk set; with mini-batches the risk set is restricted to the batch. Use large batches to reduce the error, or use CoxCC (Cox case-control), which is built for SGD — instead of the full risk set, it samples a small fixed set of controls (still-at-risk subjects) for each case (the one that failed), so the loss no longer needs every subject in the denominator. Same Cox objective, memory-efficient, mini-batch-friendly.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -861,6 +928,7 @@
     "section": "",
     "text": "The Cox loss is available at every altitude. Pick by how much you own the training loop.\ntorchsurv — raw differentiable loss for a custom PyTorch model (the custom 3D-imaging case; see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.loss import cox\n\nlog_hz = model(x)                 # network output: one log-hazard per subject\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\npycox — packaged DeepSurv (CoxPH) or memory-efficient CoxCC (see 04_packages/4.1_pycox.md):\nimport pycox.models as models, torchtuples as tt\nnet = tt.practical.MLPVanilla(in_features, [64, 64], out_features=1)\nmodel = models.CoxPH(net, tt.optim.Adam)   # or models.CoxCC(net, tt.optim.Adam)\nmodel.fit(x_train, (durations, events), epochs=100)\n\nCoxPH vs CoxCC. Both optimize the Cox partial likelihood. CoxPH uses the batch as the risk set; CoxCC approximates the denominator by case-control sampling (a few sampled controls per case), which scales to large datasets and underpins pycox’s non-proportional CoxTime model. See Key takeaways.\n\nlifelines — classical Cox on tabular data, full statistical summary (see 04_packages/4.2_lifelines.md):\nfrom lifelines import CoxPHFitter\nCoxPHFitter().fit(df, duration_col=\"T\", event_col=\"E\").print_summary()\nscikit-survival — regularized/penalized Cox inside an sklearn pipeline (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.linear_model import CoxPHSurvivalAnalysis\nCoxPHSurvivalAnalysis().fit(X_train, y_train)   # y_train is a structured (event, time) array",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "Cox Proportional Hazards Loss"
     ]
@@ -872,6 +940,7 @@
     "section": "",
     "text": "DeepHit (Lee et al., 2018) is a deep-learning survival model that makes no assumptions about the shape of risk: not the proportional hazards of Cox (2.1), and not a parametric distribution like the NLL models (2.2). Instead it lets a neural network output the survival distribution directly as a discrete probability table, and it handles competing risks (1.4) natively. Its loss combines a likelihood term (for calibration) with a ranking term (for discrimination).\n\n\nCox and parametric models predict a summary (a risk score, or a distribution’s parameters) and reconstruct the survival curve afterward. DeepHit skips the middle-man: the network outputs the full joint probability mass over which event happens and when.\nTime is first chopped into bins t \\in \\{1, \\dots, T_\\max\\} (the same discretization as the discrete-time NLL models in 2.2), and for each patient the network emits one probability per (event type, time bin) cell:\n\n\\underbrace{p_k(t \\mid x)}_{\\text{prob. that event } k \\text{ strikes in bin } t}\n\\;=\\; P(T = t,\\; K = k \\mid x)\n\n\nt — a discrete time bin.\nk \\in \\{1, \\dots, K\\} — the event type (cause), e.g. k=1 relapse, k=2 death. With a single event type, K = 1.\nAll cells sum to at most 1; the leftover mass is the probability of never experiencing any event within the observed horizon.\n\nTwo quantities are read off this table by summing cells — no extra model needed:\n\n\\underbrace{F_k(t \\mid x)}_{\\text{CIF for cause } k}\n= \\sum_{\\tau \\le t} p_k(\\tau \\mid x),\n\\qquad\n\\underbrace{S(t \\mid x)}_{\\text{overall survival}}\n= 1 - \\sum_{k=1}^{K}\\sum_{\\tau \\le t} p_k(\\tau \\mid x)\n\nF_k is the cumulative incidence function — the probability of having had cause k by time t, the competing-risks quantity defined in 1.4. S is the probability of escaping all causes through t.\n\nWorked example — one patient’s table. With two causes (relapse, death) and monthly bins, the network might place 0.04 on (relapse, month 6) and 0.01 on (death, month 6). Then the relapse CIF F_1(6) is the sum of all relapse cells up to month 6, and S(6) is 1 minus every cell (both causes) up to month 6.\n\n\n\n\nLeft: the network emits one probability per (cause, time-bin) cell — the joint mass p_k(t\\mid x). Right: everything else is read off by summing those cells — each cause’s CIF is a running sum of its cells, and overall survival S(t) is 1 minus every cell so far. No second model needed.\n\n\n\n\n\nDeepHit is trained by minimizing a weighted sum of two losses that target the two things we want from a survival model:\n\n\\underbrace{L}_{\\text{total}} \\;=\\; \\underbrace{L_{\\text{likelihood}}}_{\\text{calibration: right probabilities}} \\;+\\; \\alpha \\cdot \\underbrace{L_{\\text{rank}}}_{\\text{discrimination: right ordering}}\n\nThe hyperparameter \\alpha \\ge 0 sets how much ranking matters relative to calibration. We build up each term below.\n\n\nThis is the same negative-log-likelihood recipe as 2.2 — product of per-subject likelihoods, log, negate — with one change: an observed event contributes the probability mass of its specific (time, cause) cell instead of a density, because time is now discrete.\n\nL_{\\text{likelihood}} \\;=\\; -\\sum_i \\Big[\\,\n\\underbrace{\\delta_i \\,\\log p_{k_i}(T_i \\mid x_i)}_{\\text{event of type } k_i \\text{ in bin } T_i}\n\\;+\\;\n\\underbrace{(1-\\delta_i)\\,\\log S(T_i \\mid x_i)}_{\\text{censored: survived past } T_i}\n\\,\\Big]\n\nwhere \\delta_i is the event indicator (1 = event seen, 0 = censored) and k_i is subject i’s event type. The switch is identical to 2.2: a patient who had the event is scored by the cell they landed in; a censored patient is scored by the probability of having survived as long as they did.\n\n\n\nThe likelihood term alone makes probabilities calibrated but does not directly reward putting patients in the right order — which is what the C-index measures. The ranking term adds that pressure with a smooth, differentiable penalty over comparable pairs.\nA pair (i, j) is comparable for cause k when patient i actually had event k at time T_i while patient j was still event-free at that moment (T_j &gt; T_i). For such a pair, the patient who failed should have the higher predicted incidence at T_i: F_k(T_i \\mid x_i) &gt; F_k(T_i \\mid x_j). The loss penalizes violations:\n\nL_{\\text{rank}} \\;=\\; \\sum_{k=1}^{K}\\;\\sum_{(i,j)\\,\\in\\,\\mathcal{A}_k}\\;\n\\underbrace{\\exp\\!\\left(-\\frac{F_k(T_i \\mid x_i) - F_k(T_i \\mid x_j)}{\\sigma}\\right)}_{\\text{small when } i \\text{ correctly ranked above } j;\\ \\text{large when not}}\n\n\n\\mathcal{A}_k = \\{(i,j) : \\delta_i = 1,\\; k_i = k,\\; T_j &gt; T_i\\} — the acceptable (comparable) pairs for cause k.\n\\sigma (sigma) — a scale controlling how sharply the penalty reacts to the CIF gap. Smaller \\sigma → steeper penalty for mis-ordered pairs.\nBecause we minimize L_{\\text{rank}}, the exponential drives the gap F_k(T_i \\mid x_i) - F_k(T_i \\mid x_j) to be large and positive — exactly the concordant ordering the C-index rewards.\n\n\nWorked example — one ranking pair. Patient A relapses at month 6; patient B is still relapse-free at month 6 (so T_B &gt; 6). This is a comparable pair for the relapse cause. DeepHit wants F_1(6 \\mid x_A) &gt; F_1(6 \\mid x_B) — A’s predicted relapse incidence at month 6 above B’s. If the model instead predicts B as the higher-risk one, the gap goes negative and the \\exp(\\cdot) penalty blows up, pushing the network to fix the ordering.\n\n\n\n\n\nL \\;=\\; L_{\\text{likelihood}} \\;+\\; \\alpha \\cdot L_{\\text{rank}}\n\nCalibration (L_{\\text{likelihood}}) and discrimination (\\alpha L_{\\text{rank}}) can pull in different directions; \\alpha is the knob that balances them.\n\n\n\n\n\n\n\n✅ No PH assumption — effects can flip or fade over time (the surgery case that breaks Cox, 2.1).\n❌ Needs time binning — you must discretize the time axis; bin count is a tuning choice, and predictions live only on that grid.\n\n\n✅ No distributional assumption — the PMF takes any shape the data supports, unlike the fixed families in 2.2.\n❌ No extrapolation beyond the last bin — unlike a parametric NLL, the curve simply stops.\n\n\n✅ Competing risks are native — one head per cause, cause-specific CIFs (1.4).\n❌ Two hyperparameters (\\alpha, \\sigma) to tune, plus the bin grid — more knobs than Cox.\n\n\n✅ Optimizes calibration and ranking at once.\n❌ Data-hungry — predicting a full PMF needs more events than fitting a handful of coefficients.\n\n\n\n\n\n\nIf you just need to train and use DeepHit — not derive it — these are the points that matter:\n\nReach for it when competing risks are in play. Multiple mutually exclusive event types (relapse vs. death) with cause-specific predictions is DeepHit’s home turf; for a single event, Cox or a discrete-time NLL is usually simpler. See 1.4.\nIt outputs full probabilities — per-cause CIFs F_k(t) and overall S(t) — not just a ranking. Evaluate both: the C-index for discrimination and the Brier score / calibration for probability quality.\nalpha and sigma are the two knobs that move the needle. alpha trades calibration against discrimination; sigma sets how sharply mis-ordered pairs are punished. The defaults rarely win — tune both. (More bins = finer time resolution but more parameters and sparser cells.)\nDon’t trust it past the last time bin. DeepHit can’t extrapolate; if you need predictions beyond follow-up, use a parametric model (2.2) or DSM.\nCensoring is handled by the likelihood term (the S(T_i) part) — pass (times, events) and, for competing risks, the event-type labels.\n\nFor how DeepHit stacks up against Cox, NLL, and DSM, see 2.5.\n\n\n\npycox is the reference implementation — DeepHitSingle for one event, DeepHit for competing risks (see 04_packages/4.1_pycox.md). Like all discrete-time models it needs a label transform to bin the time axis:\nfrom pycox.models import DeepHitSingle\n\nlabtrans = DeepHitSingle.label_transform(num_durations=20)\ny_train = labtrans.fit_transform(durations, events)\n\nmodel = DeepHitSingle(net, optimizer,\n                      alpha=0.2, sigma=0.1,        # alpha weights likelihood vs ranking; sigma is the ranking scale\n                      duration_index=labtrans.cuts)\nmodel.fit(x_train, y_train, epochs=100)\nsurv = model.predict_surv_df(x_test)               # full S(t) per subject\nFor competing risks, swap in pycox.models.DeepHit and provide event-type labels k \\in \\{1, \\dots, K\\}.\nauton-survival offers an alternative deep competing-risks model, Deep Survival Machines (DSM), which mixes parametric distributions instead of a discrete grid (see 04_packages/4.5_auton_survival.md):\nfrom auton_survival.models.dsm import DeepSurvivalMachines\nmodel = DeepSurvivalMachines(layers=[100]).fit(features, outcomes.time, outcomes.event)\n\nThe two hyperparameters that matter. alpha trades likelihood (calibration) against ranking (discrimination/C-index); sigma controls how sharply the ranking term penalizes mis-ordered pairs. Tune both — the defaults rarely win. This loss is the natural choice when 01_background/1.4_multi_events_and_competing_risks.md applies.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -883,6 +952,7 @@
     "section": "",
     "text": "Cox and parametric models predict a summary (a risk score, or a distribution’s parameters) and reconstruct the survival curve afterward. DeepHit skips the middle-man: the network outputs the full joint probability mass over which event happens and when.\nTime is first chopped into bins t \\in \\{1, \\dots, T_\\max\\} (the same discretization as the discrete-time NLL models in 2.2), and for each patient the network emits one probability per (event type, time bin) cell:\n\n\\underbrace{p_k(t \\mid x)}_{\\text{prob. that event } k \\text{ strikes in bin } t}\n\\;=\\; P(T = t,\\; K = k \\mid x)\n\n\nt — a discrete time bin.\nk \\in \\{1, \\dots, K\\} — the event type (cause), e.g. k=1 relapse, k=2 death. With a single event type, K = 1.\nAll cells sum to at most 1; the leftover mass is the probability of never experiencing any event within the observed horizon.\n\nTwo quantities are read off this table by summing cells — no extra model needed:\n\n\\underbrace{F_k(t \\mid x)}_{\\text{CIF for cause } k}\n= \\sum_{\\tau \\le t} p_k(\\tau \\mid x),\n\\qquad\n\\underbrace{S(t \\mid x)}_{\\text{overall survival}}\n= 1 - \\sum_{k=1}^{K}\\sum_{\\tau \\le t} p_k(\\tau \\mid x)\n\nF_k is the cumulative incidence function — the probability of having had cause k by time t, the competing-risks quantity defined in 1.4. S is the probability of escaping all causes through t.\n\nWorked example — one patient’s table. With two causes (relapse, death) and monthly bins, the network might place 0.04 on (relapse, month 6) and 0.01 on (death, month 6). Then the relapse CIF F_1(6) is the sum of all relapse cells up to month 6, and S(6) is 1 minus every cell (both causes) up to month 6.\n\n\n\n\nLeft: the network emits one probability per (cause, time-bin) cell — the joint mass p_k(t\\mid x). Right: everything else is read off by summing those cells — each cause’s CIF is a running sum of its cells, and overall survival S(t) is 1 minus every cell so far. No second model needed.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -894,6 +964,7 @@
     "section": "",
     "text": "DeepHit is trained by minimizing a weighted sum of two losses that target the two things we want from a survival model:\n\n\\underbrace{L}_{\\text{total}} \\;=\\; \\underbrace{L_{\\text{likelihood}}}_{\\text{calibration: right probabilities}} \\;+\\; \\alpha \\cdot \\underbrace{L_{\\text{rank}}}_{\\text{discrimination: right ordering}}\n\nThe hyperparameter \\alpha \\ge 0 sets how much ranking matters relative to calibration. We build up each term below.\n\n\nThis is the same negative-log-likelihood recipe as 2.2 — product of per-subject likelihoods, log, negate — with one change: an observed event contributes the probability mass of its specific (time, cause) cell instead of a density, because time is now discrete.\n\nL_{\\text{likelihood}} \\;=\\; -\\sum_i \\Big[\\,\n\\underbrace{\\delta_i \\,\\log p_{k_i}(T_i \\mid x_i)}_{\\text{event of type } k_i \\text{ in bin } T_i}\n\\;+\\;\n\\underbrace{(1-\\delta_i)\\,\\log S(T_i \\mid x_i)}_{\\text{censored: survived past } T_i}\n\\,\\Big]\n\nwhere \\delta_i is the event indicator (1 = event seen, 0 = censored) and k_i is subject i’s event type. The switch is identical to 2.2: a patient who had the event is scored by the cell they landed in; a censored patient is scored by the probability of having survived as long as they did.\n\n\n\nThe likelihood term alone makes probabilities calibrated but does not directly reward putting patients in the right order — which is what the C-index measures. The ranking term adds that pressure with a smooth, differentiable penalty over comparable pairs.\nA pair (i, j) is comparable for cause k when patient i actually had event k at time T_i while patient j was still event-free at that moment (T_j &gt; T_i). For such a pair, the patient who failed should have the higher predicted incidence at T_i: F_k(T_i \\mid x_i) &gt; F_k(T_i \\mid x_j). The loss penalizes violations:\n\nL_{\\text{rank}} \\;=\\; \\sum_{k=1}^{K}\\;\\sum_{(i,j)\\,\\in\\,\\mathcal{A}_k}\\;\n\\underbrace{\\exp\\!\\left(-\\frac{F_k(T_i \\mid x_i) - F_k(T_i \\mid x_j)}{\\sigma}\\right)}_{\\text{small when } i \\text{ correctly ranked above } j;\\ \\text{large when not}}\n\n\n\\mathcal{A}_k = \\{(i,j) : \\delta_i = 1,\\; k_i = k,\\; T_j &gt; T_i\\} — the acceptable (comparable) pairs for cause k.\n\\sigma (sigma) — a scale controlling how sharply the penalty reacts to the CIF gap. Smaller \\sigma → steeper penalty for mis-ordered pairs.\nBecause we minimize L_{\\text{rank}}, the exponential drives the gap F_k(T_i \\mid x_i) - F_k(T_i \\mid x_j) to be large and positive — exactly the concordant ordering the C-index rewards.\n\n\nWorked example — one ranking pair. Patient A relapses at month 6; patient B is still relapse-free at month 6 (so T_B &gt; 6). This is a comparable pair for the relapse cause. DeepHit wants F_1(6 \\mid x_A) &gt; F_1(6 \\mid x_B) — A’s predicted relapse incidence at month 6 above B’s. If the model instead predicts B as the higher-risk one, the gap goes negative and the \\exp(\\cdot) penalty blows up, pushing the network to fix the ordering.\n\n\n\n\n\nL \\;=\\; L_{\\text{likelihood}} \\;+\\; \\alpha \\cdot L_{\\text{rank}}\n\nCalibration (L_{\\text{likelihood}}) and discrimination (\\alpha L_{\\text{rank}}) can pull in different directions; \\alpha is the knob that balances them.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -905,6 +976,7 @@
     "section": "",
     "text": "✅ No PH assumption — effects can flip or fade over time (the surgery case that breaks Cox, 2.1).\n❌ Needs time binning — you must discretize the time axis; bin count is a tuning choice, and predictions live only on that grid.\n\n\n✅ No distributional assumption — the PMF takes any shape the data supports, unlike the fixed families in 2.2.\n❌ No extrapolation beyond the last bin — unlike a parametric NLL, the curve simply stops.\n\n\n✅ Competing risks are native — one head per cause, cause-specific CIFs (1.4).\n❌ Two hyperparameters (\\alpha, \\sigma) to tune, plus the bin grid — more knobs than Cox.\n\n\n✅ Optimizes calibration and ranking at once.\n❌ Data-hungry — predicting a full PMF needs more events than fitting a handful of coefficients.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -916,6 +988,7 @@
     "section": "",
     "text": "If you just need to train and use DeepHit — not derive it — these are the points that matter:\n\nReach for it when competing risks are in play. Multiple mutually exclusive event types (relapse vs. death) with cause-specific predictions is DeepHit’s home turf; for a single event, Cox or a discrete-time NLL is usually simpler. See 1.4.\nIt outputs full probabilities — per-cause CIFs F_k(t) and overall S(t) — not just a ranking. Evaluate both: the C-index for discrimination and the Brier score / calibration for probability quality.\nalpha and sigma are the two knobs that move the needle. alpha trades calibration against discrimination; sigma sets how sharply mis-ordered pairs are punished. The defaults rarely win — tune both. (More bins = finer time resolution but more parameters and sparser cells.)\nDon’t trust it past the last time bin. DeepHit can’t extrapolate; if you need predictions beyond follow-up, use a parametric model (2.2) or DSM.\nCensoring is handled by the likelihood term (the S(T_i) part) — pass (times, events) and, for competing risks, the event-type labels.\n\nFor how DeepHit stacks up against Cox, NLL, and DSM, see 2.5.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -927,6 +1000,7 @@
     "section": "",
     "text": "pycox is the reference implementation — DeepHitSingle for one event, DeepHit for competing risks (see 04_packages/4.1_pycox.md). Like all discrete-time models it needs a label transform to bin the time axis:\nfrom pycox.models import DeepHitSingle\n\nlabtrans = DeepHitSingle.label_transform(num_durations=20)\ny_train = labtrans.fit_transform(durations, events)\n\nmodel = DeepHitSingle(net, optimizer,\n                      alpha=0.2, sigma=0.1,        # alpha weights likelihood vs ranking; sigma is the ranking scale\n                      duration_index=labtrans.cuts)\nmodel.fit(x_train, y_train, epochs=100)\nsurv = model.predict_surv_df(x_test)               # full S(t) per subject\nFor competing risks, swap in pycox.models.DeepHit and provide event-type labels k \\in \\{1, \\dots, K\\}.\nauton-survival offers an alternative deep competing-risks model, Deep Survival Machines (DSM), which mixes parametric distributions instead of a discrete grid (see 04_packages/4.5_auton_survival.md):\nfrom auton_survival.models.dsm import DeepSurvivalMachines\nmodel = DeepSurvivalMachines(layers=[100]).fit(features, outcomes.time, outcomes.event)\n\nThe two hyperparameters that matter. alpha trades likelihood (calibration) against ranking (discrimination/C-index); sigma controls how sharply the ranking term penalizes mis-ordered pairs. Tune both — the defaults rarely win. This loss is the natural choice when 01_background/1.4_multi_events_and_competing_risks.md applies.",
     "crumbs": [
+      "Background",
       "2 · Loss Functions",
       "DeepHit Loss"
     ]
@@ -938,6 +1012,7 @@
     "section": "",
     "text": "The C-index is the most common discrimination metric in survival analysis: it measures how well the model orders patients by risk, ignoring whether the predicted probabilities are themselves accurate (that’s calibration — see 3.2). It generalizes the AUC to censored data.\n\n\nThe C-index is the probability that, for a random comparable pair, the patient the model scores as riskier is the one who actually fails first:\n\nC \\;=\\; P\\big(\\,\n\\underbrace{r_i &gt; r_j}_{\\text{model scores } i \\text{ riskier}}\n\\;\\big|\\;\n\\underbrace{T_i &lt; T_j}_{i \\text{ fails first}},\\;\n\\underbrace{\\delta_i = 1}_{i\\text{'s event is observed}}\n\\,\\big)\n\nwhere r_i is subject i’s risk score (higher = more risk), T_i is the observed time, and \\delta_i the event indicator (the (T, δ) notation from 1.2).\nIn practice it’s computed by counting concordant pairs — pairs the model got in the right order — over all comparable pairs:\n\n\\hat{C} \\;=\\; \\frac{\\#\\{\\text{comparable pairs with } r_i &gt; r_j\\}}{\\#\\{\\text{comparable pairs}\\}}\n\n\n\n\nA pair (i, j) is comparable when we can actually tell who failed first: subject i has an observed event (\\delta_i = 1) at a time earlier than subject j’s observed time (T_i &lt; T_j). Crucially, j may be censored — we still know i failed before j left the study.\nA pair is not comparable when censoring hides the order — e.g. a subject censored at time 3 versus one who fails at time 7: the first might have failed at 4 or at 40, so the pair is dropped.\n\nWorked example — counting concordance. Three patients: | Patient | Time T | Event \\delta | Risk score r | |—|—|—|—| | A | 2 | 1 (event) | 0.9 | | B | 5 | 1 (event) | 0.4 | | C | 8 | 0 (censored) | 0.7 |\nComparable pairs and whether the model ordered them correctly (riskier patient fails first): - (A, B): A fails first; is A riskier? 0.9 &gt; 0.4 ✓ concordant - (A, C): A fails at 2, before C’s censoring at 8 → comparable; 0.9 &gt; 0.7 ✓ concordant - (B, C): B fails at 5, before C’s censoring at 8 → comparable; is B riskier? 0.4 &gt; 0.7 ✗ discordant\n\\hat{C} = 2/3 \\approx 0.67. Note (A, C) counts even though C is censored — A’s event time is unambiguously earlier.\n\n\n\n\nThe same three patients, plotted as risk score against observed time. Each line joins a comparable pair: teal where the earlier-failing patient is scored riskier (concordant), coral where they aren’t (discordant). C is censored (open marker) but still pairs with A, whose event is unambiguously earlier. Two of three pairs concordant gives \\hat{C}=0.67.\n\n\n\n\n\n\n\n\nC-index\nInterpretation\n\n\n\n\n0.5\nRandom ranking (no discrimination)\n\n\n0.6–0.7\nModerate\n\n\n0.7–0.8\nGood\n\n\n&gt; 0.8\nStrong\n\n\n\n\n\n\nThere are two C-indices in common use:\n\nHarrell’s C — counts all comparable pairs equally. Simple, but becomes optimistically biased as censoring increases (it quietly drops the hard-to-order censored pairs).\nUno’s C (IPCW) — reweights pairs by the inverse probability of censoring, giving a consistent estimate under heavier censoring. Prefer it when censoring is non-trivial; it needs the training survival distribution to estimate the censoring weights.\n\n\n\n\n\nIt scores ranking, not probabilities. A model can have a high C-index yet predict badly-calibrated survival curves. Always pair it with a calibration metric — the Brier score.\nPick Uno’s C when censoring is heavy. Harrell’s C drifts optimistic as censoring rises; Uno’s IPCW correction fixes that. Below ~25–30% censoring the two roughly agree.\nMind the sign convention. Some APIs (e.g. lifelines) expect a quantity that increases with survival — pass the negative risk score, or you’ll report 1 - C by mistake.\nIt’s a single summary. It can’t tell you when the model discriminates well. For time-resolved discrimination use the time-dependent AUC.\n\n\n\n\nlifelines — Harrell’s C. Note the sign: it expects a quantity that increases with survival time, so pass the negative risk score (see 04_packages/4.2_lifelines.md):\nfrom lifelines.utils import concordance_index\nc = concordance_index(event_times, -risk_scores, event_observed)\nscikit-survival — both estimators; the metrics gold standard in the ecosystem (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import concordance_index_censored, concordance_index_ipcw\n\nharrell = concordance_index_censored(event_test, time_test, risk_scores)[0]\nuno     = concordance_index_ipcw(y_train, y_test, risk_scores, tau=t_max)[0]\ntorchsurv — GPU-compatible, for in-loop monitoring of a PyTorch model (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.metrics.cindex import ConcordanceIndex\nc = ConcordanceIndex()(log_hz, events, times)\n\n\n\n\nSensitive to censoring patterns (use Uno’s C to mitigate)\nDoes not assess calibration\nA single number — does not capture time-varying discrimination",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -949,6 +1024,7 @@
     "section": "",
     "text": "The C-index is the probability that, for a random comparable pair, the patient the model scores as riskier is the one who actually fails first:\n\nC \\;=\\; P\\big(\\,\n\\underbrace{r_i &gt; r_j}_{\\text{model scores } i \\text{ riskier}}\n\\;\\big|\\;\n\\underbrace{T_i &lt; T_j}_{i \\text{ fails first}},\\;\n\\underbrace{\\delta_i = 1}_{i\\text{'s event is observed}}\n\\,\\big)\n\nwhere r_i is subject i’s risk score (higher = more risk), T_i is the observed time, and \\delta_i the event indicator (the (T, δ) notation from 1.2).\nIn practice it’s computed by counting concordant pairs — pairs the model got in the right order — over all comparable pairs:\n\n\\hat{C} \\;=\\; \\frac{\\#\\{\\text{comparable pairs with } r_i &gt; r_j\\}}{\\#\\{\\text{comparable pairs}\\}}",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -960,6 +1036,7 @@
     "section": "",
     "text": "A pair (i, j) is comparable when we can actually tell who failed first: subject i has an observed event (\\delta_i = 1) at a time earlier than subject j’s observed time (T_i &lt; T_j). Crucially, j may be censored — we still know i failed before j left the study.\nA pair is not comparable when censoring hides the order — e.g. a subject censored at time 3 versus one who fails at time 7: the first might have failed at 4 or at 40, so the pair is dropped.\n\nWorked example — counting concordance. Three patients: | Patient | Time T | Event \\delta | Risk score r | |—|—|—|—| | A | 2 | 1 (event) | 0.9 | | B | 5 | 1 (event) | 0.4 | | C | 8 | 0 (censored) | 0.7 |\nComparable pairs and whether the model ordered them correctly (riskier patient fails first): - (A, B): A fails first; is A riskier? 0.9 &gt; 0.4 ✓ concordant - (A, C): A fails at 2, before C’s censoring at 8 → comparable; 0.9 &gt; 0.7 ✓ concordant - (B, C): B fails at 5, before C’s censoring at 8 → comparable; is B riskier? 0.4 &gt; 0.7 ✗ discordant\n\\hat{C} = 2/3 \\approx 0.67. Note (A, C) counts even though C is censored — A’s event time is unambiguously earlier.\n\n\n\n\nThe same three patients, plotted as risk score against observed time. Each line joins a comparable pair: teal where the earlier-failing patient is scored riskier (concordant), coral where they aren’t (discordant). C is censored (open marker) but still pairs with A, whose event is unambiguously earlier. Two of three pairs concordant gives \\hat{C}=0.67.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -971,6 +1048,7 @@
     "section": "",
     "text": "C-index\nInterpretation\n\n\n\n\n0.5\nRandom ranking (no discrimination)\n\n\n0.6–0.7\nModerate\n\n\n0.7–0.8\nGood\n\n\n&gt; 0.8\nStrong",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -982,6 +1060,7 @@
     "section": "",
     "text": "There are two C-indices in common use:\n\nHarrell’s C — counts all comparable pairs equally. Simple, but becomes optimistically biased as censoring increases (it quietly drops the hard-to-order censored pairs).\nUno’s C (IPCW) — reweights pairs by the inverse probability of censoring, giving a consistent estimate under heavier censoring. Prefer it when censoring is non-trivial; it needs the training survival distribution to estimate the censoring weights.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -993,6 +1072,7 @@
     "section": "",
     "text": "It scores ranking, not probabilities. A model can have a high C-index yet predict badly-calibrated survival curves. Always pair it with a calibration metric — the Brier score.\nPick Uno’s C when censoring is heavy. Harrell’s C drifts optimistic as censoring rises; Uno’s IPCW correction fixes that. Below ~25–30% censoring the two roughly agree.\nMind the sign convention. Some APIs (e.g. lifelines) expect a quantity that increases with survival — pass the negative risk score, or you’ll report 1 - C by mistake.\nIt’s a single summary. It can’t tell you when the model discriminates well. For time-resolved discrimination use the time-dependent AUC.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -1004,6 +1084,7 @@
     "section": "",
     "text": "lifelines — Harrell’s C. Note the sign: it expects a quantity that increases with survival time, so pass the negative risk score (see 04_packages/4.2_lifelines.md):\nfrom lifelines.utils import concordance_index\nc = concordance_index(event_times, -risk_scores, event_observed)\nscikit-survival — both estimators; the metrics gold standard in the ecosystem (see 04_packages/4.4_scikit_survival.md):\nfrom sksurv.metrics import concordance_index_censored, concordance_index_ipcw\n\nharrell = concordance_index_censored(event_test, time_test, risk_scores)[0]\nuno     = concordance_index_ipcw(y_train, y_test, risk_scores, tau=t_max)[0]\ntorchsurv — GPU-compatible, for in-loop monitoring of a PyTorch model (see 04_packages/4.3_torchsurv.md):\nfrom torchsurv.metrics.cindex import ConcordanceIndex\nc = ConcordanceIndex()(log_hz, events, times)",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -1015,6 +1096,7 @@
     "section": "",
     "text": "Sensitive to censoring patterns (use Uno’s C to mitigate)\nDoes not assess calibration\nA single number — does not capture time-varying discrimination",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Concordance Index (C-index)"
     ]
@@ -1026,6 +1108,7 @@
     "section": "",
     "text": "The Kaplan-Meier (KM) estimator is the standard non-parametric way to estimate the survival function S(t) from data — no model, no covariates, no assumed shape (the “no equation for the shape” idea from 1.1). It’s the baseline every survival model is judged against and the curve clinicians actually read.\n\n\nKM walks through the event times and multiplies together the fraction surviving each one:\n\n\\hat{S}(t) \\;=\\; \\prod_{t_i \\le t}\\Big(1 - \\underbrace{\\frac{d_i}{n_i}}_{\\text{fraction who fail at } t_i}\\Big)\n\nwhere, at each distinct event time t_i:\n\nd_i — the number of events (e.g. deaths) at t_i.\nn_i — the number at risk just before t_i: everyone who has neither had the event nor been censored yet (the risk set from 2.1).\n\nEach factor (1 - d_i/n_i) is the conditional probability of surviving through t_i given survival up to it; the running product turns those into the overall survival curve — a step function that drops at each event and stays flat between events.\n\nWorked example — five patients. Times (★ = event, ○ = censored): 3★, 5★, 7○, 8★, 10○. | Event time t_i | At risk n_i | Events d_i | Factor 1 - d_i/n_i | \\hat{S}(t) | |—|—|—|—|—| | 3 | 5 | 1 | 4/5 = 0.80 | 0.80 | | 5 | 4 | 1 | 3/4 = 0.75 | 0.80 \\times 0.75 = 0.60 | | 8 | 2 | 1 | 1/2 = 0.50 | 0.60 \\times 0.50 = 0.30 |\nThe censored patient at t = 7 produces no drop — but it lowers the at-risk count n_i from 3 to 2 by the time of the event at t = 8, which is how censoring still informs the curve. The patient censored at 10 ends the followed range.\n\n\n\n\nKM curves are used to:\n\nVisualize risk-group separation — plot KM for high- vs. low-risk groups defined by the model’s threshold (the figure below).\nAssess calibration — overlay the predicted S(t) on the observed KM curve; they should track each other (a visual cousin of the Brier score).\nCommunicate results — the preferred format for clinicians.\n\n\n\n\nWhen comparing two KM curves (e.g. high- vs. low-risk groups), the log-rank test assesses whether the separation is statistically significant by comparing observed vs. expected events at each time point.\nfrom lifelines.statistics import logrank_test\nresult = logrank_test(T_high, T_low, E_high, E_low)\nprint(result.p_value)\n\n\n\nA survival model outputs a continuous risk score; to draw the stratified KM plot below you must first cut that score into high- and low-risk groups at some threshold \\tau. Three common ways to choose \\tau, in increasing order of how much they lean on the outcome:\n\n\n\n\n\n\n\n\nMethod\nRule\nPros / cons\n\n\n\n\nMedian\n\\tau = \\text{median}(r)\nSimplest; always a 50/50 split; needs no outcome labels. But the true cutpoint may not sit at the median, and it can mislead on skewed scores.\n\n\nYouden index\n\\tau = \\arg\\max_\\tau\\,[\\text{sens}(\\tau) + \\text{spec}(\\tau) - 1] at a fixed time horizon\nGrounded in diagnostic accuracy; balances false positives against false negatives. But requires choosing a horizon and binarizing the outcome.\n\n\nMax log-rank\n\\tau = \\arg\\max_\\tau\\,(\\text{log-rank statistic between the two groups})\nDirectly maximizes KM separation; needs no horizon. But scanning many cutpoints inflates significance — see the warning.\n\n\n\nTrain→test discipline (all three methods). Fit \\tau on the training set, freeze it, then apply that fixed value to the test set — never re-fit on test, or the split is no longer honest and groups stop being comparable across cohorts.\nimport numpy as np\ntau = np.median(risk_scores_train)         # or the Youden / max-log-rank cutoff, fit on TRAIN\nhigh_risk_test = risk_scores_test &gt;= tau   # apply the frozen cutoff to TEST\n\nWarning — max log-rank inflates significance. Scanning many candidate thresholds and keeping the best is multiple testing: the resulting log-rank p-value is not a valid significance test. Validate the chosen split on a held-out set or independent cohort, and never report the training p-value as a significance result.\n\nThe Youden horizon is the same one you would use for the time-dependent AUC; the max-log-rank search is the cutpoint cousin of the (removed) log-rank training loss. Package calls: median is plain NumPy; Youden reads the cutoff off the IPCW time-dependent ROC in scikit-survival (4.4); max log-rank loops lifelines.statistics.logrank_test (4.2) over candidate \\tau.\n\n\n\nfrom lifelines import KaplanMeierFitter\nkmf = KaplanMeierFitter()\nkmf.fit(T, E, label=\"All patients\")\nkmf.plot_survival_function()\n\n\nThe clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see 04_packages/4.2_lifelines.md):\nfrom lifelines import KaplanMeierFitter\nfrom lifelines.plotting import add_at_risk_counts\nimport matplotlib.pyplot as plt\n\nhigh = risk_scores &gt;= tau                        # tau from \"Choosing a risk threshold\" above\nax = plt.subplot()\nkm_hi = KaplanMeierFitter().fit(T[high],  E[high],  label=\"High risk\")\nkm_lo = KaplanMeierFitter().fit(T[~high], E[~high], label=\"Low risk\")\nkm_hi.plot_survival_function(ax=ax)\nkm_lo.plot_survival_function(ax=ax)\nadd_at_risk_counts(km_hi, km_lo, ax=ax)\n\n\n\nThe headline evaluation figure: KM curves for the model’s high- and low-risk groups. Clean separation that holds across follow-up — paired with a small log-rank p-value — is the visual evidence the risk score is clinically meaningful.\n\n\nPair the figure with the log-rank test p-value, and choose tau as in Choosing a risk threshold.\n\n\n\n\n\nIt’s the baseline to beat. A covariate-free KM curve is the null model for the Brier score — if your model doesn’t beat it, it isn’t learning.\nThe headline evaluation figure is the stratified KM plot (high- vs. low-risk groups + at-risk counts + log-rank p-value). It’s what reviewers and clinicians look at first.\nCensoring shrinks the at-risk set but never drops the curve — that’s the mechanism that lets KM use incomplete follow-up without bias.\nIt can’t extrapolate or adjust for covariates — for individualized, covariate-aware S(t) you need a model (2.1–2.4).\n\n\n\n\n\nUnivariate — does not adjust for covariates\nCannot extrapolate beyond the last observed event",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1037,6 +1120,7 @@
     "section": "",
     "text": "KM walks through the event times and multiplies together the fraction surviving each one:\n\n\\hat{S}(t) \\;=\\; \\prod_{t_i \\le t}\\Big(1 - \\underbrace{\\frac{d_i}{n_i}}_{\\text{fraction who fail at } t_i}\\Big)\n\nwhere, at each distinct event time t_i:\n\nd_i — the number of events (e.g. deaths) at t_i.\nn_i — the number at risk just before t_i: everyone who has neither had the event nor been censored yet (the risk set from 2.1).\n\nEach factor (1 - d_i/n_i) is the conditional probability of surviving through t_i given survival up to it; the running product turns those into the overall survival curve — a step function that drops at each event and stays flat between events.\n\nWorked example — five patients. Times (★ = event, ○ = censored): 3★, 5★, 7○, 8★, 10○. | Event time t_i | At risk n_i | Events d_i | Factor 1 - d_i/n_i | \\hat{S}(t) | |—|—|—|—|—| | 3 | 5 | 1 | 4/5 = 0.80 | 0.80 | | 5 | 4 | 1 | 3/4 = 0.75 | 0.80 \\times 0.75 = 0.60 | | 8 | 2 | 1 | 1/2 = 0.50 | 0.60 \\times 0.50 = 0.30 |\nThe censored patient at t = 7 produces no drop — but it lowers the at-risk count n_i from 3 to 2 by the time of the event at t = 8, which is how censoring still informs the curve. The patient censored at 10 ends the followed range.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1048,6 +1132,7 @@
     "section": "",
     "text": "KM curves are used to:\n\nVisualize risk-group separation — plot KM for high- vs. low-risk groups defined by the model’s threshold (the figure below).\nAssess calibration — overlay the predicted S(t) on the observed KM curve; they should track each other (a visual cousin of the Brier score).\nCommunicate results — the preferred format for clinicians.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1059,6 +1144,7 @@
     "section": "",
     "text": "When comparing two KM curves (e.g. high- vs. low-risk groups), the log-rank test assesses whether the separation is statistically significant by comparing observed vs. expected events at each time point.\nfrom lifelines.statistics import logrank_test\nresult = logrank_test(T_high, T_low, E_high, E_low)\nprint(result.p_value)",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1070,6 +1156,7 @@
     "section": "",
     "text": "A survival model outputs a continuous risk score; to draw the stratified KM plot below you must first cut that score into high- and low-risk groups at some threshold \\tau. Three common ways to choose \\tau, in increasing order of how much they lean on the outcome:\n\n\n\n\n\n\n\n\nMethod\nRule\nPros / cons\n\n\n\n\nMedian\n\\tau = \\text{median}(r)\nSimplest; always a 50/50 split; needs no outcome labels. But the true cutpoint may not sit at the median, and it can mislead on skewed scores.\n\n\nYouden index\n\\tau = \\arg\\max_\\tau\\,[\\text{sens}(\\tau) + \\text{spec}(\\tau) - 1] at a fixed time horizon\nGrounded in diagnostic accuracy; balances false positives against false negatives. But requires choosing a horizon and binarizing the outcome.\n\n\nMax log-rank\n\\tau = \\arg\\max_\\tau\\,(\\text{log-rank statistic between the two groups})\nDirectly maximizes KM separation; needs no horizon. But scanning many cutpoints inflates significance — see the warning.\n\n\n\nTrain→test discipline (all three methods). Fit \\tau on the training set, freeze it, then apply that fixed value to the test set — never re-fit on test, or the split is no longer honest and groups stop being comparable across cohorts.\nimport numpy as np\ntau = np.median(risk_scores_train)         # or the Youden / max-log-rank cutoff, fit on TRAIN\nhigh_risk_test = risk_scores_test &gt;= tau   # apply the frozen cutoff to TEST\n\nWarning — max log-rank inflates significance. Scanning many candidate thresholds and keeping the best is multiple testing: the resulting log-rank p-value is not a valid significance test. Validate the chosen split on a held-out set or independent cohort, and never report the training p-value as a significance result.\n\nThe Youden horizon is the same one you would use for the time-dependent AUC; the max-log-rank search is the cutpoint cousin of the (removed) log-rank training loss. Package calls: median is plain NumPy; Youden reads the cutoff off the IPCW time-dependent ROC in scikit-survival (4.4); max log-rank loops lifelines.statistics.logrank_test (4.2) over candidate \\tau.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1081,6 +1168,7 @@
     "section": "",
     "text": "from lifelines import KaplanMeierFitter\nkmf = KaplanMeierFitter()\nkmf.fit(T, E, label=\"All patients\")\nkmf.plot_survival_function()\n\n\nThe clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see 04_packages/4.2_lifelines.md):\nfrom lifelines import KaplanMeierFitter\nfrom lifelines.plotting import add_at_risk_counts\nimport matplotlib.pyplot as plt\n\nhigh = risk_scores &gt;= tau                        # tau from \"Choosing a risk threshold\" above\nax = plt.subplot()\nkm_hi = KaplanMeierFitter().fit(T[high],  E[high],  label=\"High risk\")\nkm_lo = KaplanMeierFitter().fit(T[~high], E[~high], label=\"Low risk\")\nkm_hi.plot_survival_function(ax=ax)\nkm_lo.plot_survival_function(ax=ax)\nadd_at_risk_counts(km_hi, km_lo, ax=ax)\n\n\n\nThe headline evaluation figure: KM curves for the model’s high- and low-risk groups. Clean separation that holds across follow-up — paired with a small log-rank p-value — is the visual evidence the risk score is clinically meaningful.\n\n\nPair the figure with the log-rank test p-value, and choose tau as in Choosing a risk threshold.",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1092,6 +1180,7 @@
     "section": "",
     "text": "It’s the baseline to beat. A covariate-free KM curve is the null model for the Brier score — if your model doesn’t beat it, it isn’t learning.\nThe headline evaluation figure is the stratified KM plot (high- vs. low-risk groups + at-risk counts + log-rank p-value). It’s what reviewers and clinicians look at first.\nCensoring shrinks the at-risk set but never drops the curve — that’s the mechanism that lets KM use incomplete follow-up without bias.\nIt can’t extrapolate or adjust for covariates — for individualized, covariate-aware S(t) you need a model (2.1–2.4).",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1103,6 +1192,7 @@
     "section": "",
     "text": "Univariate — does not adjust for covariates\nCannot extrapolate beyond the last observed event",
     "crumbs": [
+      "Background",
       "3 · Metrics",
       "Kaplan-Meier Curves"
     ]
@@ -1114,6 +1204,7 @@
     "section": "",
     "text": "pycox is a Python package for deep learning survival models built on top of PyTorch and torchtuples.\n\n\npip install pycox\n\n\n\n\n\n\nModel\nLoss\nNotes\n\n\n\n\nCoxPH (DeepSurv)\nCox partial likelihood\nClassic deep Cox\n\n\nCoxCC\nCox case-control\nMemory-efficient approximation\n\n\nDeepHitSingle\nDeepHIT\nSingle event, discrete time\n\n\nDeepHit\nDeepHIT\nCompeting risks\n\n\nMTLR\nMTLR\nMulti-task logistic regression\n\n\nPMF\nNLL\nPiecewise constant hazard\n\n\n\n\n\n\nimport pycox.models as models\nimport torchtuples as tt\n\nnet = tt.practical.MLPVanilla(in_features, [64, 64], out_features)\nmodel = models.CoxPH(net, tt.optim.Adam)\nmodel.fit(x_train, (durations_train, events_train), epochs=100)\nsurv = model.predict_surv_df(x_test)\n\n\n\n\nDeep learning survival models\nBenchmarking multiple architectures\nDiscrete-time and competing risk models\n\n\n\n\n\nGitHub: github.com/havakv/pycox\nIntro notebook: 01_introduction.ipynb\nAll examples: examples/\nPaper (CoxTime / CoxCC): Kvamme et al. (2019). Time-to-event prediction with neural networks and Cox regression. JMLR. jmlr.org/papers/v20/18-424.html\nPaper (DeepSurv / CoxPH): Katzman et al. (2018). DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network. BMC Medical Research Methodology. doi:10.1186/s12874-018-0482-1\nPaper (DeepHit): Lee et al. (2018). DeepHit: A deep learning approach to survival analysis with competing risks. AAAI. paper\n\n\n\n@article{kvamme2019time,\n  title   = {Time-to-event prediction with neural networks and Cox regression},\n  author  = {Kvamme, H{\\aa}vard and Borgan, {\\O}rnulf and Scheel, Ida},\n  journal = {Journal of Machine Learning Research},\n  volume  = {20},\n  number  = {129},\n  pages   = {1--30},\n  year    = {2019}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1125,6 +1216,7 @@
     "section": "",
     "text": "pip install pycox",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1136,6 +1228,7 @@
     "section": "",
     "text": "Model\nLoss\nNotes\n\n\n\n\nCoxPH (DeepSurv)\nCox partial likelihood\nClassic deep Cox\n\n\nCoxCC\nCox case-control\nMemory-efficient approximation\n\n\nDeepHitSingle\nDeepHIT\nSingle event, discrete time\n\n\nDeepHit\nDeepHIT\nCompeting risks\n\n\nMTLR\nMTLR\nMulti-task logistic regression\n\n\nPMF\nNLL\nPiecewise constant hazard",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1147,6 +1240,7 @@
     "section": "",
     "text": "import pycox.models as models\nimport torchtuples as tt\n\nnet = tt.practical.MLPVanilla(in_features, [64, 64], out_features)\nmodel = models.CoxPH(net, tt.optim.Adam)\nmodel.fit(x_train, (durations_train, events_train), epochs=100)\nsurv = model.predict_surv_df(x_test)",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1158,6 +1252,7 @@
     "section": "",
     "text": "Deep learning survival models\nBenchmarking multiple architectures\nDiscrete-time and competing risk models",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1169,6 +1264,7 @@
     "section": "",
     "text": "GitHub: github.com/havakv/pycox\nIntro notebook: 01_introduction.ipynb\nAll examples: examples/\nPaper (CoxTime / CoxCC): Kvamme et al. (2019). Time-to-event prediction with neural networks and Cox regression. JMLR. jmlr.org/papers/v20/18-424.html\nPaper (DeepSurv / CoxPH): Katzman et al. (2018). DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network. BMC Medical Research Methodology. doi:10.1186/s12874-018-0482-1\nPaper (DeepHit): Lee et al. (2018). DeepHit: A deep learning approach to survival analysis with competing risks. AAAI. paper\n\n\n\n@article{kvamme2019time,\n  title   = {Time-to-event prediction with neural networks and Cox regression},\n  author  = {Kvamme, H{\\aa}vard and Borgan, {\\O}rnulf and Scheel, Ida},\n  journal = {Journal of Machine Learning Research},\n  volume  = {20},\n  number  = {129},\n  pages   = {1--30},\n  year    = {2019}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "pycox"
     ]
@@ -1180,6 +1276,7 @@
     "section": "",
     "text": "torchsurv is a lightweight PyTorch library providing survival loss functions and metrics as native PyTorch operations, designed to integrate easily into custom training loops.\n\n\npip install torchsurv\n\n\n\n\nLosses: Cox, Weibull (AFT), Momentum (contrastive)\nMetrics: C-index, Brier score, AUC — all differentiable and GPU-compatible\nIntegrates directly with any PyTorch model\n\n\n\n\nimport torch\nfrom torchsurv.loss import cox\nfrom torchsurv.metrics.cindex import ConcordanceIndex\n\n# Training\nlog_hz = model(x)  # your network output\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\n\n# Evaluation\ncindex = ConcordanceIndex()\nc = cindex(log_hz, events, times)\n\n\n\n\nCustom PyTorch survival architectures\n3D imaging models (CNNs, ViTs) where you own the forward pass\nWhen you need GPU-accelerated survival metrics\nIntegrating survival loss into SSL or multi-task pipelines\n\n\n\n\n\nDocs: opensource.nibr.com/torchsurv\nGitHub: github.com/Novartis/torchsurv\nPaper: Monod et al. (2024). TorchSurv: A Lightweight Package for Deep Survival Analysis. Journal of Open Source Software. doi:10.21105/joss.07341\nFDA Regulatory Science Tool: cdrh-rst.fda.gov/torchsurv\nIntro notebook: opensource.nibr.com/torchsurv/notebooks/introduction.html\n\n\n\n@article{Monod2024,\n  doi     = {10.21105/joss.07341},\n  year    = {2024},\n  volume  = {9},\n  number  = {104},\n  pages   = {7341},\n  author  = {Mélodie Monod and Peter Krusche and Qian Cao and Berkman Sahiner and Nicholas Petrick and David Ohlssen and Thibaud Coroller},\n  title   = {TorchSurv: A Lightweight Package for Deep Survival Analysis},\n  journal = {Journal of Open Source Software}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1191,6 +1288,7 @@
     "section": "",
     "text": "pip install torchsurv",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1202,6 +1300,7 @@
     "section": "",
     "text": "Losses: Cox, Weibull (AFT), Momentum (contrastive)\nMetrics: C-index, Brier score, AUC — all differentiable and GPU-compatible\nIntegrates directly with any PyTorch model",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1213,6 +1312,7 @@
     "section": "",
     "text": "import torch\nfrom torchsurv.loss import cox\nfrom torchsurv.metrics.cindex import ConcordanceIndex\n\n# Training\nlog_hz = model(x)  # your network output\nloss = cox.neg_partial_log_likelihood(log_hz, events, times)\n\n# Evaluation\ncindex = ConcordanceIndex()\nc = cindex(log_hz, events, times)",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1224,6 +1324,7 @@
     "section": "",
     "text": "Custom PyTorch survival architectures\n3D imaging models (CNNs, ViTs) where you own the forward pass\nWhen you need GPU-accelerated survival metrics\nIntegrating survival loss into SSL or multi-task pipelines",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1235,6 +1336,7 @@
     "section": "",
     "text": "Docs: opensource.nibr.com/torchsurv\nGitHub: github.com/Novartis/torchsurv\nPaper: Monod et al. (2024). TorchSurv: A Lightweight Package for Deep Survival Analysis. Journal of Open Source Software. doi:10.21105/joss.07341\nFDA Regulatory Science Tool: cdrh-rst.fda.gov/torchsurv\nIntro notebook: opensource.nibr.com/torchsurv/notebooks/introduction.html\n\n\n\n@article{Monod2024,\n  doi     = {10.21105/joss.07341},\n  year    = {2024},\n  volume  = {9},\n  number  = {104},\n  pages   = {7341},\n  author  = {Mélodie Monod and Peter Krusche and Qian Cao and Berkman Sahiner and Nicholas Petrick and David Ohlssen and Thibaud Coroller},\n  title   = {TorchSurv: A Lightweight Package for Deep Survival Analysis},\n  journal = {Journal of Open Source Software}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "torchsurv"
     ]
@@ -1246,6 +1348,7 @@
     "section": "",
     "text": "auton-survival (Carnegie Mellon / Auton Lab) is a toolkit for regression, counterfactual estimation, evaluation, and phenotyping with censored time-to-event data.\n\n\ngit clone https://github.com/autonlab/auton-survival.git\npip install -r requirements.txt\n\n\n\n\nModels: DeepSurvivalMachines (DSM), DeepCoxPH, DeepCoxMixtures (DCM), DeepCoxMixturesHeterogeneousEffects (CMHE)\nPhenotyping: unsupervised, supervised, counterfactual, and virtual twins\nEvaluation: Brier score, IBS, AUC, time-dependent C-index — with bootstrapped confidence intervals\nTreatment effects: RMST, Risk at Time, Time at Risk between arms\nPreprocessing: imputation + scaling pipeline\n\n\n\n\nfrom auton_survival import datasets, preprocessing\nfrom auton_survival.models.cph import DeepCoxPH\n\n# Load and preprocess\noutcomes, features = datasets.load_dataset(\"SUPPORT\")\nfeatures = preprocessing.Preprocessor().fit_transform(features)\n\n# Train\nmodel = DeepCoxPH(layers=[100])\nmodel.fit(features, outcomes.time, outcomes.event)\n\n# Predict risk at time horizons\npredictions = model.predict_risk(features, t=[8, 12, 16])\n\n\n\nfrom auton_survival.experiments import SurvivalRegressionCV\n\nexperiment = SurvivalRegressionCV(model='cph', num_folds=5,\n                                  hyperparam_grid=hyperparam_grid)\nmodel = experiment.fit(features, outcomes, metric='ibs',\n                       cat_feats=cat_feats, num_feats=num_feats)\n\n\n\n\nDeep survival models with competing risks (DSM)\nCounterfactual / causal survival analysis\nTreatment effect estimation\nPatient phenotyping and subgroup discovery\n\n\n\n\n\nDocs: autonlab.github.io/auton-survival\nGitHub: github.com/autonlab/auton-survival\nDemo notebooks: nbviewer.org/github/autonlab/auton-survival/tree/master/examples/\nWhite Paper: cs.cmu.edu/~chiragn/papers/auton_survival.pdf\nPaper: Nagpal et al. (2022). auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data. arXiv:2204.07276\n\n\n\n@article{nagpal2022auton,\n  title   = {auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},\n  author  = {Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},\n  journal = {arXiv preprint arXiv:2204.07276},\n  year    = {2022}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1257,6 +1360,7 @@
     "section": "",
     "text": "git clone https://github.com/autonlab/auton-survival.git\npip install -r requirements.txt",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1268,6 +1372,7 @@
     "section": "",
     "text": "Models: DeepSurvivalMachines (DSM), DeepCoxPH, DeepCoxMixtures (DCM), DeepCoxMixturesHeterogeneousEffects (CMHE)\nPhenotyping: unsupervised, supervised, counterfactual, and virtual twins\nEvaluation: Brier score, IBS, AUC, time-dependent C-index — with bootstrapped confidence intervals\nTreatment effects: RMST, Risk at Time, Time at Risk between arms\nPreprocessing: imputation + scaling pipeline",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1279,6 +1384,7 @@
     "section": "",
     "text": "from auton_survival import datasets, preprocessing\nfrom auton_survival.models.cph import DeepCoxPH\n\n# Load and preprocess\noutcomes, features = datasets.load_dataset(\"SUPPORT\")\nfeatures = preprocessing.Preprocessor().fit_transform(features)\n\n# Train\nmodel = DeepCoxPH(layers=[100])\nmodel.fit(features, outcomes.time, outcomes.event)\n\n# Predict risk at time horizons\npredictions = model.predict_risk(features, t=[8, 12, 16])",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1290,6 +1396,7 @@
     "section": "",
     "text": "from auton_survival.experiments import SurvivalRegressionCV\n\nexperiment = SurvivalRegressionCV(model='cph', num_folds=5,\n                                  hyperparam_grid=hyperparam_grid)\nmodel = experiment.fit(features, outcomes, metric='ibs',\n                       cat_feats=cat_feats, num_feats=num_feats)",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1301,6 +1408,7 @@
     "section": "",
     "text": "Deep survival models with competing risks (DSM)\nCounterfactual / causal survival analysis\nTreatment effect estimation\nPatient phenotyping and subgroup discovery",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
@@ -1312,6 +1420,7 @@
     "section": "",
     "text": "Docs: autonlab.github.io/auton-survival\nGitHub: github.com/autonlab/auton-survival\nDemo notebooks: nbviewer.org/github/autonlab/auton-survival/tree/master/examples/\nWhite Paper: cs.cmu.edu/~chiragn/papers/auton_survival.pdf\nPaper: Nagpal et al. (2022). auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data. arXiv:2204.07276\n\n\n\n@article{nagpal2022auton,\n  title   = {auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},\n  author  = {Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},\n  journal = {arXiv preprint arXiv:2204.07276},\n  year    = {2022}\n}",
     "crumbs": [
+      "Background",
       "4 · Packages",
       "auton-survival"
     ]
