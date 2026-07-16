@@ -14,6 +14,33 @@ website:
   description: "A build-along course on survival modelling for 3D medical imaging."
   reader-mode: true
   page-navigation: true
+  repo-url: "https://github.com/Safwat08/survival_minicourse"
+  navbar:
+    background: "#061715"
+    foreground: "#fee5ca"
+    title: "Survival · Mini-Course"
+    left:
+      - text: "Background"
+        href: 01_background/1.1_what_is_survival_analysis.md
+      - text: "Loss Functions"
+        href: 02_loss_functions/2.1_cox_ph_loss.md
+      - text: "Metrics"
+        href: 03_metrics/3.1_c_index.md
+      - text: "Packages"
+        href: 04_packages/4.1_pycox.md
+      - text: "Recipes"
+        href: 06_recipes/6.1_pfs_stratification.md
+    right:
+      - icon: github
+        href: "https://github.com/Safwat08/survival_minicourse"
+        aria-label: "Course repository on GitHub"
+  page-footer:
+    background: "#061715"
+    left: "Survival Analysis Mini-Course — time-to-event modelling for 3D medical imaging."
+    right:
+      - icon: github
+        href: "https://github.com/Safwat08/survival_minicourse"
+        aria-label: GitHub
   sidebar:
     style: docked
     search: true
@@ -59,6 +86,7 @@ format:
     toc: true
     toc-depth: 3
     html-math-method: katex
+    highlight-style: arrow
     code-copy: true
     code-overflow: wrap
     fig-cap-location: bottom

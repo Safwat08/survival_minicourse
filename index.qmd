@@ -1,28 +1,50 @@
 ---
-title: "Survival Analysis Mini-Course"
-subtitle: "Time-to-event modelling for 3D medical imaging"
+pagetitle: "Survival Analysis Mini-Course"
+description: "A build-along course on survival modelling for 3D medical imaging."
+toc: false
 ---
 
-A build-along course that takes survival analysis from first principles to a
-working 3D-imaging pipeline. Each section defines its terms before using them,
-glosses notation on first appearance, and cross-links to the section that owns
-each concept.
+```{=html}
+<div class="hx-hero hx-reveal">
+  <span class="hx-kicker">Mini Course</span>
+  <h1>Survival Analysis</h1>
+  <p class="hx-subtitle">A build-along course taking time-to-event modelling from first principles to a working 3D-imaging pipeline.</p>
+  <div class="hx-cta">
+    <a class="hx-btn hx-btn-solid" href="01_background/1.1_what_is_survival_analysis.html">Start the course →</a>
+    <a class="hx-btn hx-btn-ghost" href="https://github.com/Safwat08/survival_minicourse">GitHub repository</a>
+  </div>
+</div>
 
-## The path
+<p class="hx-label">Course outline</p>
 
-1. **[Background](01_background/1.1_what_is_survival_analysis.md)** — what
-   survival analysis is, censoring, events, competing risks, and what clinicians
-   actually want out of a model.
-2. **[Loss functions](02_loss_functions/2.1_cox_ph_loss.md)** — Cox partial
-   likelihood, the discrete-time negative log-likelihood, DeepHit, and how they
-   compare.
-3. **[Metrics](03_metrics/3.1_c_index.md)** — C-index, Brier score,
-   Kaplan-Meier curves, time-dependent AUC.
-4. **[Packages](04_packages/4.1_pycox.md)** — `pycox`, `lifelines`,
-   `torchsurv`, `scikit-survival`, `auton-survival`, routed by how much of the
-   training loop you own.
-5. **[Recipes](06_recipes/6.1_pfs_stratification.md)** — end-to-end PFS risk
-   stratification.
+<table class="hx-outline">
+  <tr>
+    <td class="hx-num">01</td>
+    <td class="hx-what"><strong>Background</strong><span>What survival analysis is — censoring, events, competing risks, and what clinicians want from a model.</span></td>
+    <td class="hx-go"><a href="01_background/1.1_what_is_survival_analysis.html">Jump &rarr;</a></td>
+  </tr>
+  <tr>
+    <td class="hx-num">02</td>
+    <td class="hx-what"><strong>Loss Functions</strong><span>Cox partial likelihood, the discrete-time negative log-likelihood, DeepHit, and how they compare.</span></td>
+    <td class="hx-go"><a href="02_loss_functions/2.1_cox_ph_loss.html">Jump &rarr;</a></td>
+  </tr>
+  <tr>
+    <td class="hx-num">03</td>
+    <td class="hx-what"><strong>Metrics</strong><span>C-index, Brier score, Kaplan-Meier curves, and time-dependent AUC.</span></td>
+    <td class="hx-go"><a href="03_metrics/3.1_c_index.html">Jump &rarr;</a></td>
+  </tr>
+  <tr>
+    <td class="hx-num">04</td>
+    <td class="hx-what"><strong>Packages</strong><span>pycox, lifelines, torchsurv, scikit-survival, auton-survival — routed by how much of the training loop you own.</span></td>
+    <td class="hx-go"><a href="04_packages/4.1_pycox.html">Jump &rarr;</a></td>
+  </tr>
+  <tr>
+    <td class="hx-num">05</td>
+    <td class="hx-what"><strong>Recipes</strong><span>End-to-end progression-free-survival risk stratification.</span></td>
+    <td class="hx-go"><a href="06_recipes/6.1_pfs_stratification.html">Jump &rarr;</a></td>
+  </tr>
+</table>
+```
 
 ## How to read it
 

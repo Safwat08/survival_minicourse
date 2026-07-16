@@ -1,42 +1,508 @@
 /*-- scss:defaults --*/
-// House palette: academic_navy (deck_toolkit/themes.json)
-$primary:      #1B2A41;
-$body-color:   #33415A;
-$link-color:   #1C7293;
-$link-hover-color: #0F4C5C;
+// =====================================================================
+//  Survival Mini-Course — Hermes Agent theme
+//  DARK CHROME + LIGHT CONTENT. Navbar, sidebar, footer, and the landing
+//  hero stay forest-dark (Hermes canvas + cream ink). The reading pages
+//  use Hermes' inverse pairing: warm cream paper with deep forest ink.
+//  "Printed matter" — hairline grid, near-square corners, no shadows.
+//  Palette + type ported from the Hermes Agent design system tokens.
+// =====================================================================
 
-$font-family-sans-serif: Calibri, "Helvetica Neue", Arial, sans-serif;
-$headings-font-family:   Georgia, "Times New Roman", serif;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+// ---- Hermes palette (tokens/colors.css) -----------------------------
+$forest-950: #05110f;
+$forest-900: #061715;   // dark chrome — navbar / sidebar / footer / hero
+$forest-850: #081b19;
+$forest-800: #0a1f1d;
+$forest-750: #0c2523;
+$forest-700: #0f2b28;
+$forest-600: #143a33;
+
+$cream-50:  #fff6ea;
+$cream-100: #fee5ca;    // ink on dark chrome
+$cream-300: #d8c2a3;
+$sage-500:  #7d968a;
+
+$emerald-500: #2f8a5f;
+$emerald-deep: #1c6b43; // accent that passes contrast on light paper
+$azure-500:   #3a6ea5;
+$oxblood-500: #b23a24;
+
+// ---- Light-content tokens (cream paper + forest ink) ----------------
+$paper:       #fbf7ef;  // reading-page background
+$paper-alt:   #f3eee3;  // table header / subtle tint
+$panel:       #f5f1e8;  // code / aside panels
+$ink:         #0e1f1b;  // body text
+$ink-2:       #33463f;  // secondary text
+$ink-muted:   #5f776c;  // captions / muted
+$line:        rgba(9, 24, 20, 0.12);
+$line-strong: rgba(9, 24, 20, 0.22);
+$line-faint:  rgba(9, 24, 20, 0.06);
+
+// hairlines on the DARK chrome (cream, low alpha)
+$dline:        rgba(254, 229, 202, 0.16);
+$dline-strong: rgba(254, 229, 202, 0.34);
+
+// ---- Bootstrap / Quarto overrides (light content) -------------------
+$body-bg:    $paper;
+$body-color: $ink;
+
+$link-color:       $emerald-deep;
+$link-hover-color: #12512f;
+$link-decoration:  none;
+
+$border-color: $line;
+
+$font-family-sans-serif: "EB Garamond", Georgia, "Times New Roman", serif;
+$headings-font-family:   "Playfair Display", Georgia, serif;
+$font-family-monospace:  "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 $font-size-root: 18px;
+$headings-color: #0b1c18;
+$headings-font-weight: 700;
+$line-height-base: 1.7;
 
-$code-bg:    #EEF2F7;
-$code-color: #0F4C5C;
-$border-color: #CBD5E1;
+$code-color: $ink;
+$code-bg:    $panel;
+$pre-bg:     $panel;
+
+$table-color:        $ink;
+$table-bg:           transparent;
+$table-border-color: $line;
+
+$card-bg:           #ffffff;
+$card-border-color: $line;
+$card-cap-bg:       $paper-alt;
+
+$input-bg:           #ffffff;
+$input-color:        $ink;
+$input-border-color: $line;
+$input-placeholder-color: $ink-muted;
+
+$component-active-bg: $emerald-500;
+$component-active-color: #ffffff;
+
+// Dark chrome
+$navbar-bg: $forest-900;
+$navbar-fg: $cream-100;
 
 /*-- scss:rules --*/
-h1, h2, h3, h4 { color: $primary; }
+// =====================================================================
+//  CSS custom properties — reused by hand-authored landing HTML
+// =====================================================================
+:root {
+  // dark-chrome tokens (hero / tryit)
+  --hx-sunken:  #{$forest-900};
+  --hx-raised:  #{$forest-700};
+  --hx-plate:   #ffffff;
+  --hx-emerald: #{$emerald-500};
+  --hx-emerald-deep: #{$emerald-deep};
+  --hx-azure:   #{$azure-500};
+  --hx-oxblood: #{$oxblood-500};
+  --hx-dline:   #{$dline};
+  --hx-dline-strong: #{$dline-strong};
+  // light-content tokens
+  --pg-paper:   #{$paper};
+  --pg-panel:   #{$panel};
+  --pg-ink:     #{$ink};
+  --pg-ink-2:   #{$ink-2};
+  --pg-muted:   #{$ink-muted};
+  --pg-line:    #{$line};
+  --pg-line-strong: #{$line-strong};
+  --hx-accent:  #{$cream-100};      // hero button fill (cream on dark)
+  --hx-accent-ink: #{$forest-900};
+  --hx-font-display: "Playfair Display", Georgia, serif;
+  --hx-font-body: "EB Garamond", Georgia, serif;
+  --hx-font-label: "Jost", "Helvetica Neue", Arial, sans-serif;
+  --hx-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --hx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
 
-// Figures: centered, full content width, with a light frame
-figure img, p > img {
-  display: block;
-  margin: 1.2rem auto;
+// Faint film-grain overlay for dark panels, self-contained (no asset).
+@mixin grain($opacity: 0.06) {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: $opacity;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nMTQwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJy8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9JzEwMCUnIGhlaWdodD0nMTAwJScgZmlsdGVyPSd1cmwoI24pJy8+PC9zdmc+");
+    background-size: 140px 140px;
+  }
+}
+
+// overflow-x: clip guards stray horizontal scroll without turning <body>
+// into a scroll container (which would break sticky sidebar / TOC).
+body { text-rendering: optimizeLegibility; overflow-x: clip; }
+
+// ---- headings -------------------------------------------------------
+h1, h2, h3, h4, h5 { text-wrap: balance; letter-spacing: -0.01em; }
+p { text-wrap: pretty; max-width: 72ch; }
+
+main h2 {
+  font-size: 1.7rem;
+  margin-top: 2.4rem;
+  padding-bottom: 0;
+  border-bottom: 0;
+  &::after {
+    content: "";
+    display: block;
+    width: 52px;
+    height: 3px;
+    border-radius: 2px;
+    background: $emerald-500;
+    margin-top: 0.7rem;
+  }
+}
+main h3 { font-size: 1.28rem; margin-top: 1.9rem; color: #0b1c18; }
+main h4 { font-size: 1.08rem; color: $ink-2; }
+
+// ---- content links: document-style underline ------------------------
+main p a, main li a, main td a, main th a, .figcaption a {
+  text-decoration: underline;
+  text-decoration-color: rgba(28, 107, 67, 0.4);
+  text-underline-offset: 2px;
+  transition: color var(--hx-ease) 0.15s, text-decoration-color var(--hx-ease) 0.15s;
+  &:hover { color: #12512f; text-decoration-color: #12512f; }
+}
+
+// ---- navbar (dark chrome) -------------------------------------------
+.navbar {
+  border-bottom: 1px solid $dline;
+  font-family: var(--hx-font-label);
+  .navbar-brand {
+    font-family: var(--hx-font-display);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: $cream-50 !important;
+  }
+  .navbar-nav .nav-link {
+    color: rgba(254, 229, 202, 0.74) !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
+    padding: 0.35rem 0.7rem;
+    &:hover, &.active { color: $cream-50 !important; background: rgba(254, 229, 202, 0.08); }
+  }
+  .navbar-toggler { border-color: $dline; }
+}
+
+// ---- left sidebar (light; Quarto shares .sidebar with the right
+//      margin, so no forced background here — both inherit the paper) --
+#quarto-sidebar.sidebar { border-right: 1px solid $line; }
+.sidebar { font-family: var(--hx-font-label); }
+.sidebar-title { color: #0b1c18; }
+.sidebar .sidebar-item .sidebar-link {
+  color: $ink-2;
+  border-radius: 4px;
+  &:hover { color: $ink; background: rgba(9, 24, 20, 0.05); }
+  &.active {
+    color: #0b1c18;
+    background: rgba(47, 138, 95, 0.14);
+    border-left: 2px solid $emerald-500;
+    padding-left: calc(0.5rem - 2px);
+    font-weight: 600;
+  }
+}
+.sidebar-section .sidebar-item-section > .sidebar-item .sidebar-link {
+  font-family: var(--hx-font-label);
+  text-transform: none;
+  font-weight: 600;
+  color: #0b1c18;
+}
+#quarto-search .aa-Form, .sidebar input.form-control {
+  background: #ffffff;
+  border-color: $line;
+  color: $ink;
+}
+
+// ---- TOC (right margin, on light paper) ----------------------------
+#TOC, .toc-active, #quarto-margin-sidebar {
+  font-family: var(--hx-font-label);
+  a { color: $ink-muted; &:hover, &.active { color: $ink; } }
+  .active { border-left-color: $emerald-500; }
+}
+
+// ---- tables (light) ------------------------------------------------
+main table, table.table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.6rem 0;
+  font-family: var(--hx-font-body);
+  color: $ink;
+  border-top: 2px solid $line-strong;
+  border-bottom: 2px solid $line-strong;
+  thead {
+    background: $paper-alt;
+    th {
+      font-family: var(--hx-font-label);
+      font-weight: 600;
+      color: #0b1c18;
+      letter-spacing: 0.01em;
+      border-bottom: 1px solid $line-strong;
+      padding: 0.65rem 0.85rem;
+    }
+  }
+  tbody tr { border-bottom: 1px solid $line; }
+  tbody tr:last-child { border-bottom: 0; }
+  td { padding: 0.6rem 0.85rem; vertical-align: top; color: $ink; }
+  tbody tr:hover { background: rgba(9, 24, 20, 0.03); }
+}
+
+// ---- blockquotes → aside panel (light) -----------------------------
+main blockquote, .blockquote {
+  border: 1px solid $line;
+  border-left: 3px solid $emerald-500;
+  background: $panel;
+  border-radius: 4px;
+  padding: 0.9rem 1.15rem;
+  margin: 1.5rem 0;
+  color: $ink-2;
+  font-size: 1rem;
+  p:last-child { margin-bottom: 0; }
+  strong { color: #0b1c18; }
+}
+
+// ---- figures: framed on white, on the paper -------------------------
+main figure, .quarto-figure { margin: 2rem auto; text-align: center; }
+main figure img, main p > img, .quarto-figure img {
   max-width: 100%;
+  background: #ffffff;
+  border: 1px solid $line;
+  border-radius: 4px;
+  padding: 10px;
 }
-figcaption, .figure-caption {
-  color: #5B6B7F;
-  font-size: 0.9rem;
+figcaption, .figure-caption, .quarto-figure figcaption {
+  font-family: var(--hx-font-body);
+  color: $ink-muted;
+  font-size: 0.92rem;
+  font-style: italic;
+  margin-top: 0.7rem;
+  max-width: 60ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// ---- code (light) ---------------------------------------------------
+code:not(.sourceCode), p code, li code, td code {
+  background: $panel;
+  color: #123a2a;
+  border: 1px solid $line-faint;
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.86em;
+}
+div.sourceCode, pre.sourceCode, pre {
+  background: $panel !important;
+  border: 1px solid $line;
+  border-radius: 6px;
+}
+div.sourceCode pre { border: 0; }
+pre code { font-size: 0.92rem; line-height: 1.55; }
+.code-copy-button { color: $ink-muted; &:hover { color: $ink; } }
+
+// ---- Quarto callouts (light) ---------------------------------------
+.callout {
+  background: #ffffff;
+  border: 1px solid $line;
+  border-left-width: 3px;
+  border-radius: 6px;
+  .callout-title { color: #0b1c18; }
+}
+.callout.callout-note   { border-left-color: $azure-500; }
+.callout.callout-tip    { border-left-color: $emerald-500; }
+.callout.callout-warning,
+.callout.callout-important { border-left-color: $oxblood-500; }
+
+// =====================================================================
+//  Landing components
+// =====================================================================
+.hx-label {
+  font-family: var(--hx-font-label);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $emerald-deep;
+}
+
+// ---- hero (DARK card on the light page) ----------------------------
+.hx-hero {
+  position: relative;
+  overflow: hidden;
+  margin: -1.5rem -0.5rem 2.5rem;
+  padding: 4.5rem 2rem 3.75rem;
+  border-radius: 8px;
+  border: 1px solid $dline;
   text-align: center;
+  color: $cream-50;
+  background:
+    radial-gradient(1100px 420px at 78% -20%, rgba(47, 138, 95, 0.22), transparent 62%),
+    radial-gradient(820px 380px at 12% 118%, rgba(58, 110, 165, 0.18), transparent 60%),
+    linear-gradient(160deg, #{$forest-900} 0%, #{$forest-800} 55%, #{$forest-750} 100%);
+  @include grain(0.05);
+}
+.hx-hero > * { position: relative; z-index: 1; }
+.hx-kicker {
+  display: inline-block;
+  font-family: var(--hx-font-label);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $cream-300;
+  border: 1px solid $dline-strong;
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  margin-bottom: 1.4rem;
+}
+.hx-hero h1 {
+  font-family: var(--hx-font-display);
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 0.6rem;
+  color: $cream-50;
+  border: 0;
+  overflow-wrap: break-word;
+  &::after { display: none; }
+}
+.hx-hero .hx-subtitle {
+  font-family: var(--hx-font-body);
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  color: $cream-300;
+  max-width: 46ch;
+  margin: 0 auto 1.1rem;
+}
+.hx-hero .hx-byline { font-size: 1rem; color: $cream-100; margin: 0 0 0.25rem; }
+.hx-hero .hx-affil  { font-size: 0.9rem; color: $sage-500; margin: 0 0 1.8rem; }
+
+.hx-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.hx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--hx-font-label);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.6rem 1.35rem;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--hx-ease) 0.12s, background var(--hx-ease) 0.15s;
+  &:hover { text-decoration: none; }
+  &:active { transform: translateY(1px); }
+}
+.hx-btn-solid { background: var(--hx-accent); color: var(--hx-accent-ink); &:hover { background: $cream-50; color: $forest-900; } }
+.hx-btn-ghost { border-color: $dline-strong; color: $cream-50; &:hover { background: rgba(254, 229, 202, 0.08); color: $cream-50; } }
+
+// ---- outline table (on the light page) -----------------------------
+.hx-outline {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border-top: 2px solid $line-strong;
+  border-bottom: 2px solid $line-strong;
+  font-family: var(--hx-font-body);
+  tr { border-bottom: 1px solid $line; }
+  tr:last-child { border-bottom: 0; }
+  tr:hover { background: rgba(9, 24, 20, 0.03); }
+  td { padding: 1rem 0.85rem; vertical-align: top; }
+  td.hx-num {
+    width: 58px;
+    font-family: var(--hx-font-label);
+    font-weight: 700;
+    color: $emerald-deep;
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+  }
+  td.hx-what strong { font-size: 1.08rem; color: #0b1c18; }
+  td.hx-what span { display: block; color: $ink-muted; font-size: 0.95rem; margin-top: 0.15rem; }
+  td.hx-go { width: 96px; text-align: right; white-space: nowrap; font-family: var(--hx-font-label); font-weight: 600; }
+}
+@media (max-width: 620px) {
+  .hx-outline td.hx-go { display: none; }
 }
 
-// Tables get the house light fill on the header row
-table thead {
-  background: #EEF2F7;
+// ---- optional in-body cards / takeaways (light) --------------------
+.hx-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem; margin: 1.5rem 0; }
+.hx-card {
+  background: #ffffff;
+  border: 1px solid $line;
+  border-top: 3px solid $emerald-500;
+  border-radius: 6px;
+  padding: 1.1rem 1.15rem;
+  h4 { margin: 0 0 0.4rem; font-family: var(--hx-font-display); font-size: 1.1rem; color: #0b1c18; }
+  p { margin: 0; color: $ink-2; font-size: 0.95rem; }
+}
+.hx-takeaways {
+  counter-reset: tk; list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.7rem;
+  li {
+    counter-increment: tk; position: relative; padding: 0.85rem 1rem 0.85rem 3.4rem;
+    background: #ffffff; border: 1px solid $line; border-radius: 6px;
+    &::before {
+      content: counter(tk, decimal-leading-zero);
+      position: absolute; left: 1rem; top: 0.85rem;
+      font-family: var(--hx-font-label); font-weight: 700; color: $emerald-deep;
+      font-variant-numeric: tabular-nums;
+    }
+  }
 }
 
-// Blockquotes (the course uses them heavily for worked examples / asides)
-blockquote {
-  border-left: 4px solid #1C7293;
-  background: #EEF2F7;
-  padding: 0.6rem 1rem;
-  color: #33415A;
+// ---- try-it callout (DARK card on light page) ----------------------
+.hx-tryit {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #{$forest-900}, #{$forest-700});
+  border: 1px solid $dline; border-radius: 8px;
+  padding: 1.6rem 1.8rem; margin: 2rem 0;
+  display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  @include grain(0.05);
+  > * { position: relative; z-index: 1; }
+  h3 { color: $cream-50; margin: 0 0 0.3rem; border: 0; &::after { display: none; } }
+  p  { color: $cream-300; margin: 0; max-width: 48ch; }
+}
+
+// =====================================================================
+//  Footer (dark chrome)
+// =====================================================================
+.nav-footer, .footer, footer.footer {
+  background: $forest-900;
+  border-top: 1px solid $dline;
+  color: $sage-500;
+  font-family: var(--hx-font-label);
+  a { color: $cream-300; &:hover { color: $cream-50; } }
+}
+
+// =====================================================================
+//  Math (KaTeX) — inherit forest ink, keep display math scrollable
+// =====================================================================
+.katex { color: $ink; }
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.2rem 0; }
+
+// =====================================================================
+//  Motion — low intensity, respect reduced-motion
+// =====================================================================
+@media (prefers-reduced-motion: no-preference) {
+  .hx-reveal { opacity: 0; transform: translateY(14px); animation: hx-rise 0.6s var(--hx-ease) forwards; }
+  .hx-reveal-2 { animation-delay: 0.08s; }
+  .hx-reveal-3 { animation-delay: 0.16s; }
+}
+@keyframes hx-rise { to { opacity: 1; transform: none; } }
+
+// =====================================================================
+//  Mobile — no horizontal overflow; hero reflows, wide tables scroll
+// =====================================================================
+@media (max-width: 620px) {
+  .hx-hero { margin-left: 0; margin-right: 0; padding: 3rem 1.25rem 2.5rem; }
+  .hx-hero .hx-subtitle { max-width: 100%; }
+  .hx-btn { width: 100%; justify-content: center; }
+  .hx-cta { width: 100%; }
+
+  main table, table.table {
+    display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .hx-outline { display: table; overflow: visible; }
 }
