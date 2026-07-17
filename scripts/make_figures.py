@@ -1,7 +1,8 @@
 """Deterministic figure generation for the survival mini-course (module 01).
 
-Every figure is built from synthetic data with a fixed RNG seed and the house
-`academic_navy` palette, so re-running reproduces byte-stable SVGs. Conceptual
+Every figure is built from synthetic data with a fixed RNG seed and the Hermes
+Agent palette (cream paper + emerald/oxblood/azure accents, ported from
+custom.scss), so re-running reproduces byte-stable SVGs. Conceptual
 diagrams use small synthetic examples on purpose — they read more clearly than a
 real dataset. Real fitted-model figures (modules 02-03) will load GBSG2 instead.
 
@@ -16,21 +17,42 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import font_manager
 
-# --- house palette (deck_toolkit/themes.json -> academic_navy) -------------
-PRIMARY = "#1B2A41"
-ACCENT = "#1C7293"
-ACCENT_DARK = "#0F4C5C"
-BODY = "#33415A"
-MUTED = "#5B6B7F"
-LIGHT = "#EEF2F7"
-LINE = "#CBD5E1"
-CORAL = "#EF6F6C"  # second categorical color (from slate_coral) for contrast
-AMBER = "#E0A100"  # third categorical color (from charcoal_amber)
-GREEN = "#2E9E6B"  # fourth categorical color (from forest_moss)
+# --- house palette (Hermes Agent design system -> custom.scss tokens) ------
+# Light reading surface: warm cream paper + deep forest/emerald ink & accents.
+# Categorical order (emerald, oxblood, azure) validated colorblind-safe on the
+# cream surface via the dataviz skill's validate_palette.js; the emerald/oxblood
+# pair sits in the CVD floor band, so those two are always separated by a dashed
+# linestyle or a direct label (secondary encoding) wherever they co-occur.
+PRIMARY = "#0e1f1b"       # ink — main dark line / titles
+ACCENT = "#2f8a5f"        # emerald-500 — primary series line & fill
+ACCENT_DARK = "#1c6b43"   # emerald-deep — darker accent (cumulative hazard)
+BODY = "#33463f"          # ink-2 — axis labels / body text
+MUTED = "#5f776c"         # ink-muted — ticks, captions, neutral "constant" line
+LIGHT = "#f5f1e8"         # panel — subtle tint fill
+LINE = "#d8d2c4"          # warm hairline (≈ $line rgba(9,24,20,.12) on cream)
+PAPER = "#fbf7ef"         # $paper — baked figure/axes background
+OXBLOOD = "#b23a24"       # oxblood-500 — contrast series (always dashed/labeled)
+GOLD = "#a9781c"          # warm gold — label-anchored category tag (method map)
+AZURE = "#3a6ea5"         # azure-500 — third series line & label-anchored tag
 
 OUT = Path(__file__).resolve().parent.parent / "assets" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
+
+# Register the EB Garamond TTFs bundled in the repo so figures match the site
+# body type without depending on a system font install (keeps CI / other
+# machines reproducible). svg.fonttype defaults to "path", so glyphs are baked
+# as vector outlines — the SVGs render correctly even when Quarto embeds them as
+# an isolated <img> that cannot see the page's web font. The italic variable
+# font reports its style as "normal", so tag it explicitly for deterministic
+# upright-vs-italic resolution.
+_FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
+for _ttf in sorted(_FONT_DIR.glob("*.ttf")):
+    font_manager.fontManager.addfont(str(_ttf))
+for _entry in font_manager.fontManager.ttflist:
+    if _entry.name == "EB Garamond" and "Italic" in Path(_entry.fname).name:
+        object.__setattr__(_entry, "style", "italic")
 
 
 def _style():
@@ -38,7 +60,7 @@ def _style():
     plt.rcParams.update(
         {
             "font.family": "serif",
-            "font.serif": ["Georgia", "Times New Roman", "DejaVu Serif"],
+            "font.serif": ["EB Garamond", "Georgia", "Times New Roman", "DejaVu Serif"],
             "font.size": 12,
             "axes.edgecolor": MUTED,
             "axes.labelcolor": BODY,
@@ -48,10 +70,10 @@ def _style():
             "ytick.color": MUTED,
             "axes.spines.top": False,
             "axes.spines.right": False,
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
+            "figure.facecolor": PAPER,
+            "axes.facecolor": PAPER,
             "savefig.bbox": "tight",
-            "savefig.facecolor": "white",
+            "savefig.facecolor": PAPER,
         }
     )
 
@@ -182,8 +204,8 @@ def fig_censoring_timeline():
             ax.plot(t1, y, ">", color=ACCENT, markersize=9, zorder=3)
         ax.text(-0.6, y, lab, ha="right", va="center", fontsize=10, color=BODY)
 
-    ax.axvline(study_end, color=CORAL, ls="--", lw=1.6)
-    ax.text(study_end, len(subjects) + 0.7, "study ends", color=CORAL,
+    ax.axvline(study_end, color=OXBLOOD, ls="--", lw=1.6)
+    ax.text(study_end, len(subjects) + 0.7, "study ends", color=OXBLOOD,
             ha="center", fontsize=10)
 
     # legend proxies
@@ -230,11 +252,11 @@ def fig_cif_vs_oneminuss():
     naive = 1 - km1
 
     fig, ax = plt.subplots(figsize=(7, 4.2))
-    ax.plot(t, naive, color=CORAL, lw=2.2, ls="--",
+    ax.plot(t, naive, color=OXBLOOD, lw=2.2, ls="--",
             label=r"$1-S_1(t)$  (naive, overestimates)")
     ax.plot(t, cif1, color=ACCENT, lw=2.4,
             label=r"$\mathrm{CIF}_1(t)$  (correct, Aalen-Johansen)")
-    ax.fill_between(t, cif1, naive, color=CORAL, alpha=0.10)
+    ax.fill_between(t, cif1, naive, color=OXBLOOD, alpha=0.10)
     ax.annotate("overestimation gap", xy=(45, (cif1[45] + naive[45]) / 2),
                 xytext=(28, 0.62), fontsize=10, color=MUTED,
                 arrowprops=dict(arrowstyle="->", color=MUTED))
@@ -269,7 +291,7 @@ def fig_proportional_hazards():
     # Left: proportional — patient B's hazard is a constant 2.4x patient A's
     hr = 2.4
     axes[0].plot(t, base, color=ACCENT, lw=2.2, label="patient A (baseline)")
-    axes[0].plot(t, hr * base, color=CORAL, lw=2.2, label=f"patient B ($\\times{hr}$)")
+    axes[0].plot(t, hr * base, color=OXBLOOD, lw=2.2, label=f"patient B ($\\times{hr}$)")
     axes[0].set_title("Proportional hazards — holds\nconstant ratio, curves never cross", fontsize=12)
     axes[0].legend(frameon=False, loc="upper left", fontsize=9)
 
@@ -277,7 +299,7 @@ def fig_proportional_hazards():
     treated = 0.16 * np.exp(-t / 4) + 0.012
     control = 0.018 + 0.0022 * t
     axes[1].plot(t, control, color=ACCENT, lw=2.2, label="control")
-    axes[1].plot(t, treated, color=CORAL, lw=2.2, label="treated (surgery)")
+    axes[1].plot(t, treated, color=OXBLOOD, lw=2.2, label="treated (surgery)")
     # mark the crossing point
     cross = np.argmin(np.abs(treated - control))
     axes[1].plot(t[cross], treated[cross], "o", color=PRIMARY, ms=7, zorder=5)
@@ -316,8 +338,8 @@ def fig_hazard_shapes():
     fig, ax = plt.subplots(figsize=(7.2, 4.2))
     ax.plot(t, h_exp, color=MUTED, lw=2.2, label="Exponential — constant")
     ax.plot(t, h_winc, color=ACCENT, lw=2.2, label="Weibull ($k>1$) — rising")
-    ax.plot(t, h_wdec, color=CORAL, lw=2.2, label="Weibull ($k<1$) — falling")
-    ax.plot(t, h_logn, color=AMBER, lw=2.2, label="Log-normal — rises then falls")
+    ax.plot(t, h_wdec, color=OXBLOOD, lw=2.2, label="Weibull ($k<1$) — falling")
+    ax.plot(t, h_logn, color=AZURE, lw=2.2, label="Log-normal — rises then falls")
 
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 1.2)
@@ -345,14 +367,14 @@ def fig_deephit_pmf():
 
     w = 0.4
     axes[0].bar(bins - w / 2, p1, width=w, color=ACCENT, label="cause 1 (relapse)")
-    axes[0].bar(bins + w / 2, p2, width=w, color=CORAL, label="cause 2 (death)")
+    axes[0].bar(bins + w / 2, p2, width=w, color=OXBLOOD, label="cause 2 (death)")
     axes[0].set_title(r"Network output: $p_k(t\mid x)=P(T=t,\,K=k)$")
     axes[0].set_xlabel("time bin")
     axes[0].set_ylabel("probability mass")
     axes[0].legend(frameon=False, fontsize=9)
 
     axes[1].step(bins, cif1, where="mid", color=ACCENT, lw=2.2, label=r"$\mathrm{CIF}_1$ (relapse)")
-    axes[1].step(bins, cif2, where="mid", color=CORAL, lw=2.2, label=r"$\mathrm{CIF}_2$ (death)")
+    axes[1].step(bins, cif2, where="mid", color=OXBLOOD, lw=2.2, label=r"$\mathrm{CIF}_2$ (death)")
     axes[1].step(bins, surv, where="mid", color=PRIMARY, lw=2.2, label=r"$S(t)$ overall")
     axes[1].set_title("Read off by summing cells")
     axes[1].set_xlabel("time bin")
@@ -370,14 +392,14 @@ def fig_method_map():
     # x = flexibility (rigid assumptions -> flexible); y = output (ranking -> prob)
     methods = [
         ("Cox PH", 0.22, 0.12, ACCENT),
-        ("Parametric\nNLL", 0.40, 0.88, AMBER),
-        ("Discrete-time\nNLL", 0.62, 0.66, GREEN),
-        ("DeepHit", 0.86, 0.78, CORAL),
+        ("Parametric\nNLL", 0.40, 0.88, GOLD),
+        ("Discrete-time\nNLL", 0.62, 0.66, AZURE),
+        ("DeepHit", 0.86, 0.78, OXBLOOD),
         ("DSM", 0.74, 0.95, ACCENT_DARK),
     ]
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
     for name, x, y, c in methods:
-        ax.scatter(x, y, s=260, color=c, alpha=0.9, zorder=3, edgecolor="white", lw=1.5)
+        ax.scatter(x, y, s=260, color=c, alpha=0.9, zorder=3, edgecolor=PAPER, lw=1.5)
         ax.annotate(name, (x, y), textcoords="offset points", xytext=(0, 13),
                     color=PRIMARY, fontsize=9.5, ha="center", va="bottom", zorder=4)
 
@@ -412,23 +434,23 @@ def fig_cindex_pairs():
     pairs = [("A", "B", True), ("A", "C", True), ("B", "C", False)]
     for a, b, concordant in pairs:
         (ta, _, ra), (tb, _, rb) = pts[a], pts[b]
-        col = ACCENT if concordant else CORAL
+        col = ACCENT if concordant else OXBLOOD
         ax.plot([ta, tb], [ra, rb], color=col, lw=2.0, alpha=0.8, zorder=1)
 
     for lab, (t, ev, r) in pts.items():
         if ev == 1:
             ax.plot(t, r, "o", color=PRIMARY, ms=13, zorder=3)
         else:
-            ax.plot(t, r, "o", mfc="white", mec=PRIMARY, mew=2, ms=13, zorder=3)
+            ax.plot(t, r, "o", mfc=PAPER, mec=PRIMARY, mew=2, ms=13, zorder=3)
         ax.annotate(lab, (t, r), color="white" if ev else PRIMARY,
                     fontsize=9, ha="center", va="center", zorder=4,
                     fontweight="bold")
 
     # legend proxies
     ax.plot([], [], color=ACCENT, lw=2.4, label="concordant (right order)")
-    ax.plot([], [], color=CORAL, lw=2.4, label="discordant (wrong order)")
+    ax.plot([], [], color=OXBLOOD, lw=2.4, label="discordant (wrong order)")
     ax.plot([], [], "o", color=PRIMARY, ms=10, label="event observed")
-    ax.plot([], [], "o", mfc="white", mec=PRIMARY, mew=2, ms=10, label="censored")
+    ax.plot([], [], "o", mfc=PAPER, mec=PRIMARY, mew=2, ms=10, label="censored")
     ax.legend(frameon=False, fontsize=9, loc="upper right", ncol=1)
 
     ax.text(0.02, 0.02, r"$\hat{C} = 2/3 \approx 0.67$", transform=ax.transAxes,
@@ -452,7 +474,7 @@ def fig_brier_curve():
     fig, ax = plt.subplots(figsize=(7.2, 4.2))
 
     ax.axhline(0.25, color=MUTED, ls=":", lw=1.6, label="uninformative (0.25)")
-    ax.plot(t, bs_km, color=CORAL, lw=2.2, ls="--", label="Kaplan-Meier baseline")
+    ax.plot(t, bs_km, color=OXBLOOD, lw=2.2, ls="--", label="Kaplan-Meier baseline")
     ax.plot(t, bs_model, color=ACCENT, lw=2.4, label="model")
     ax.fill_between(t, bs_model, color=ACCENT, alpha=0.10)
     ax.annotate("IBS = area under\nthe model curve", xy=(20, bs_model[110] / 2),
@@ -509,7 +531,7 @@ def fig_stratified_km():
 
     fig, ax = plt.subplots(figsize=(7.2, 4.4))
     ax.step(tl, sl, where="post", color=ACCENT, lw=2.4, label="Low risk")
-    ax.step(th, sh, where="post", color=CORAL, lw=2.4, label="High risk")
+    ax.step(th, sh, where="post", color=OXBLOOD, lw=2.4, label="High risk")
 
     ax.text(0.97, 0.9, "log-rank $p < 0.001$", transform=ax.transAxes,
             ha="right", fontsize=11, color=PRIMARY)
@@ -534,7 +556,7 @@ def fig_auc_over_time():
 
     ax.axhline(0.5, color=MUTED, ls=":", lw=1.6, label="chance (0.5)")
     ax.plot(t, auc_robust, color=ACCENT, lw=2.4, label="robust model")
-    ax.plot(t, auc_degrade, color=CORAL, lw=2.4, label="degrades at long horizons")
+    ax.plot(t, auc_degrade, color=OXBLOOD, lw=2.4, label="degrades at long horizons")
 
     ax.set_xlim(0, 36)
     ax.set_ylim(0.45, 1.0)
