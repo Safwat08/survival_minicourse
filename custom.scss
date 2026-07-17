@@ -138,7 +138,7 @@ body { text-rendering: optimizeLegibility; overflow-x: clip; }
 
 // ---- headings -------------------------------------------------------
 h1, h2, h3, h4, h5 { text-wrap: balance; letter-spacing: -0.01em; }
-p { text-wrap: pretty; max-width: 72ch; }
+p { text-wrap: pretty; }
 
 main h2 {
   font-size: 1.7rem;
@@ -265,14 +265,12 @@ main blockquote, .blockquote {
   strong { color: #0b1c18; }
 }
 
-// ---- figures: framed on white, on the paper -------------------------
+// ---- figures: sit directly on the paper, full content width ---------
 main figure, .quarto-figure { margin: 2rem auto; text-align: center; }
 main figure img, main p > img, .quarto-figure img {
+  width: 100%;
   max-width: 100%;
-  background: #ffffff;
-  border: 1px solid $line;
-  border-radius: 4px;
-  padding: 10px;
+  height: auto;
 }
 figcaption, .figure-caption, .quarto-figure figcaption {
   font-family: var(--hx-font-body);

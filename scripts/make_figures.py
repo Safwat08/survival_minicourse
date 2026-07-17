@@ -61,7 +61,7 @@ def _style():
         {
             "font.family": "serif",
             "font.serif": ["EB Garamond", "Georgia", "Times New Roman", "DejaVu Serif"],
-            "font.size": 12,
+            "font.size": 14.5,
             "axes.edgecolor": MUTED,
             "axes.labelcolor": BODY,
             "axes.titlecolor": PRIMARY,
@@ -103,18 +103,18 @@ def fig_hazard_vs_cumhazard():
     axes[0].fill_between(t, h, color=ACCENT, alpha=0.10)
     axes[0].set_title("Hazard $h(t)$")
     axes[0].text(0.5, 0.92, "speedometer\n(rate right now)", transform=axes[0].transAxes,
-                 ha="center", va="top", fontsize=10, color=MUTED, style="italic")
+                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
 
     axes[1].plot(t, H, color=ACCENT_DARK, lw=2.2)
     axes[1].set_title(r"Cumulative hazard $H(t)=\int_0^t h$")
     axes[1].text(0.5, 0.18, "odometer\n(total so far)", transform=axes[1].transAxes,
-                 ha="center", va="top", fontsize=10, color=MUTED, style="italic")
+                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
 
     axes[2].plot(t, S, color=PRIMARY, lw=2.2)
     axes[2].set_ylim(0, 1.02)
     axes[2].set_title(r"Survival $S(t)=e^{-H(t)}$")
     axes[2].text(0.5, 0.40, "fraction still\nevent-free", transform=axes[2].transAxes,
-                 ha="center", va="top", fontsize=10, color=MUTED, style="italic")
+                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
 
     for ax in axes:
         ax.set_xlabel("time (months)")
@@ -202,17 +202,17 @@ def fig_censoring_timeline():
             ax.plot(t1, y, "o", color=PRIMARY, markersize=9, zorder=3)
         else:
             ax.plot(t1, y, ">", color=ACCENT, markersize=9, zorder=3)
-        ax.text(-0.6, y, lab, ha="right", va="center", fontsize=10, color=BODY)
+        ax.text(-0.6, y, lab, ha="right", va="center", fontsize=12, color=BODY)
 
     ax.axvline(study_end, color=OXBLOOD, ls="--", lw=1.6)
     ax.text(study_end, len(subjects) + 0.7, "study ends", color=OXBLOOD,
-            ha="center", fontsize=10)
+            ha="center", fontsize=12)
 
     # legend proxies
     ax.plot([], [], "o", color=PRIMARY, markersize=9, label="event observed ($\\delta=1$)")
     ax.plot([], [], ">", color=ACCENT, markersize=9, label="censored ($\\delta=0$)")
     ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.12),
-              ncol=2, fontsize=10)
+              ncol=2, fontsize=12)
 
     ax.set_yticks([])
     ax.set_xlim(-2.5, study_end + 2)
@@ -258,7 +258,7 @@ def fig_cif_vs_oneminuss():
             label=r"$\mathrm{CIF}_1(t)$  (correct, Aalen-Johansen)")
     ax.fill_between(t, cif1, naive, color=OXBLOOD, alpha=0.10)
     ax.annotate("overestimation gap", xy=(45, (cif1[45] + naive[45]) / 2),
-                xytext=(28, 0.62), fontsize=10, color=MUTED,
+                xytext=(28, 0.62), fontsize=12, color=MUTED,
                 arrowprops=dict(arrowstyle="->", color=MUTED))
 
     ax.set_xlim(0, 59)
@@ -266,7 +266,7 @@ def fig_cif_vs_oneminuss():
     ax.set_xlabel("time (months)")
     ax.set_ylabel("probability of event 1 by $t$")
     ax.set_title("Competing risks: why $1-S(t)$ overstates cumulative incidence")
-    ax.legend(frameon=False, loc="upper left", fontsize=10)
+    ax.legend(frameon=False, loc="upper left", fontsize=12)
     fig.tight_layout()
     _save(fig, "1.4_cif_vs_oneminuss")
 
@@ -292,8 +292,8 @@ def fig_proportional_hazards():
     hr = 2.4
     axes[0].plot(t, base, color=ACCENT, lw=2.2, label="patient A (baseline)")
     axes[0].plot(t, hr * base, color=OXBLOOD, lw=2.2, label=f"patient B ($\\times{hr}$)")
-    axes[0].set_title("Proportional hazards — holds\nconstant ratio, curves never cross", fontsize=12)
-    axes[0].legend(frameon=False, loc="upper left", fontsize=9)
+    axes[0].set_title("Proportional hazards — holds\nconstant ratio, curves never cross", fontsize=14.5)
+    axes[0].legend(frameon=False, loc="upper left", fontsize=11)
 
     # Right: crossing — treated arm high early, protective later
     treated = 0.16 * np.exp(-t / 4) + 0.012
@@ -303,8 +303,8 @@ def fig_proportional_hazards():
     # mark the crossing point
     cross = np.argmin(np.abs(treated - control))
     axes[1].plot(t[cross], treated[cross], "o", color=PRIMARY, ms=7, zorder=5)
-    axes[1].set_title("Proportional hazards violated\nratio flips, curves cross", fontsize=12)
-    axes[1].legend(frameon=False, loc="upper right", fontsize=9)
+    axes[1].set_title("Proportional hazards violated\nratio flips, curves cross", fontsize=14.5)
+    axes[1].legend(frameon=False, loc="upper right", fontsize=11)
 
     for ax in axes:
         ax.set_xlabel("time (months)")
@@ -346,7 +346,7 @@ def fig_hazard_shapes():
     ax.set_xlabel("time")
     ax.set_ylabel("hazard $h(t)$")
     ax.set_title("Each distribution fixes the shape the hazard may take")
-    ax.legend(frameon=False, fontsize=9, loc="upper right")
+    ax.legend(frameon=False, fontsize=11, loc="upper right")
     fig.tight_layout()
     _save(fig, "2.2_hazard_shapes")
 
@@ -371,7 +371,7 @@ def fig_deephit_pmf():
     axes[0].set_title(r"Network output: $p_k(t\mid x)=P(T=t,\,K=k)$")
     axes[0].set_xlabel("time bin")
     axes[0].set_ylabel("probability mass")
-    axes[0].legend(frameon=False, fontsize=9)
+    axes[0].legend(frameon=False, fontsize=11)
 
     axes[1].step(bins, cif1, where="mid", color=ACCENT, lw=2.2, label=r"$\mathrm{CIF}_1$ (relapse)")
     axes[1].step(bins, cif2, where="mid", color=OXBLOOD, lw=2.2, label=r"$\mathrm{CIF}_2$ (death)")
@@ -379,7 +379,7 @@ def fig_deephit_pmf():
     axes[1].set_title("Read off by summing cells")
     axes[1].set_xlabel("time bin")
     axes[1].set_ylim(0, 1.02)
-    axes[1].legend(frameon=False, fontsize=9, loc="upper right")
+    axes[1].legend(frameon=False, fontsize=11, loc="upper right")
 
     fig.tight_layout()
     _save(fig, "2.4_deephit_pmf")
@@ -401,16 +401,16 @@ def fig_method_map():
     for name, x, y, c in methods:
         ax.scatter(x, y, s=260, color=c, alpha=0.9, zorder=3, edgecolor=PAPER, lw=1.5)
         ax.annotate(name, (x, y), textcoords="offset points", xytext=(0, 13),
-                    color=PRIMARY, fontsize=9.5, ha="center", va="bottom", zorder=4)
+                    color=PRIMARY, fontsize=11.5, ha="center", va="bottom", zorder=4)
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1.18)
     ax.set_xlabel(r"flexibility  —  assumptions imposed on time  $\rightarrow$")
     ax.set_ylabel(r"output: ranking  $\rightarrow$  absolute probability")
     ax.set_xticks([0.05, 0.95])
-    ax.set_xticklabels(["rigid\n(PH / fixed shape)", "flexible\n(no PH, no shape)"], fontsize=9)
+    ax.set_xticklabels(["rigid\n(PH / fixed shape)", "flexible\n(no PH, no shape)"], fontsize=11)
     ax.set_yticks([0.08, 1.0])
-    ax.set_yticklabels(["risk\nscore", "full $S(t)$\n+ CIF"], fontsize=9)
+    ax.set_yticklabels(["risk\nscore", "full $S(t)$\n+ CIF"], fontsize=11)
     ax.set_title("Where each loss family sits")
     ax.grid(True, color=LIGHT, lw=1)
     ax.set_axisbelow(True)
@@ -443,7 +443,7 @@ def fig_cindex_pairs():
         else:
             ax.plot(t, r, "o", mfc=PAPER, mec=PRIMARY, mew=2, ms=13, zorder=3)
         ax.annotate(lab, (t, r), color="white" if ev else PRIMARY,
-                    fontsize=9, ha="center", va="center", zorder=4,
+                    fontsize=11, ha="center", va="center", zorder=4,
                     fontweight="bold")
 
     # legend proxies
@@ -451,10 +451,10 @@ def fig_cindex_pairs():
     ax.plot([], [], color=OXBLOOD, lw=2.4, label="discordant (wrong order)")
     ax.plot([], [], "o", color=PRIMARY, ms=10, label="event observed")
     ax.plot([], [], "o", mfc=PAPER, mec=PRIMARY, mew=2, ms=10, label="censored")
-    ax.legend(frameon=False, fontsize=9, loc="upper right", ncol=1)
+    ax.legend(frameon=False, fontsize=11, loc="upper right", ncol=1)
 
     ax.text(0.02, 0.02, r"$\hat{C} = 2/3 \approx 0.67$", transform=ax.transAxes,
-            fontsize=12, color=PRIMARY)
+            fontsize=14.5, color=PRIMARY)
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 1.05)
     ax.set_xlabel("observed time $T$  (earlier = should be riskier)")
@@ -478,7 +478,7 @@ def fig_brier_curve():
     ax.plot(t, bs_model, color=ACCENT, lw=2.4, label="model")
     ax.fill_between(t, bs_model, color=ACCENT, alpha=0.10)
     ax.annotate("IBS = area under\nthe model curve", xy=(20, bs_model[110] / 2),
-                xytext=(7, 0.16), fontsize=10, color=MUTED,
+                xytext=(7, 0.16), fontsize=12, color=MUTED,
                 arrowprops=dict(arrowstyle="->", color=MUTED))
 
     ax.set_xlim(0, 36)
@@ -486,7 +486,7 @@ def fig_brier_curve():
     ax.set_xlabel("time (months)")
     ax.set_ylabel("$BS(t)$  (lower = better)")
     ax.set_title("Brier score: calibration over time — beat the KM baseline")
-    ax.legend(frameon=False, fontsize=9, loc="upper left")
+    ax.legend(frameon=False, fontsize=11, loc="upper left")
     fig.tight_layout()
     _save(fig, "3.2_brier_curve")
 
@@ -534,13 +534,13 @@ def fig_stratified_km():
     ax.step(th, sh, where="post", color=OXBLOOD, lw=2.4, label="High risk")
 
     ax.text(0.97, 0.9, "log-rank $p < 0.001$", transform=ax.transAxes,
-            ha="right", fontsize=11, color=PRIMARY)
+            ha="right", fontsize=13, color=PRIMARY)
     ax.set_xlim(0, 36)
     ax.set_ylim(0, 1.02)
     ax.set_xlabel("time (months)")
     ax.set_ylabel("$S(t)$")
     ax.set_title("Stratified KM: do the model's risk groups separate?")
-    ax.legend(frameon=False, fontsize=10, loc="lower left")
+    ax.legend(frameon=False, fontsize=12, loc="lower left")
     fig.tight_layout()
     _save(fig, "3.3_stratified_km")
 
@@ -563,7 +563,7 @@ def fig_auc_over_time():
     ax.set_xlabel("time horizon $t$ (months)")
     ax.set_ylabel(r"$\mathrm{AUC}(t)$")
     ax.set_title("Time-dependent AUC: when does the model discriminate well?")
-    ax.legend(frameon=False, fontsize=9, loc="lower left")
+    ax.legend(frameon=False, fontsize=11, loc="lower left")
     fig.tight_layout()
     _save(fig, "3.4_auc_over_time")
 
