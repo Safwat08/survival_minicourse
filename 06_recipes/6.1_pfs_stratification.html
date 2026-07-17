@@ -377,11 +377,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#recipe-pfs-risk-stratification" id="toc-recipe-pfs-risk-stratification" class="nav-link active" data-scroll-target="#recipe-pfs-risk-stratification">Recipe: PFS Risk Stratification</a>
   <ul class="collapse">
-  <li><a href="#the-shape-of-the-data" id="toc-the-shape-of-the-data" class="nav-link" data-scroll-target="#the-shape-of-the-data">The shape of the data</a></li>
-  <li><a href="#stage-1-train-a-risk-model-produces-a-score-not-a-split" id="toc-stage-1-train-a-risk-model-produces-a-score-not-a-split" class="nav-link" data-scroll-target="#stage-1-train-a-risk-model-produces-a-score-not-a-split">Stage 1 — Train a risk model (produces a score, not a split)</a></li>
-  <li><a href="#stage-2-fit-the-cutpoint-on-train-then-freeze-it" id="toc-stage-2-fit-the-cutpoint-on-train-then-freeze-it" class="nav-link" data-scroll-target="#stage-2-fit-the-cutpoint-on-train-then-freeze-it">Stage 2 — Fit the cutpoint on TRAIN, then freeze it</a></li>
-  <li><a href="#stage-3-apply-the-frozen-cutpoint-to-test-and-evaluate" id="toc-stage-3-apply-the-frozen-cutpoint-to-test-and-evaluate" class="nav-link" data-scroll-target="#stage-3-apply-the-frozen-cutpoint-to-test-and-evaluate">Stage 3 — Apply the frozen cutpoint to TEST and evaluate</a></li>
-  <li><a href="#the-three-ways-this-goes-wrong" id="toc-the-three-ways-this-goes-wrong" class="nav-link" data-scroll-target="#the-three-ways-this-goes-wrong">The three ways this goes wrong</a></li>
+  <li><a href="#define-the-endpoint-and-prediction-origin" id="toc-define-the-endpoint-and-prediction-origin" class="nav-link" data-scroll-target="#define-the-endpoint-and-prediction-origin">1. Define the endpoint and prediction origin</a></li>
+  <li><a href="#train-the-continuous-risk-model" id="toc-train-the-continuous-risk-model" class="nav-link" data-scroll-target="#train-the-continuous-risk-model">2. Train the continuous risk model</a></li>
+  <li><a href="#choose-one-cutpoint-on-development-data" id="toc-choose-one-cutpoint-on-development-data" class="nav-link" data-scroll-target="#choose-one-cutpoint-on-development-data">3. Choose one cutpoint on development data</a></li>
+  <li><a href="#evaluate-once-on-the-test-cohort" id="toc-evaluate-once-on-the-test-cohort" class="nav-link" data-scroll-target="#evaluate-once-on-the-test-cohort">4. Evaluate once on the test cohort</a></li>
+  <li><a href="#common-failure-modes" id="toc-common-failure-modes" class="nav-link" data-scroll-target="#common-failure-modes">Common failure modes</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -394,69 +394,117 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="recipe-pfs-risk-stratification" class="level1">
 <h1>Recipe: PFS Risk Stratification</h1>
-<p><strong>Goal:</strong> train a model that predicts progression-free survival, then split patients into <strong>high- vs low-risk</strong> groups whose KM curves separate cleanly.</p>
-<p>This recipe is the connective tissue between sections — it runs the chain <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> + log-rank loss → <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">threshold selection</a> → <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a> end-to-end.</p>
-<section id="the-shape-of-the-data" class="level2">
-<h2 class="anchored" data-anchor-id="the-shape-of-the-data">The shape of the data</h2>
-<p>One composite PFS endpoint per patient — see <a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a>:</p>
-<ul>
-<li><code>T</code> — time to the earliest of {progression, death}, else censoring time</li>
-<li><code>E</code> — <code>1</code> if progression <em>or</em> death occurred, <code>0</code> if censored</li>
-</ul>
-<p>No event-type labels, no second time. This is <strong>not</strong> competing risks.</p>
-</section>
-<section id="stage-1-train-a-risk-model-produces-a-score-not-a-split" class="level2">
-<h2 class="anchored" data-anchor-id="stage-1-train-a-risk-model-produces-a-score-not-a-split">Stage 1 — Train a risk model (produces a score, not a split)</h2>
-<p>The model emits a continuous risk score; higher = worse PFS. For a custom 3D-imaging model you own the forward pass, so use the differentiable Cox loss from <code>torchsurv</code> (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>). Because stratification is the goal, add the log-rank loss as an auxiliary term (a differentiable relaxation of the log-rank test that rewards separating the risk groups’ survival curves):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.loss <span class="im">import</span> cox</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>log_hz <span class="op">=</span> model(x)                                  <span class="co"># one log-hazard per patient</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> cox.neg_partial_log_likelihood(log_hz, events, times)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> loss <span class="op">+</span> lam <span class="op">*</span> logrank_aux(log_hz, events, times)   <span class="co"># lam ~ 0.1–0.5; aux is your custom smooth log-rank</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>(For a tabular baseline, <code>lifelines.CoxPHFitter</code> or <code>sksurv.CoxPHSurvivalAnalysis</code> give the same kind of score — see <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>.)</p>
-<p>After training, get scores for <strong>both</strong> splits:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>r_train <span class="op">=</span> model(x_train).detach().cpu().numpy().ravel()</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>r_test  <span class="op">=</span> model(x_test ).detach().cpu().numpy().ravel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="stage-2-fit-the-cutpoint-on-train-then-freeze-it" class="level2">
-<h2 class="anchored" data-anchor-id="stage-2-fit-the-cutpoint-on-train-then-freeze-it">Stage 2 — Fit the cutpoint on TRAIN, then freeze it</h2>
-<p>The split happens here, not in the model. Search the threshold that maximizes the log-rank statistic on the <strong>training</strong> scores — see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">threshold selection</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.statistics <span class="im">import</span> logrank_test</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>best_stat, tau <span class="op">=</span> <span class="dv">0</span>, <span class="va">None</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> np.percentile(r_train, <span class="bu">range</span>(<span class="dv">10</span>, <span class="dv">91</span>)):</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    hi <span class="op">=</span> r_train <span class="op">&gt;=</span> c</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> logrank_test(T_train[hi], T_train[<span class="op">~</span>hi], E_train[hi], E_train[<span class="op">~</span>hi])</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> res.test_statistic <span class="op">&gt;</span> best_stat:</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        best_stat, tau <span class="op">=</span> res.test_statistic, c</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>tau</code> is now <strong>frozen</strong>. A median cutoff (<code>tau = np.median(r_train)</code>) is the safe baseline — see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">threshold selection</a>.</p>
-</section>
-<section id="stage-3-apply-the-frozen-cutpoint-to-test-and-evaluate" class="level2">
-<h2 class="anchored" data-anchor-id="stage-3-apply-the-frozen-cutpoint-to-test-and-evaluate">Stage 3 — Apply the frozen cutpoint to TEST and evaluate</h2>
-<p>This is the only honest significance test — the cutpoint was never tuned on these patients:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.plotting <span class="im">import</span> add_at_risk_counts</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>hi <span class="op">=</span> r_test <span class="op">&gt;=</span> tau                                  <span class="co"># frozen tau from Stage 2</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> logrank_test(T_test[hi], T_test[<span class="op">~</span>hi], E_test[hi], E_test[<span class="op">~</span>hi])</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"test log-rank p = </span><span class="sc">{</span>res<span class="sc">.</span>p_value<span class="sc">:.4f}</span><span class="ss">"</span>)       <span class="co"># the money number</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plt.subplot()</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>km_hi <span class="op">=</span> KaplanMeierFitter().fit(T_test[hi],  E_test[hi],  label<span class="op">=</span><span class="st">"High risk"</span>)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>km_lo <span class="op">=</span> KaplanMeierFitter().fit(T_test[<span class="op">~</span>hi], E_test[<span class="op">~</span>hi], label<span class="op">=</span><span class="st">"Low risk"</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>km_hi.plot_survival_function(ax<span class="op">=</span>ax)<span class="op">;</span> km_lo.plot_survival_function(ax<span class="op">=</span>ax)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>add_at_risk_counts(km_hi, km_lo, ax<span class="op">=</span>ax)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Also report the underlying ranking quality — C-index (<a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>) and time-dependent AUC (<a href="../03_metrics/3.4_time_dependent_auc.html"><code>3.4</code></a>) — so a good split isn’t masking a poorly-discriminating model.</p>
-</section>
-<section id="the-three-ways-this-goes-wrong" class="level2">
-<h2 class="anchored" data-anchor-id="the-three-ways-this-goes-wrong">The three ways this goes wrong</h2>
+<p><strong>Goal:</strong> train a model for progression-free survival (PFS), evaluate its continuous risk score, and—when a clinical use case requires groups—apply one frozen cutpoint to an untouched test cohort.</p>
+<p>The important separation is:</p>
 <ol type="1">
-<li><strong>Re-deriving <code>tau</code> on the test set</strong> — guarantees an optimistic split that fails on external data. Freeze it on train.</li>
-<li><strong>Reporting the <em>training</em> max-log-rank p-value as significance</strong> — invalid (multiple testing over candidate cutpoints). Only the held-out p-value counts. See <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">threshold selection</a>.</li>
-<li><strong>Treating PFS as two events</strong> — death is already inside PFS; competing risks is a different question. See <a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a> and <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
+<li>the survival model learns a <strong>continuous score</strong>;</li>
+<li>development data determine any <strong>group cutpoint</strong>; and</li>
+<li>the test cohort evaluates both without refitting either one.</li>
+</ol>
+<section id="define-the-endpoint-and-prediction-origin" class="level2">
+<h2 class="anchored" data-anchor-id="define-the-endpoint-and-prediction-origin">1. Define the endpoint and prediction origin</h2>
+<p>Use one composite PFS record per patient; see <a href="../01_background/1.3_what_is_an_event.html#composite-endpoints"><code>1.3</code></a>:</p>
+<ul>
+<li><code>T</code> — time from the stated origin to the earliest of progression or death, otherwise the censoring time</li>
+<li><code>E</code> — <code>1</code> if progression or death occurred and <code>0</code> if censored</li>
+</ul>
+<p>No event-type label or second event time is needed for composite PFS. If the goal is to predict progression while treating death as a distinct competing event, redefine the endpoint and use the methods in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</p>
+<p>Before splitting, confirm that images and clinical predictors were available by the prediction origin. Split by patient—and by site when testing geographic generalization—before learning preprocessing, feature selection, or normalization.</p>
+</section>
+<section id="train-the-continuous-risk-model" class="level2">
+<h2 class="anchored" data-anchor-id="train-the-continuous-risk-model">2. Train the continuous risk model</h2>
+<p>For a custom PyTorch imaging model, the output is one log-relative-hazard value per patient. A Cox loss is a defensible baseline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.loss <span class="im">import</span> cox</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>log_hz <span class="op">=</span> model(x_train).reshape(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> cox.neg_partial_log_likelihood(log_hz, E_train, T_train)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>loss.backward()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Do not add a custom log-rank loss merely to make a development KM plot look more separated. It optimizes the later visualization, introduces another weight to tune, and can overfit the chosen grouping rule. Start with the survival objective and evaluate the continuous score honestly.</p>
+<p>The exact Cox loss uses full risk sets. If the imaging model requires mini-batches, use a risk-set-aware strategy or a case-control method rather than assuming an ordinary random mini-batch reproduces the full loss; see <a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists"><code>2.1</code></a>.</p>
+<p>After model selection is complete, collect scores without augmentation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">eval</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    r_train <span class="op">=</span> model(x_train).cpu().numpy().ravel()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    r_valid <span class="op">=</span> model(x_valid).cpu().numpy().ravel()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    r_test <span class="op">=</span> model(x_test).cpu().numpy().ravel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="choose-one-cutpoint-on-development-data" class="level2">
+<h2 class="anchored" data-anchor-id="choose-one-cutpoint-on-development-data">3. Choose one cutpoint on development data</h2>
+<p>Prefer a clinically pre-specified threshold or a threshold validated in earlier work. If none exists, the median <strong>training</strong> score is a transparent, outcome-free baseline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> np.median(r_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If the project specifically requires outcome-guided cutpoint selection, use a separate validation set. The following exploratory max-log-rank search excludes extreme splits, then freezes the selected value:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.statistics <span class="im">import</span> logrank_test</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>candidates <span class="op">=</span> np.unique(np.quantile(r_valid, np.linspace(<span class="fl">0.10</span>, <span class="fl">0.90</span>, <span class="dv">81</span>)))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>best_stat, tau <span class="op">=</span> <span class="op">-</span>np.inf, <span class="va">None</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> candidate <span class="kw">in</span> candidates:</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    high <span class="op">=</span> r_valid <span class="op">&gt;=</span> candidate</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> E_valid[high].<span class="bu">sum</span>() <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> E_valid[<span class="op">~</span>high].<span class="bu">sum</span>() <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> logrank_test(</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        T_valid[high], T_valid[<span class="op">~</span>high],</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        event_observed_A<span class="op">=</span>E_valid[high],</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        event_observed_B<span class="op">=</span>E_valid[<span class="op">~</span>high],</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> result.test_statistic <span class="op">&gt;</span> best_stat:</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        best_stat, tau <span class="op">=</span> result.test_statistic, candidate</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> tau <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"No candidate produced events in both validation groups."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This validation p-value is not a valid significance result because many cutpoints were searched. Record the search grid and the resulting <code>tau</code>, and do not adjust it after looking at test outcomes. For small datasets, use nested cross-validation to repeat the entire model-and-cutpoint procedure.</p>
+</section>
+<section id="evaluate-once-on-the-test-cohort" class="level2">
+<h2 class="anchored" data-anchor-id="evaluate-once-on-the-test-cohort">4. Evaluate once on the test cohort</h2>
+<p>First evaluate the <strong>continuous</strong> score. This preserves information discarded by a high/low split:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> concordance_index_censored</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>c_index <span class="op">=</span> concordance_index_censored(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    E_test.astype(<span class="bu">bool</span>), T_test.astype(<span class="bu">float</span>), r_test</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)[<span class="dv">0</span>]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"test C-index = </span><span class="sc">{</span>c_index<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then apply the frozen cutpoint and draw the descriptive KM curves:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.plotting <span class="im">import</span> add_at_risk_counts</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.statistics <span class="im">import</span> logrank_test</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>high <span class="op">=</span> r_test <span class="op">&gt;=</span> tau</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> high.<span class="bu">sum</span>() <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> (<span class="op">~</span>high).<span class="bu">sum</span>() <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Frozen cutpoint creates an empty test group."</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> logrank_test(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    T_test[high], T_test[<span class="op">~</span>high],</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    event_observed_A<span class="op">=</span>E_test[high],</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    event_observed_B<span class="op">=</span>E_test[<span class="op">~</span>high],</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"test log-rank p = </span><span class="sc">{</span>result<span class="sc">.</span>p_value<span class="sc">:.4g}</span><span class="ss">"</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plt.subplot()</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>km_high <span class="op">=</span> KaplanMeierFitter().fit(</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    T_test[high], E_test[high], label<span class="op">=</span><span class="st">"High risk"</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>km_low <span class="op">=</span> KaplanMeierFitter().fit(</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    T_test[<span class="op">~</span>high], E_test[<span class="op">~</span>high], label<span class="op">=</span><span class="st">"Low risk"</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>km_high.plot_survival_function(ax<span class="op">=</span>ax, ci_show<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>km_low.plot_survival_function(ax<span class="op">=</span>ax, ci_show<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>add_at_risk_counts(km_high, km_low, ax<span class="op">=</span>ax)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Report the test-set C-index with a confidence interval, group sizes and event counts, the frozen cutpoint rule, KM confidence bands and at-risk counts, and the log-rank result. If the model produces survival probabilities, also report the Brier score and horizon-specific calibration. A small p-value alone is neither an effect size nor evidence of clinical utility.</p>
+</section>
+<section id="common-failure-modes" class="level2">
+<h2 class="anchored" data-anchor-id="common-failure-modes">Common failure modes</h2>
+<ol type="1">
+<li><strong>Selecting or adjusting <code>tau</code> on the test set</strong> — this makes the displayed separation optimistic.</li>
+<li><strong>Reporting the validation max-log-rank p-value</strong> — the search itself invalidates the naive p-value.</li>
+<li><strong>Using only the grouped result</strong> — dichotomization discards information; keep continuous-score metrics primary.</li>
+<li><strong>Computing preprocessing before the split</strong> — leaked normalization or feature selection can inflate every downstream metric.</li>
+<li><strong>Treating composite PFS as competing risks</strong> — death is already part of the PFS event; use event types only when the scientific question distinguishes causes.</li>
+<li><strong>Claiming treatment benefit from prognosis</strong> — a high-risk group identifies poorer prognosis, not which treatment will help.</li>
 </ol>
 
 

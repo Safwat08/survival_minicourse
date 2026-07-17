@@ -402,12 +402,12 @@ window.Quarto = {
 
 <section id="clinician-goals-in-survival-analysis" class="level1">
 <h1>Clinician Goals in Survival Analysis</h1>
-<p>Survival models translate imaging and clinical data into actionable outputs for clinicians.</p>
+<p>Survival models can translate imaging and clinical data into prognostic outputs. Whether those outputs should change care requires external validation, assessment of clinical utility, and comparison with current practice—not predictive accuracy alone.</p>
 <section id="risk-score" class="level2">
 <h2 class="anchored" data-anchor-id="risk-score">Risk Score</h2>
 <p>A continuous score that ranks patients by their estimated risk. Higher score = higher hazard. Used to compare patients or cohorts.</p>
 <ul>
-<li>Output of Cox PH (the proportional-hazards model defined in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <em>linear predictor</em>, i.e.&nbsp;a log-hazard ratio — the number <span class="math inline">\beta^\top x</span>. It is the log of the hazard ratio <span class="math inline">\exp(\beta^\top x)</span> (how many times the patient’s hazard is vs.&nbsp;baseline), so it is centered at 0: positive = higher risk, negative = lower. “Linear predictor”, “risk score”, and “log-hazard ratio” all name this same number (see <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>).</li>
+<li>Output of Cox PH (the proportional-hazards model defined in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <em>linear predictor</em>, <span class="math inline">\beta^\top x</span>. Relative to the reference covariate vector, <span class="math inline">\exp(\beta^\top x)</span> is a hazard ratio. A positive score is higher risk than that reference and a negative score is lower; the score is <strong>not necessarily centered at zero in the study cohort</strong>.</li>
 <li>Output of deep models (e.g.&nbsp;DeepSurv, the neural Cox of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <strong>scalar</strong> risk score per patient — i.e.&nbsp;<em>one single number</em> for each patient (not a list or a curve), the network’s <span class="math inline">\varphi(x)</span> standing in for the linear <span class="math inline">\beta^\top x</span>. Like the linear predictor it only <em>ranks</em> patients; it is not a probability. For absolute probabilities you need a full S(t) curve — see “Event Probability by Time” below.</li>
 </ul>
 <p><strong>Symbols used above</strong> (all defined in full where the concept lives):</p>
@@ -455,16 +455,17 @@ window.Quarto = {
 </section>
 <section id="risk-stratification" class="level2">
 <h2 class="anchored" data-anchor-id="risk-stratification">Risk Stratification</h2>
-<p>Divides patients into risk groups (e.g., low / intermediate / high) using a threshold on the risk score. Enables: - Treatment escalation for high-risk patients - Active surveillance for low-risk patients</p>
+<p>Divides patients into groups (for example, low / intermediate / high) using a pre-specified or previously validated threshold on the risk score. Stratification can support trial enrichment, reporting, and discussions about follow-up intensity, but a prognostic group alone does not establish that a treatment helps.</p>
 <p>See <code>03_metrics/</code> for methods to select the cutoff.</p>
 </section>
 <section id="event-probability-by-time" class="level2">
 <h2 class="anchored" data-anchor-id="event-probability-by-time">Event Probability by Time</h2>
 <p>Estimates the probability that a patient experiences the event by a specific time point — e.g., “60% probability of recurrence within 2 years.”</p>
 <ul>
-<li>Derived from the survival function: P(T ≤ t) = 1 - S(t)</li>
+<li>For a single-event endpoint, derived from the survival function: <span class="math inline">P(T \le t) = 1-S(t)</span></li>
 <li>More clinically interpretable than a raw risk score</li>
 </ul>
+<p>With competing risks, use the cause-specific CIF rather than <span class="math inline">1-S(t)</span> for the probability of a particular event; see <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</p>
 </section>
 <section id="which-output-comes-from-which-call" class="level2">
 <h2 class="anchored" data-anchor-id="which-output-comes-from-which-call">Which Output Comes From Which Call</h2>
@@ -491,7 +492,7 @@ window.Quarto = {
 <tr class="odd">
 <td>Risk at fixed horizons</td>
 <td>P(event by t)</td>
-<td><code>model.predict_risk(features, t=[8, 12, 16])</code> (auton-survival)</td>
+<td><code>model.predict_risk(features, times=[8, 12, 16])</code> (auton-survival)</td>
 </tr>
 <tr class="even">
 <td>Risk stratification</td>
@@ -502,7 +503,7 @@ window.Quarto = {
 </table>
 <p>See <a href="../04_packages/4.1_pycox.html"><code>04_packages/</code></a> for each package’s full API.</p>
 <blockquote class="blockquote">
-<p><strong>A risk score alone cannot answer “what’s my 2-year recurrence probability?”</strong> Cox-style models give a <em>ranking</em> (risk score); you need a model that emits S(t) — parametric, discrete-time, or a calibrated Cox baseline — for absolute probabilities. Choose the model by the question the clinician is asking.</p>
+<p><strong>A risk score alone cannot answer “what is this patient’s 2-year recurrence probability?”</strong> You need an estimated <span class="math inline">S(t)</span> or, under competing risks, a CIF. Cox models can provide <span class="math inline">S(t)</span> after estimating the baseline survival, but those absolute probabilities still require calibration and external validation.</p>
 </blockquote>
 
 

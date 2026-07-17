@@ -417,28 +417,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="common-usage" class="level2">
 <h2 class="anchored" data-anchor-id="common-usage">Common Usage</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival <span class="im">import</span> datasets, preprocessing</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival.models.cph <span class="im">import</span> DeepCoxPH</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load and preprocess</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>outcomes, features <span class="op">=</span> datasets.load_dataset(<span class="st">"SUPPORT"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> preprocessing.Preprocessor().fit_transform(features)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Train</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DeepCoxPH(layers<span class="op">=</span>[<span class="dv">100</span>])</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>model.fit(features, outcomes.time, outcomes.event)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict risk at time horizons</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict_risk(features, t<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival <span class="im">import</span> datasets, estimators</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>outcomes, features <span class="op">=</span> datasets.load_dataset(<span class="st">"SUPPORT"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the package's common estimator interface</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> estimators.SurvivalModel(model<span class="op">=</span><span class="st">"dsm"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>model.fit(features, outcomes)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict risk at time horizons</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict_risk(features, times<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="cross-validation-experiment" class="level2">
 <h2 class="anchored" data-anchor-id="cross-validation-experiment">Cross-Validation Experiment</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival.experiments <span class="im">import</span> SurvivalRegressionCV</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>experiment <span class="op">=</span> SurvivalRegressionCV(model<span class="op">=</span><span class="st">'cph'</span>, num_folds<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                                  hyperparam_grid<span class="op">=</span>hyperparam_grid)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> experiment.fit(features, outcomes, metric<span class="op">=</span><span class="st">'ibs'</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       cat_feats<span class="op">=</span>cat_feats, num_feats<span class="op">=</span>num_feats)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>experiment <span class="op">=</span> SurvivalRegressionCV(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"cph"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    num_folds<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    hyperparam_grid<span class="op">=</span>{<span class="st">"l2"</span>: [<span class="fl">1e-4</span>, <span class="fl">1e-3</span>, <span class="fl">1e-2</span>]},</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> experiment.fit(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    features, outcomes, horizons<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>], metric<span class="op">=</span><span class="st">"ibs"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
@@ -448,6 +450,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Treatment effect estimation</li>
 <li>Patient phenotyping and subgroup discovery</li>
 </ul>
+<p>The counterfactual and treatment-effect utilities do not make an observational analysis causal by themselves. Identification still requires a defensible treatment assignment model, measured confounders, positivity, and appropriate sensitivity analysis. The official installation path is currently source-based, so verify its dependency compatibility in a clean environment before committing a project to it.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>

@@ -440,7 +440,7 @@ window.Quarto = {
 
 <section id="concordance-index-c-index" class="level1">
 <h1>Concordance Index (C-index)</h1>
-<p>The C-index is the most common <strong>discrimination</strong> metric in survival analysis: it measures how well the model <em>orders</em> patients by risk, ignoring whether the predicted probabilities are themselves accurate (that’s calibration — see <a href="../03_metrics/3.2_brier_score.html"><code>3.2</code></a>). It generalizes the AUC to censored data.</p>
+<p>The C-index is a common <strong>discrimination</strong> metric in survival analysis: it measures how well the model <em>orders</em> patients by risk, without checking whether predicted probabilities are accurate. It is related to rank statistics and ROC-AUC, but its pair definition is adapted to time-to-event outcomes and censoring.</p>
 <section id="definition" class="level2">
 <h2 class="anchored" data-anchor-id="definition">Definition</h2>
 <p>The C-index is the probability that, for a random comparable pair, the patient the model scores as <strong>riskier</strong> is the one who actually <strong>fails first</strong>:</p>
@@ -455,7 +455,7 @@ C \;=\; P\big(\,
 <p>where <span class="math inline">r_i</span> is subject <span class="math inline">i</span>’s <strong>risk score</strong> (higher = more risk), <span class="math inline">T_i</span> is the observed time, and <span class="math inline">\delta_i</span> the event indicator (the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>).</p>
 <p>In practice it’s computed by counting <strong>concordant pairs</strong> — pairs the model got in the right order — over all comparable pairs:</p>
 <p><span class="math display">
-\hat{C} \;=\; \frac{\#\{\text{comparable pairs with } r_i &gt; r_j\}}{\#\{\text{comparable pairs}\}}
+\hat{C} \;=\; \frac{\#\{\text{concordant pairs}\} + 0.5\,\#\{\text{risk-score ties}\}}{\#\{\text{comparable pairs}\}}
 </span></p>
 </section>
 <section id="comparable-pairs" class="level2">
@@ -476,32 +476,11 @@ C \;=\; P\big(\,
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>C-index</th>
-<th>Interpretation</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>0.5</td>
-<td>Random ranking (no discrimination)</td>
-</tr>
-<tr class="even">
-<td>0.6–0.7</td>
-<td>Moderate</td>
-</tr>
-<tr class="odd">
-<td>0.7–0.8</td>
-<td>Good</td>
-</tr>
-<tr class="even">
-<td>&gt; 0.8</td>
-<td>Strong</td>
-</tr>
-</tbody>
-</table>
+<ul>
+<li><span class="math inline">0.5</span> is the expected value for an uninformative continuous score.</li>
+<li><span class="math inline">1.0</span> is perfect concordance; <span class="math inline">0.0</span> is perfect reverse ordering.</li>
+<li>There are no universal “moderate” or “good” cutoffs. Achievable concordance depends on endpoint noise, case mix, follow-up, censoring, and the prediction horizon. Compare models on the same held-out cohort and report uncertainty.</li>
+</ul>
 </section>
 <section id="harrell-vs.-uno-ipcw" class="level2">
 <h2 class="anchored" data-anchor-id="harrell-vs.-uno-ipcw">Harrell vs.&nbsp;Uno (IPCW)</h2>
@@ -514,10 +493,11 @@ C \;=\; P\big(\,
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
-<li><strong>It scores ranking, not probabilities.</strong> A model can have a high C-index yet predict badly-calibrated survival curves. Always pair it with a calibration metric — the <a href="../03_metrics/3.2_brier_score.html">Brier score</a>.</li>
-<li><strong>Pick Uno’s C when censoring is heavy.</strong> Harrell’s C drifts optimistic as censoring rises; Uno’s IPCW correction fixes that. Below ~25–30% censoring the two roughly agree.</li>
+<li><strong>It scores ranking, not probabilities.</strong> A model can have a high C-index yet predict poor survival probabilities. Pair it with the <a href="../03_metrics/3.2_brier_score.html">Brier score</a> for overall probabilistic error and a calibration curve for calibration itself.</li>
+<li><strong>Consider Uno’s C when censoring is substantial or follow-up differs.</strong> Harrell’s C can drift optimistic as censoring rises. Uno’s estimator uses IPCW, but it still relies on a valid censoring model and a supported truncation horizon <span class="math inline">\tau</span>.</li>
 <li><strong>Mind the sign convention.</strong> Some APIs (e.g.&nbsp;lifelines) expect a quantity that <em>increases with survival</em> — pass the <strong>negative</strong> risk score, or you’ll report <span class="math inline">1 - C</span> by mistake.</li>
 <li><strong>It’s a single summary.</strong> It can’t tell you <em>when</em> the model discriminates well. For time-resolved discrimination use the <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>.</li>
+<li><strong>Estimate it out of sample.</strong> Hyperparameter tuning, feature selection, and model fitting must be separated from the test cohort; add a confidence interval when comparing models.</li>
 </ul>
 </section>
 <section id="implementation" class="level2">
@@ -525,7 +505,7 @@ C \;=\; P\big(\,
 <p><strong>lifelines</strong> — Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.utils <span class="im">import</span> concordance_index</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> concordance_index(event_times, <span class="op">-</span>risk_scores, event_observed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>scikit-survival</strong> — both estimators; the metrics gold standard in the ecosystem (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong> — both estimators (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> concordance_index_censored, concordance_index_ipcw</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>harrell <span class="op">=</span> concordance_index_censored(event_test, time_test, risk_scores)[<span class="dv">0</span>]</span>

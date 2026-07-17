@@ -406,8 +406,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="key-features" class="level2">
 <h2 class="anchored" data-anchor-id="key-features">Key Features</h2>
 <ul>
-<li><strong>Losses</strong>: Cox, Weibull (AFT), Momentum (contrastive)</li>
-<li><strong>Metrics</strong>: C-index, Brier score, AUC — all differentiable and GPU-compatible</li>
+<li><strong>Losses</strong>: Cox, Weibull (AFT), flexible hazard NLL, and momentum/contrastive tools</li>
+<li><strong>Metrics</strong>: C-index, Brier score, and AUC implemented with native PyTorch tensors and GPU support</li>
 <li>Integrates directly with any PyTorch model</li>
 </ul>
 </section>
@@ -424,13 +424,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>cindex <span class="op">=</span> ConcordanceIndex()</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> cindex(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Metrics should normally be computed on accumulated validation/test predictions, not averaged from separate mini-batch metric values: comparable pairs and censoring weights can cross batch boundaries. The Cox training loss has the same risk-set caveat; see <a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists"><code>2.1</code></a>.</p>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
 <ul>
 <li>Custom PyTorch survival architectures</li>
 <li>3D imaging models (CNNs, ViTs) where you own the forward pass</li>
-<li>When you need GPU-accelerated survival metrics</li>
+<li>When you need GPU-compatible survival metrics without leaving PyTorch</li>
 <li>Integrating survival loss into SSL or multi-task pipelines</li>
 </ul>
 </section>

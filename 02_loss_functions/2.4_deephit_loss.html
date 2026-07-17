@@ -424,7 +424,7 @@ window.Quarto = {
   <li><a href="#model-output" id="toc-model-output" class="nav-link" data-scroll-target="#model-output">Model output</a></li>
   <li><a href="#from-data-to-loss" id="toc-from-data-to-loss" class="nav-link" data-scroll-target="#from-data-to-loss">From data to loss</a>
   <ul class="collapse">
-  <li><a href="#term-1-the-likelihood-loss-calibration" id="toc-term-1-the-likelihood-loss-calibration" class="nav-link" data-scroll-target="#term-1-the-likelihood-loss-calibration">Term 1 — the likelihood loss (calibration)</a></li>
+  <li><a href="#term-1-the-likelihood-loss-probabilistic-accuracy" id="toc-term-1-the-likelihood-loss-probabilistic-accuracy" class="nav-link" data-scroll-target="#term-1-the-likelihood-loss-probabilistic-accuracy">Term 1 — the likelihood loss (probabilistic accuracy)</a></li>
   <li><a href="#term-2-the-ranking-loss-discrimination" id="toc-term-2-the-ranking-loss-discrimination" class="nav-link" data-scroll-target="#term-2-the-ranking-loss-discrimination">Term 2 — the ranking loss (discrimination)</a></li>
   <li><a href="#combined" id="toc-combined" class="nav-link" data-scroll-target="#combined">Combined</a></li>
   </ul></li>
@@ -443,7 +443,7 @@ window.Quarto = {
 
 <section id="deephit-loss" class="level1">
 <h1>DeepHit Loss</h1>
-<p>DeepHit (Lee et al., 2018) is a deep-learning survival model that makes <strong>no assumptions about the shape of risk</strong>: not the proportional hazards of Cox (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>), and not a parametric distribution like the NLL models (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>). Instead it lets a neural network output the survival distribution <em>directly</em> as a discrete probability table, and it handles <strong>competing risks</strong> (<a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>) natively. Its loss combines a likelihood term (for calibration) with a ranking term (for discrimination).</p>
+<p>DeepHit (Lee et al., 2018) is a deep-learning survival model that does not require the proportional-hazards assumption of Cox (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>) or a named parametric event-time distribution (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>). Instead, it predicts a discrete probability table and handles <strong>competing risks</strong> (<a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>) natively. Its loss combines a likelihood term that rewards probabilistic accuracy with a ranking term that rewards discrimination. It is flexible, but not assumption-free: time discretization, network architecture, and censoring assumptions still matter.</p>
 <section id="model-output" class="level2">
 <h2 class="anchored" data-anchor-id="model-output">Model output</h2>
 <p>Cox and parametric models predict a <em>summary</em> (a risk score, or a distribution’s parameters) and reconstruct the survival curve afterward. DeepHit skips the middle-man: the network outputs the full <strong>joint probability mass</strong> over <em>which</em> event happens and <em>when</em>.</p>
@@ -462,7 +462,7 @@ window.Quarto = {
 \underbrace{F_k(t \mid x)}_{\text{CIF for cause } k}
 = \sum_{\tau \le t} p_k(\tau \mid x),
 \qquad
-\underbrace{S(t \mid x)}_{\text{overall survival}}
+\underbrace{S(t \mid x)}_{\text{event-free survival}}
 = 1 - \sum_{k=1}^{K}\sum_{\tau \le t} p_k(\tau \mid x)
 </span></p>
 <p><span class="math inline">F_k</span> is the <strong>cumulative incidence function</strong> — the probability of having had cause <span class="math inline">k</span> by time <span class="math inline">t</span>, the competing-risks quantity defined in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>. <span class="math inline">S</span> is the probability of escaping <em>all</em> causes through <span class="math inline">t</span>.</p>
@@ -471,20 +471,23 @@ window.Quarto = {
 </blockquote>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../assets/figures/2.4_deephit_pmf.svg" class="img-fluid figure-img" alt="Left: grouped bar chart of probability mass for two causes across time bins. Right: cumulative incidence step curves for the two causes plus a descending overall survival curve."></p>
-<figcaption>Left: the network emits one probability per (cause, time-bin) cell — the joint mass <span class="math inline">p_k(t\mid x)</span>. Right: everything else is read off by summing those cells — each cause’s CIF is a running sum of its cells, and overall survival <span class="math inline">S(t)</span> is 1 minus every cell so far. No second model needed.</figcaption>
+<p><img src="../assets/figures/2.4_deephit_pmf.svg" class="img-fluid figure-img" alt="Left: grouped bar chart of probability mass for two causes across time bins. Right: cumulative incidence step curves for the two causes plus a descending event-free survival curve."></p>
+<figcaption>Left: the network emits one probability per (cause, time-bin) cell—the joint mass <span class="math inline">p_k(t\mid x)</span>. Right: each cause’s CIF is a running sum of its cells, and event-free survival <span class="math inline">S(t)</span> is 1 minus every event cell accumulated so far.</figcaption>
 </figure>
 </div>
 </section>
 <section id="from-data-to-loss" class="level2">
 <h2 class="anchored" data-anchor-id="from-data-to-loss">From data to loss</h2>
-<p>DeepHit is trained by minimizing a <strong>weighted sum of two losses</strong> that target the two things we want from a survival model:</p>
+<p>DeepHit is trained by minimizing a <strong>weighted sum of two losses</strong>. Using separate non-negative weights avoids ambiguity across implementations:</p>
 <p><span class="math display">
-\underbrace{L}_{\text{total}} \;=\; \underbrace{L_{\text{likelihood}}}_{\text{calibration: right probabilities}} \;+\; \alpha \cdot \underbrace{L_{\text{rank}}}_{\text{discrimination: right ordering}}
+\underbrace{L}_{\text{total}} \;=\; a\,
+\underbrace{L_{\text{likelihood}}}_{\text{probabilistic accuracy}}
+\;+\; b\,
+\underbrace{L_{\text{rank}}}_{\text{discrimination}}
 </span></p>
-<p>The hyperparameter <span class="math inline">\alpha \ge 0</span> sets how much ranking matters relative to calibration. We build up each term below.</p>
-<section id="term-1-the-likelihood-loss-calibration" class="level3">
-<h3 class="anchored" data-anchor-id="term-1-the-likelihood-loss-calibration">Term 1 — the likelihood loss (calibration)</h3>
+<p>The ratio <span class="math inline">a:b</span> controls the trade-off. The <code>pycox</code> API later uses a parameter named <code>alpha</code>, but defines it specifically as <span class="math inline">a=\alpha</span> and <span class="math inline">b=1-\alpha</span>.</p>
+<section id="term-1-the-likelihood-loss-probabilistic-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="term-1-the-likelihood-loss-probabilistic-accuracy">Term 1 — the likelihood loss (probabilistic accuracy)</h3>
 <p>This is the <strong>same negative-log-likelihood recipe as <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></strong> — product of per-subject likelihoods, log, negate — with one change: an <em>observed event</em> contributes the probability <strong>mass</strong> of its specific (time, cause) cell instead of a density, because time is now discrete.</p>
 <p><span class="math display">
 L_{\text{likelihood}} \;=\; -\sum_i \Big[\,
@@ -497,7 +500,7 @@ L_{\text{likelihood}} \;=\; -\sum_i \Big[\,
 </section>
 <section id="term-2-the-ranking-loss-discrimination" class="level3">
 <h3 class="anchored" data-anchor-id="term-2-the-ranking-loss-discrimination">Term 2 — the ranking loss (discrimination)</h3>
-<p>The likelihood term alone makes probabilities <em>calibrated</em> but does not directly reward putting patients in the <strong>right order</strong> — which is what the <a href="../03_metrics/3.1_c_index.html">C-index</a> measures. The ranking term adds that pressure with a smooth, differentiable penalty over <strong>comparable pairs</strong>.</p>
+<p>The likelihood term rewards accurate probabilities but does not guarantee calibration in finite data or directly emphasize the <strong>ordering</strong> of patients—which is what the <a href="../03_metrics/3.1_c_index.html">C-index</a> measures. The ranking term adds that pressure with a smooth, differentiable penalty over <strong>comparable pairs</strong>.</p>
 <p>A pair <span class="math inline">(i, j)</span> is <em>comparable for cause <span class="math inline">k</span></em> when patient <span class="math inline">i</span> actually had event <span class="math inline">k</span> at time <span class="math inline">T_i</span> while patient <span class="math inline">j</span> was still event-free at that moment (<span class="math inline">T_j &gt; T_i</span>). For such a pair, the patient who failed should have the <strong>higher predicted incidence</strong> at <span class="math inline">T_i</span>: <span class="math inline">F_k(T_i \mid x_i) &gt; F_k(T_i \mid x_j)</span>. The loss penalizes violations:</p>
 <p><span class="math display">
 L_{\text{rank}} \;=\; \sum_{k=1}^{K}\;\sum_{(i,j)\,\in\,\mathcal{A}_k}\;
@@ -515,9 +518,10 @@ L_{\text{rank}} \;=\; \sum_{k=1}^{K}\;\sum_{(i,j)\,\in\,\mathcal{A}_k}\;
 <section id="combined" class="level3">
 <h3 class="anchored" data-anchor-id="combined">Combined</h3>
 <p><span class="math display">
-L \;=\; L_{\text{likelihood}} \;+\; \alpha \cdot L_{\text{rank}}
+L \;=\; a\,L_{\text{likelihood}} \;+\; b\,L_{\text{rank}}
 </span></p>
-<p>Calibration (<span class="math inline">L_{\text{likelihood}}</span>) and discrimination (<span class="math inline">\alpha L_{\text{rank}}</span>) can pull in different directions; <span class="math inline">\alpha</span> is the knob that balances them.</p>
+<p>For the <code>pycox</code> convention, this becomes <span class="math inline">L=\alpha L_{\text{likelihood}}+(1-\alpha)L_{\text{rank}}</span>.</p>
+<p>Probabilistic accuracy and discrimination can pull in different directions. Select their relative weights using validation data and metrics that match the intended clinical output.</p>
 </section>
 </section>
 <section id="pros-and-cons" class="level2">
@@ -537,8 +541,8 @@ L \;=\; L_{\text{likelihood}} \;+\; \alpha \cdot L_{\text{rank}}
 <td>❌ <strong>Two hyperparameters</strong> (<span class="math inline">\alpha</span>, <span class="math inline">\sigma</span>) to tune, plus the bin grid — more knobs than Cox.</td>
 </tr>
 <tr class="even">
-<td>✅ <strong>Optimizes calibration <em>and</em> ranking</strong> at once.</td>
-<td>❌ <strong>Data-hungry</strong> — predicting a full PMF needs more events than fitting a handful of coefficients.</td>
+<td>✅ <strong>Targets probability quality and ranking</strong> in one objective.</td>
+<td>❌ <strong>Data-hungry</strong> — predicting a full PMF can require more events than fitting a small coefficient model.</td>
 </tr>
 </tbody>
 </table>
@@ -548,8 +552,8 @@ L \;=\; L_{\text{likelihood}} \;+\; \alpha \cdot L_{\text{rank}}
 <p>If you just need to train and use DeepHit — not derive it — these are the points that matter:</p>
 <ul>
 <li><strong>Reach for it when competing risks are in play.</strong> Multiple mutually exclusive event types (relapse <em>vs.</em> death) with cause-specific predictions is DeepHit’s home turf; for a single event, Cox or a discrete-time NLL is usually simpler. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
-<li><strong>It outputs full probabilities</strong> — per-cause CIFs <span class="math inline">F_k(t)</span> and overall <span class="math inline">S(t)</span> — not just a ranking. Evaluate both: the <a href="../03_metrics/3.1_c_index.html">C-index</a> for discrimination <em>and</em> the Brier score / calibration for probability quality.</li>
-<li><strong><code>alpha</code> and <code>sigma</code> are the two knobs that move the needle.</strong> <code>alpha</code> trades calibration against discrimination; <code>sigma</code> sets how sharply mis-ordered pairs are punished. The defaults rarely win — tune both. (More bins = finer time resolution but more parameters and sparser cells.)</li>
+<li><strong>It outputs full probabilities</strong> — per-cause CIFs <span class="math inline">F_k(t)</span> and event-free <span class="math inline">S(t)</span> — not just a ranking. Evaluate discrimination, Brier prediction error, and calibration separately.</li>
+<li><strong><code>alpha</code>, <code>sigma</code>, and the time grid need validation.</strong> In <code>pycox</code>, <code>alpha</code> weights the NLL and <code>1-alpha</code> weights ranking; <code>sigma</code> sets how sharply mis-ordered pairs are penalized. More bins give finer nominal resolution but also sparser supervision.</li>
 <li><strong>Don’t trust it past the last time bin.</strong> DeepHit can’t extrapolate; if you need predictions beyond follow-up, use a parametric model (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) or DSM.</li>
 <li><strong>Censoring is handled by the likelihood term</strong> (the <span class="math inline">S(T_i)</span> part) — pass <code>(times, events)</code> and, for competing risks, the event-type labels.</li>
 </ul>
@@ -564,7 +568,7 @@ L \;=\; L_{\text{likelihood}} \;+\; \alpha \cdot L_{\text{rank}}
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> labtrans.fit_transform(durations, events)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DeepHitSingle(net, optimizer,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                      alpha<span class="op">=</span><span class="fl">0.2</span>, sigma<span class="op">=</span><span class="fl">0.1</span>,        <span class="co"># alpha weights likelihood vs ranking; sigma is the ranking scale</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                      alpha<span class="op">=</span><span class="fl">0.2</span>, sigma<span class="op">=</span><span class="fl">0.1</span>,        <span class="co"># pycox: alpha*NLL + (1-alpha)*rank</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                      duration_index<span class="op">=</span>labtrans.cuts)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>model.fit(x_train, y_train, epochs<span class="op">=</span><span class="dv">100</span>)</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> model.predict_surv_df(x_test)               <span class="co"># full S(t) per subject</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -573,7 +577,7 @@ L \;=\; L_{\text{likelihood}} \;+\; \alpha \cdot L_{\text{rank}}
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival.models.dsm <span class="im">import</span> DeepSurvivalMachines</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DeepSurvivalMachines(layers<span class="op">=</span>[<span class="dv">100</span>]).fit(features, outcomes.time, outcomes.event)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <blockquote class="blockquote">
-<p><strong>The two hyperparameters that matter.</strong> <code>alpha</code> trades likelihood (calibration) against ranking (discrimination/C-index); <code>sigma</code> controls how sharply the ranking term penalizes mis-ordered pairs. Tune both — the defaults rarely win. This loss is the natural choice when <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>01_background/1.4_multi_events_and_competing_risks.md</code></a> applies.</p>
+<p><strong>Implementation convention.</strong> In <code>pycox</code>, <code>alpha</code> is restricted to <span class="math inline">[0,1]</span> and weights the likelihood term: <code>alpha * NLL + (1 - alpha) * rank</code>. Other papers or implementations may name the weights differently, so verify the local definition before interpreting a tuning result.</p>
 </blockquote>
 
 

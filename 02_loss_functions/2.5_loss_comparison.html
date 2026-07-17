@@ -434,10 +434,10 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><strong>Cox PH</strong> (DeepSurv)</td>
-<td>Ranking — order of events (partial likelihood)</td>
-<td>Risk score (log-hazard); <span class="math inline">S(t)</span> via Breslow</td>
+<td>Partial likelihood over risk sets</td>
+<td>Relative-risk score; <span class="math inline">S(t)</span> after baseline estimation</td>
 <td><strong>Proportional hazards</strong></td>
-<td>No (single event)</td>
+<td>One cause-specific fit at a time</td>
 <td>lifelines, scikit-survival, pycox, torchsurv</td>
 </tr>
 <tr class="even">
@@ -460,7 +460,7 @@ window.Quarto = {
 <td><strong>DeepHit</strong></td>
 <td>Likelihood <strong>+</strong> ranking (weighted)</td>
 <td>Discrete joint PMF over (time, event) → <span class="math inline">S(t)</span>, CIF</td>
-<td>None (no PH, no distribution); binning</td>
+<td>Time binning; no PH or named distribution</td>
 <td><strong>Yes, native</strong></td>
 <td>pycox (DeepHit, DeepHitSingle)</td>
 </tr>
@@ -478,7 +478,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/2.5_method_map.svg" class="img-fluid figure-img" alt="Scatter plot positioning five loss families on axes of flexibility versus output type; Cox PH bottom-left, DeepHit and DSM top-right."></p>
-<figcaption>The same trade-off as the tables, in one picture. Left-to-right: how much structure the loss imposes on time (rigid PH/distribution → fully flexible). Bottom-to-top: what it outputs (a bare risk-score ranking → an absolute, calibrated <span class="math inline">S(t)</span> and CIF). Cox sits bottom-left (rigid, ranking); DeepHit/DSM sit top-right (flexible, full probabilities).</figcaption>
+<figcaption>The same trade-off as the tables, in one picture. Left-to-right: how much structure the method imposes on time. Bottom-to-top: whether its native output is mainly a relative-risk score or a full probability curve. A full curve is not automatically calibrated; calibration must be evaluated on held-out data.</figcaption>
 </figure>
 </div>
 </section>
@@ -509,9 +509,9 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td><strong>Parametric NLL</strong></td>
-<td>Implied by the chosen family</td>
-<td><strong>Fixed</strong> (you pick it)</td>
-<td>Continuous, closed-form</td>
+<td>Depends on the regression parameterization; not inherent to NLL</td>
+<td><strong>Fixed family</strong> (you pick it)</td>
+<td>Continuous, often closed-form</td>
 </tr>
 <tr class="odd">
 <td><strong>Discrete-time NLL</strong></td>
@@ -534,13 +534,19 @@ window.Quarto = {
 </tbody>
 </table>
 <blockquote class="blockquote">
-<p><strong>Reading this table.</strong> Cox buys freedom on the <em>shape of risk over time</em> (no distribution) by paying with the <em>proportional-hazards</em> constraint (see <a href="../02_loss_functions/2.1_cox_ph_loss.html#the-proportional-hazards-assumption"><code>2.1</code></a>). Parametric NLL is the mirror image: it drops PH but commits to a distributional shape (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html#common-distributions"><code>2.2</code></a>). DeepHit and discrete-time NLL drop <em>both</em> — at the cost of discretizing time and needing more data.</p>
+<p><strong>Reading this table.</strong> Cox leaves the baseline hazard shape unspecified but imposes proportional hazards. Parametric NLL commits to a distributional family; whether it also implies PH depends on how covariates enter that family. DeepHit and discrete-time NLL avoid both restrictions but still depend on the chosen time grid and model capacity.</p>
 </blockquote>
 </section>
 <section id="output-evaluation" class="level2">
 <h2 class="anchored" data-anchor-id="output-evaluation">Output &amp; evaluation</h2>
 <p>What a loss produces dictates how you evaluate it.</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Loss</th>
@@ -552,9 +558,9 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><strong>Cox PH</strong></td>
-<td>Ranking (risk score)</td>
-<td>No (baseline ends with data)</td>
-<td><a href="../03_metrics/3.1_c_index.html">C-index</a> (rank-based)</td>
+<td>Risk score; <span class="math inline">S(t)</span> after baseline estimation</td>
+<td>No reliable baseline extrapolation</td>
+<td>C-index; Brier/calibration if <span class="math inline">S(t)</span> is used</td>
 </tr>
 <tr class="even">
 <td><strong>Parametric NLL</strong></td>
@@ -583,7 +589,7 @@ window.Quarto = {
 </tbody>
 </table>
 <blockquote class="blockquote">
-<p><strong>Ranking vs.&nbsp;probability.</strong> A <em>risk score</em> (Cox) only orders patients — evaluate with the rank-based <a href="../03_metrics/3.1_c_index.html">C-index</a>. A <em>probability</em> model (parametric NLL, DeepHit, DSM) predicts an absolute <span class="math inline">S(t)</span> — also check <strong>calibration</strong> (do 70%-survival predictions actually survive 70% of the time?) and the <strong>Brier score</strong>.</p>
+<p><strong>Ranking vs.&nbsp;probability.</strong> Evaluate a bare risk score with discrimination metrics such as the <a href="../03_metrics/3.1_c_index.html">C-index</a>. Whenever a model is used to report <span class="math inline">S(t)</span> or a CIF—including Cox after baseline estimation—also assess calibration and overall probabilistic error with the Brier score.</p>
 </blockquote>
 </section>
 <section id="variants-cheat-sheet" class="level2">
@@ -655,13 +661,13 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="how-to-choose">How to choose</h2>
 <p>Walk down these questions in order; the first “yes” usually points to your loss.</p>
 <ol type="1">
-<li><strong>Are there competing risks</strong> (multiple mutually exclusive event types)? → <strong>DeepHit</strong> (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) or <strong>DSM</strong>. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
-<li><strong>Do you need absolute, calibrated <span class="math inline">S(t)</span> — or to extrapolate beyond follow-up</strong>? → <strong>Parametric NLL</strong> (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) or <strong>DSM</strong>.</li>
+<li><strong>Are there competing risks</strong> (multiple mutually exclusive event types)? → Start with descriptive Aalen–Johansen and cause-specific or Fine–Gray baselines; consider <strong>DeepHit</strong> (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) or <strong>DSM</strong> when a flexible joint prediction model is justified. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
+<li><strong>Do you need smooth, model-based extrapolation beyond follow-up, with a defensible distributional assumption?</strong> → <strong>Parametric NLL</strong> (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) or <strong>DSM</strong>. Validate extrapolation separately.</li>
 <li><strong>Do you suspect non-proportional hazards</strong> (effects that flip or fade over time)? → <strong>DeepHit</strong>, <strong>discrete-time NLL</strong>, or <strong>CoxTime</strong> — avoid plain Cox.</li>
 <li><strong>Otherwise — you just need a solid risk ranking?</strong> → <strong>Cox PH</strong> (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>). It’s the default for a reason: no distributional assumption, strong baseline, well-tooled.</li>
 </ol>
 <blockquote class="blockquote">
-<p><strong>Rule of thumb.</strong> Start with <strong>Cox</strong> for a ranking baseline. Move to a <strong>parametric/discrete NLL</strong> when you need real probabilities or non-PH flexibility. Reach for <strong>DeepHit/DSM</strong> when competing risks are in play.</p>
+<p><strong>Rule of thumb.</strong> Start with a well-validated <strong>Cox</strong> baseline. Move to a parametric or discrete NLL when its time representation matches the clinical question. Consider DeepHit or DSM for competing risks, but compare them with simpler cause-specific and CIF-based baselines.</p>
 </blockquote>
 
 

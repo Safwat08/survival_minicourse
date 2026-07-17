@@ -449,7 +449,7 @@ window.Quarto = {
 <p>The <strong>cumulative incidence function</strong> CIF_k(t) is the probability that a subject experiences event type <em>k</em> on or before time <em>t</em> — i.e.&nbsp;P(T ≤ t <strong>and</strong> event = k). It is the expected fraction of the cohort who have had event <em>k</em> by time <em>t</em>.</p>
 <p>For a single event type, <code>1 - S(t)</code> (where S(t) is the survival probability — the chance of still being event-free past time <em>t</em>) already gives this cumulative probability. Under competing risks it does <strong>not</strong>: <code>1 - S(t)</code> treats a patient removed by a competing event (death) as if they could still later have the event of interest (recurrence), so it <strong>overestimates</strong>. The CIF discounts those patients correctly by weighting each instant by the chance of still being event-free up to then:</p>
 <p><span class="math display">\text{CIF}_k(t) = \int_0^t S(u^-)\, h_k(u)\, du</span></p>
-<p>To have event <em>k</em> at instant <em>u</em> you must (a) survive <strong>all</strong> event types up to <em>u</em> — the overall survival S(u⁻) — and (b) experience event <em>k</em> exactly then — the cause-specific hazard h_k(u). The CIFs of all competing events sum to 1 − S(t), partitioning the total risk among the causes. (For S(t) and h(t), see <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a>.)</p>
+<p>To have event <em>k</em> at instant <em>u</em> you must (a) remain free of <strong>all</strong> event types up to <em>u</em>—the event-free survival <span class="math inline">S(u^-)</span>—and (b) experience event <em>k</em> then, at cause-specific hazard <span class="math inline">h_k(u)</span>. The CIFs of all mutually exclusive first events sum to <span class="math inline">1-S(t)</span>, partitioning total incidence among the causes. (For <span class="math inline">S(t)</span> and <span class="math inline">h(t)</span>, see <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a>.)</p>
 <p>Ignoring competing risks leads to overestimation of the CIF — which is exactly the <code>1 - S(t)</code> error above.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -520,12 +520,12 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="multi-event-survival">Multi-Event Survival</h2>
 <p>These approaches differ in <strong>what they model</strong>, and that decides <strong>what question they answer</strong>:</p>
 <ul>
-<li><strong>Cause-specific hazard models</strong> — fit <em>one hazard model per event type</em>; when modelling event <em>k</em>, every competing event is treated as censoring. Each answers “among patients still event-free, what drives the <em>rate</em> of event <em>k</em>?” Best for understanding <strong>mechanism / etiology</strong>. A single cause-specific hazard does <em>not</em> translate directly into that event’s CIF — you need all of them together to reconstruct incidence.</li>
-<li><strong>Sub-distribution hazard (Fine-Gray)</strong> — a regression model named after Fine &amp; Gray (1999), the competing-risks counterpart of the Cox model (see <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>). It models a <em>modified</em> hazard engineered to have a direct one-to-one link to the CIF (it keeps patients who had a competing event in the at-risk set rather than dropping them). So one model gives that event’s CIF directly. Best for <strong>prediction / prognosis</strong>.</li>
+<li><strong>Cause-specific hazard models</strong> — fit <em>one hazard model per event type</em>; when modelling event <em>k</em>, competing events are treated as censored for that cause-specific fit. Each answers “among patients still event-free, what is the instantaneous rate of event <em>k</em>?” To obtain an absolute CIF, combine the estimated cause-specific hazards for <strong>all</strong> causes.</li>
+<li><strong>Sub-distribution hazard (Fine–Gray)</strong> — links covariates to a modified risk set whose hazard is tied directly to one cause’s CIF. Patients who experienced a competing event remain represented in that risk set. The resulting sub-distribution hazard ratio describes association with the CIF; it is not a cause-specific hazard ratio and should not be given a causal interpretation.</li>
 <li><strong>DeepHit</strong> — a neural network that skips hazards entirely and directly learns the <strong>joint distribution over (which event, when)</strong>, P(event = k, T = t), in discrete time. No proportional-hazards assumption; covariates interact freely, at the cost of more data and tuning. Covered in full — model output, loss, and tuning — in <a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>.</li>
 </ul>
 <blockquote class="blockquote">
-<p>Rule of thumb: <strong>cause-specific = “rate among those still at risk” (etiology); Fine-Gray = “directly model the cumulative incidence” (prediction).</strong> See <a href="#cumulative-incidence-function-cif"><code>1.4</code> above</a> for the CIF itself.</p>
+<p>Rule of thumb: use cause-specific models when the scientific question is about event rates among currently event-free patients; use Fine–Gray when the regression target is a particular cause’s cumulative incidence. Either approach can support prediction when specified and validated appropriately.</p>
 </blockquote>
 </section>
 <section id="tooling" class="level2">
@@ -566,9 +566,10 @@ window.Quarto = {
 <section id="practical-notes" class="level2">
 <h2 class="anchored" data-anchor-id="practical-notes">Practical Notes</h2>
 <ul>
-<li>Always check whether competing risks are present in your dataset</li>
+<li>Define which events are truly mutually exclusive for the first-event question</li>
 <li>Multi-event models require event-type labels in addition to (T, δ)</li>
 <li>Plain Kaplan-Meier (<code>1 - S(t)</code>) overestimates the CIF under competing risks — use Aalen-Johansen</li>
+<li>If patients can experience several events in sequence, the problem may be recurrent-event or multi-state analysis rather than competing risks</li>
 </ul>
 
 

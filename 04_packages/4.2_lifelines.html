@@ -108,6 +108,49 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -398,7 +441,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="lifelines" class="level1">
 <h1>lifelines</h1>
-<p><code>lifelines</code> is the most popular Python package for classical survival analysis. It is pure Python, well-documented, and beginner-friendly.</p>
+<p><code>lifelines</code> provides classical survival estimators and regression models through a DataFrame-oriented API. It is especially convenient for exploration, statistical summaries, diagnostics, and publication-style plots.</p>
 <section id="installation" class="level2">
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install lifelines</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -410,8 +453,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Nelson-Aalen estimator</li>
 <li>Cox Proportional Hazards model (with L1/L2 regularization)</li>
 <li>Parametric models: Weibull, Log-Normal, Log-Logistic, etc.</li>
+<li>Aalen–Johansen cumulative incidence estimator for competing risks</li>
 <li>Log-rank test, statistical comparisons</li>
-<li>Plotting utilities</li>
+<li>Proportional-hazards diagnostics and plotting utilities</li>
 </ul>
 </section>
 <section id="common-usage" class="level2">
@@ -429,7 +473,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Cox PH</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>cph <span class="op">=</span> CoxPHFitter()</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>cph.fit(df, duration_col<span class="op">=</span><span class="st">"T"</span>, event_col<span class="op">=</span><span class="st">"E"</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>cph.print_summary()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>cph.print_summary()</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>cph.check_assumptions(df, p_value_threshold<span class="op">=</span><span class="fl">0.05</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Predictions are different objects: relative risk versus absolute survival.</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>risk <span class="op">=</span> cph.predict_partial_hazard(df)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> cph.predict_survival_function(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
@@ -439,6 +488,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Statistical testing and visualization</li>
 <li>Clinical researchers new to survival analysis</li>
 </ul>
+<p><code>lifelines</code> is not a neural-network framework and its built-in concordance measure does not replace the IPCW evaluation suite in <a href="../04_packages/4.4_scikit_survival.html"><code>scikit-survival</code></a>. For competing risks, use <code>AalenJohansenFitter</code> for descriptive CIFs rather than <span class="math inline">1-\hat S(t)</span>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>

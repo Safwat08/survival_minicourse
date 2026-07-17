@@ -2,82 +2,82 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/06_recipes/6.1_pfs_stratification.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/04_packages/4.4_scikit_survival.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/04_packages/4.2_lifelines.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/03_metrics/3.4_time_dependent_auc.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/03_metrics/3.2_brier_score.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/02_loss_functions/2.5_loss_comparison.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/02_loss_functions/2.2_negative_log_likelihood_loss.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/01_background/1.5_clinician_goals.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/01_background/1.3_what_is_an_event.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/01_background/1.1_what_is_survival_analysis.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/index.html</loc>
-    <lastmod>2026-07-16T23:13:25.063Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.477Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/01_background/1.2_censored_data.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/01_background/1.4_multi_events_and_competing_risks.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/02_loss_functions/2.1_cox_ph_loss.html</loc>
-    <lastmod>2026-07-16T23:13:25.057Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.462Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/02_loss_functions/2.4_deephit_loss.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/03_metrics/3.1_c_index.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/03_metrics/3.3_km_curves.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/04_packages/4.1_pycox.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/04_packages/4.3_torchsurv.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
   <url>
     <loc>https://Safwat08.github.io/survival_minicourse/04_packages/4.5_auton_survival.html</loc>
-    <lastmod>2026-07-16T23:13:25.058Z</lastmod>
+    <lastmod>2026-07-17T01:28:29.463Z</lastmod>
   </url>
 </urlset>

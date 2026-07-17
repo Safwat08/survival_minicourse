@@ -449,13 +449,13 @@ window.Quarto = {
 \underbrace{j \text{ is a control at } t}_{\text{still event-free at } t}
 \,\big)
 </span></p>
-<p>where <span class="math inline">r_i</span> is the risk score. The split itself comes in two flavors:</p>
+<p>where <span class="math inline">r_i</span> is a risk score. For a model whose risk changes with the horizon, <span class="math inline">r_i(t)</span> can be supplied instead. Subjects censored before <span class="math inline">t</span> have unknown case status and are handled through the estimator’s censoring adjustment. The case/control definition itself comes in two common flavors:</p>
 <ul>
 <li><strong>Cumulative/Dynamic</strong> (most common): <strong>cases</strong> = everyone who had the event by <span class="math inline">t</span> (<span class="math inline">T_i \le t</span>, <span class="math inline">\delta_i = 1</span>); <strong>controls</strong> = everyone still event-free at <span class="math inline">t</span> (<span class="math inline">T_j &gt; t</span>).</li>
 <li><strong>Incident/Dynamic:</strong> <strong>cases</strong> = only those whose event falls in a narrow window <em>around</em> <span class="math inline">t</span> (<span class="math inline">T_i \in [t-\Delta, t]</span>); controls as above. Useful for “how well does the model flag risk <em>right now</em>?”</li>
 </ul>
 <blockquote class="blockquote">
-<p><strong>Worked example — AUC at <span class="math inline">t = 12</span> (cumulative/dynamic).</strong> Five patients, evaluated at month 12: | Patient | Time <span class="math inline">T</span> | Event | Role at <span class="math inline">t=12</span> | Risk <span class="math inline">r</span> | |—|—|—|—|—| | A | 6 | 1 | case (failed by 12) | 0.9 | | B | 9 | 1 | case (failed by 12) | 0.5 | | C | 18 | 1 | control (event-free at 12) | 0.4 | | D | 20 | 0 | control (event-free at 12) | 0.2 |</p>
+<p><strong>Worked example — AUC at <span class="math inline">t = 12</span> (cumulative/dynamic).</strong> Four patients, evaluated at month 12: | Patient | Time <span class="math inline">T</span> | Event | Role at <span class="math inline">t=12</span> | Risk <span class="math inline">r</span> | |—|—|—|—|—| | A | 6 | 1 | case (failed by 12) | 0.9 | | B | 9 | 1 | case (failed by 12) | 0.5 | | C | 18 | 1 | control (event-free at 12) | 0.4 | | D | 20 | 0 | control (event-free at 12) | 0.2 |</p>
 <p>Compare each case against each control (4 case–control pairs); count those where the case is scored riskier: - A(0.9) &gt; C(0.4) ✓, A(0.9) &gt; D(0.2) ✓, B(0.5) &gt; C(0.4) ✓, B(0.5) &gt; D(0.2) ✓ → 4/4</p>
 <p><span class="math inline">\text{AUC}(12) = 1.0</span> — at this horizon the model perfectly separates those who have failed from those still at risk. Computing it at <span class="math inline">t = 8</span> instead (only A is a case) would probe a different, earlier horizon.</p>
 </blockquote>
@@ -479,7 +479,8 @@ window.Quarto = {
 <li><strong>Use it when the time horizon matters.</strong> If a clinical decision is made at “2 years,” report <span class="math inline">\text{AUC}</span>(2 yr) directly instead of a horizon-agnostic C-index. The horizon you pick here is the natural one for the <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">Youden threshold</a> cutoff.</li>
 <li><strong>It diagnoses <em>when</em> a model is good.</strong> A flat-high AUC curve is robust; one that sags at long horizons tells you predictions degrade far out — something a single C-index hides.</li>
 <li><strong>Cumulative/Dynamic is the default</strong>; reach for Incident/Dynamic only when you specifically care about risk <em>in a window</em> rather than cumulative risk.</li>
-<li><strong>Same IPCW time-window caveat as Brier</strong> (below) — evaluation times must stay inside observed follow-up.</li>
+<li><strong>Same IPCW time-window caveat as Brier</strong> (below) — evaluation times must have adequate follow-up and censoring support.</li>
+<li><strong>Report uncertainty and the horizon definition.</strong> AUC values at many nearby times are correlated; do not cherry-pick the best point on the curve.</li>
 </ul>
 </section>
 <section id="implementation" class="level2">
@@ -490,11 +491,11 @@ window.Quarto = {
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.percentile(time_test[event_test], [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>])     <span class="co"># within follow-up range</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>auc, mean_auc <span class="op">=</span> cumulative_dynamic_auc(y_train, y_test, risk_scores, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> — AUC as a PyTorch metric for in-loop, time-resolved monitoring (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
+<p><strong>torchsurv</strong> — AUC as a native PyTorch metric (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>). Compute final values on accumulated evaluation predictions rather than averaging batch-wise AUCs:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.auc <span class="im">import</span> Auc</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>auc <span class="op">=</span> Auc()(log_hz, events, times, new_time<span class="op">=</span>eval_times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <blockquote class="blockquote">
-<p><strong>Same time-window caveat as Brier.</strong> Both rely on IPCW censoring weights, so evaluation <code>times</code> must stay inside the observed follow-up. The time horizon you pick here is also the natural one for the <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>03_metrics/3.3_km_curves.md#choosing-a-risk-threshold</code></a> cutoff.</p>
+<p><strong>Same time-window caveat as Brier.</strong> The IPCW estimator needs test follow-up inside the range supported by the training censoring distribution, and tail estimates become unstable when few subjects remain. Pre-specify clinically useful horizons with adequate support. A chosen horizon can also define the <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">Youden cutpoint</a>.</p>
 </blockquote>
 
 

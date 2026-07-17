@@ -73,6 +73,49 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -350,7 +393,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#death" id="toc-death" class="nav-link" data-scroll-target="#death">Death</a></li>
   <li><a href="#choosing-the-right-endpoint" id="toc-choosing-the-right-endpoint" class="nav-link" data-scroll-target="#choosing-the-right-endpoint">Choosing the Right Endpoint</a></li>
   </ul></li>
-  <li><a href="#requirements-for-a-well-defined-event" id="toc-requirements-for-a-well-defined-event" class="nav-link" data-scroll-target="#requirements-for-a-well-defined-event">Requirements for a Well-Defined Event</a></li>
+  <li><a href="#requirements-for-a-well-defined-endpoint" id="toc-requirements-for-a-well-defined-endpoint" class="nav-link" data-scroll-target="#requirements-for-a-well-defined-endpoint">Requirements for a Well-Defined Endpoint</a></li>
   <li><a href="#composite-endpoints" id="toc-composite-endpoints" class="nav-link" data-scroll-target="#composite-endpoints">Composite Endpoints</a></li>
   <li><a href="#event-vs.-censoring" id="toc-event-vs.-censoring" class="nav-link" data-scroll-target="#event-vs.-censoring">Event vs.&nbsp;Censoring</a></li>
   </ul></li>
@@ -365,7 +408,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="what-is-an-event" class="level1">
 <h1>What is an Event?</h1>
-<p>An <strong>event</strong> is the outcome of interest whose time of occurrence is being modeled. Events must be clearly defined and unambiguous before analysis.</p>
+<p>An <strong>event</strong> is the outcome of interest whose time of occurrence is being modeled. The endpoint must define the event, the time origin, and the rules used to assign an event date before analysis begins.</p>
 <section id="examples-in-oncology" class="level2">
 <h2 class="anchored" data-anchor-id="examples-in-oncology">Examples in Oncology</h2>
 <table class="caption-top table">
@@ -394,6 +437,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
+<p>The same event definition can produce different times depending on the <strong>time origin</strong>: diagnosis, surgery, treatment start, or a landmark visit. State the origin explicitly and ensure every predictor was available by that time.</p>
 </section>
 <section id="types-of-events" class="level2">
 <h2 class="anchored" data-anchor-id="types-of-events">Types of Events</h2>
@@ -411,7 +455,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="death" class="level3">
 <h3 class="anchored" data-anchor-id="death">Death</h3>
 <ul>
-<li><strong>Overall survival (OS)</strong> — time from treatment to death from <em>any</em> cause. The gold-standard endpoint in oncology trials: unambiguous, no cause-of-death judgment needed.</li>
+<li><strong>Overall survival (OS)</strong> — time from treatment to death from <em>any</em> cause. It is a hard, unambiguous endpoint that avoids cause-of-death adjudication, but often requires long follow-up and can dilute disease-specific effects.</li>
 <li><strong>Cancer-specific survival (CSS)</strong> — time to death attributed to <em>the cancer</em>. More targeted, but requires accurate cause-of-death records and is subject to misclassification.</li>
 </ul>
 </section>
@@ -450,13 +494,16 @@ ul.task-list li input[type="checkbox"] {
 </table>
 </section>
 </section>
-<section id="requirements-for-a-well-defined-event" class="level2">
-<h2 class="anchored" data-anchor-id="requirements-for-a-well-defined-event">Requirements for a Well-Defined Event</h2>
+<section id="requirements-for-a-well-defined-endpoint" class="level2">
+<h2 class="anchored" data-anchor-id="requirements-for-a-well-defined-endpoint">Requirements for a Well-Defined Endpoint</h2>
 <ul>
-<li><strong>Binary</strong>: Either happened or didn’t</li>
-<li><strong>Irreversible</strong>: Once it occurs, the clock stops</li>
-<li><strong>Precisely timestamped</strong>: Date of scan, pathology report, or death record</li>
+<li><strong>Operational definition</strong>: specify exactly what counts as an event and who adjudicates it</li>
+<li><strong>Time origin</strong>: use the same clinically meaningful starting point for every subject</li>
+<li><strong>Dating rule</strong>: define whether the date comes from a scan, pathology report, clinical assessment, or death record</li>
+<li><strong>Censoring rule</strong>: state when an event-free subject’s follow-up ends</li>
+<li><strong>Analysis type</strong>: say whether only the first event is analyzed, events can recur, or patients can move through multiple states</li>
 </ul>
+<p>In an ordinary first-event analysis the stored indicator is binary and the clock stops at the first qualifying event. That is a property of the <em>analysis record</em>, not a claim that all clinical events are irreversible or exactly observed. Recurrent events, recovery, and interval-censored events require extensions beyond the simple <span class="math inline">(T, \delta)</span> setup.</p>
 </section>
 <section id="composite-endpoints" class="level2">
 <h2 class="anchored" data-anchor-id="composite-endpoints">Composite Endpoints</h2>
@@ -492,7 +539,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="event-vs.-censoring" class="level2">
 <h2 class="anchored" data-anchor-id="event-vs.-censoring">Event vs.&nbsp;Censoring</h2>
-<p>A subject either experiences the event (δ=1) or is censored (δ=0) — never both.</p>
+<p>For the recorded endpoint, a subject contributes either an observed event (<span class="math inline">\delta=1</span>) or a censored observation (<span class="math inline">\delta=0</span>). A patient may later experience the event after censoring, but that later time is unknown to the analysis.</p>
 
 
 </section>

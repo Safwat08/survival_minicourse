@@ -443,7 +443,7 @@ window.Quarto = {
 
 <section id="kaplan-meier-curves" class="level1">
 <h1>Kaplan-Meier Curves</h1>
-<p>The Kaplan-Meier (KM) estimator is the standard <strong>non-parametric</strong> way to estimate the survival function <span class="math inline">S(t)</span> from data — no model, no covariates, no assumed shape (the “no equation for the shape” idea from <a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a>). It’s the baseline every survival model is judged against and the curve clinicians actually read.</p>
+<p>The Kaplan–Meier (KM) estimator is the standard <strong>non-parametric</strong> way to estimate the survival function <span class="math inline">S(t)</span> for a cohort or group—no covariates and no assumed curve shape. It is a useful descriptive reference, not a personalized prediction model. Like the other standard methods here, it relies on independent censoring (<a href="../01_background/1.2_censored_data.html#the-assumption-behind-standard-methods"><code>1.2</code></a>).</p>
 <section id="estimator" class="level2">
 <h2 class="anchored" data-anchor-id="estimator">Estimator</h2>
 <p>KM walks through the event times and multiplies together the fraction surviving each one:</p>
@@ -455,7 +455,7 @@ window.Quarto = {
 <li><strong><span class="math inline">d_i</span></strong> — the number of <strong>events</strong> (e.g.&nbsp;deaths) at <span class="math inline">t_i</span>.</li>
 <li><strong><span class="math inline">n_i</span></strong> — the number <strong>at risk</strong> <em>just before</em> <span class="math inline">t_i</span>: everyone who has neither had the event nor been censored yet (the risk set from <a href="../02_loss_functions/2.1_cox_ph_loss.html#partial-likelihood"><code>2.1</code></a>).</li>
 </ul>
-<p>Each factor <span class="math inline">(1 - d_i/n_i)</span> is the conditional probability of surviving <em>through</em> <span class="math inline">t_i</span> given survival up to it; the running product turns those into the overall survival curve — a <strong>step function</strong> that drops at each event and stays flat between events.</p>
+<p>Each factor <span class="math inline">(1 - d_i/n_i)</span> is the conditional probability of remaining event-free through <span class="math inline">t_i</span> given survival up to it; the running product produces the estimated survival curve—a <strong>step function</strong> that drops at events and stays flat between them.</p>
 <blockquote class="blockquote">
 <p><strong>Worked example — five patients.</strong> Times (★ = event, ○ = censored): 3★, 5★, 7○, 8★, 10○. | Event time <span class="math inline">t_i</span> | At risk <span class="math inline">n_i</span> | Events <span class="math inline">d_i</span> | Factor <span class="math inline">1 - d_i/n_i</span> | <span class="math inline">\hat{S}(t)</span> | |—|—|—|—|—| | 3 | 5 | 1 | <span class="math inline">4/5 = 0.80</span> | 0.80 | | 5 | 4 | 1 | <span class="math inline">3/4 = 0.75</span> | <span class="math inline">0.80 \times 0.75 = 0.60</span> | | 8 | 2 | 1 | <span class="math inline">1/2 = 0.50</span> | <span class="math inline">0.60 \times 0.50 = 0.30</span> |</p>
 <p>The censored patient at <span class="math inline">t = 7</span> produces <strong>no drop</strong> — but it lowers the at-risk count <span class="math inline">n_i</span> from 3 to 2 by the time of the event at <span class="math inline">t = 8</span>, which is how censoring still informs the curve. The patient censored at 10 ends the followed range.</p>
@@ -466,16 +466,18 @@ window.Quarto = {
 <p>KM curves are used to:</p>
 <ol type="1">
 <li><strong>Visualize risk-group separation</strong> — plot KM for high- vs.&nbsp;low-risk groups defined by the model’s threshold (the figure below).</li>
-<li><strong>Assess calibration</strong> — overlay the predicted <span class="math inline">S(t)</span> on the observed KM curve; they should track each other (a visual cousin of the <a href="../03_metrics/3.2_brier_score.html">Brier score</a>).</li>
-<li><strong>Communicate results</strong> — the preferred format for clinicians.</li>
+<li><strong>Check group-level agreement</strong> — compare the cohort-average predicted survival with the observed KM curve. This is a coarse check; horizon-specific calibration curves are more informative.</li>
+<li><strong>Communicate results</strong> — a familiar clinical summary when confidence bands and numbers at risk are included.</li>
 </ol>
 </section>
 <section id="log-rank-test" class="level2">
 <h2 class="anchored" data-anchor-id="log-rank-test">Log-rank test</h2>
 <p>When comparing two KM curves (e.g.&nbsp;high- vs.&nbsp;low-risk groups), the <strong>log-rank test</strong> assesses whether the separation is statistically significant by comparing observed vs.&nbsp;expected events at each time point.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.statistics <span class="im">import</span> logrank_test</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> logrank_test(T_high, T_low, E_high, E_low)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result.p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> logrank_test(T_high, T_low,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                      event_observed_A<span class="op">=</span>E_high,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                      event_observed_B<span class="op">=</span>E_low)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result.p_value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="choosing-a-risk-threshold" class="level2">
 <h2 class="anchored" data-anchor-id="choosing-a-risk-threshold">Choosing a risk threshold</h2>
@@ -511,7 +513,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p><strong>Train→test discipline (all three methods).</strong> Fit <span class="math inline">\tau</span> on the <em>training</em> set, freeze it, then apply that fixed value to the test set — never re-fit on test, or the split is no longer honest and groups stop being comparable across cohorts.</p>
+<p><strong>Development→test discipline (all three methods).</strong> Fit <span class="math inline">\tau</span> using only development data, freeze the entire procedure, then apply it once to the test set. If the model itself was fit on the training set, prefer a separate validation set or nested cross-validation for outcome-guided cutpoint selection. A median training cutpoint does not use outcomes and is a simpler baseline.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> np.median(risk_scores_train)         <span class="co"># or the Youden / max-log-rank cutoff, fit on TRAIN</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>high_risk_test <span class="op">=</span> risk_scores_test <span class="op">&gt;=</span> tau   <span class="co"># apply the frozen cutoff to </span><span class="al">TEST</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -543,7 +545,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/3.3_stratified_km.svg" class="img-fluid figure-img" alt="Two Kaplan-Meier step curves, a low-risk curve staying high and a high-risk curve dropping faster, well separated, annotated with log-rank p less than 0.001."></p>
-<figcaption>The headline evaluation figure: KM curves for the model’s high- and low-risk groups. Clean separation that holds across follow-up — paired with a small log-rank p-value — is the visual evidence the risk score is clinically meaningful.</figcaption>
+<figcaption>KM curves can summarize outcomes in pre-defined risk groups. Show confidence intervals and numbers at risk, and report how the cutpoint was chosen. Separation is descriptive evidence of group discrimination; it does not by itself establish calibration, treatment benefit, or clinical utility.</figcaption>
 </figure>
 </div>
 <p>Pair the figure with the <a href="#log-rank-test">log-rank test</a> p-value, and choose <code>tau</code> as in <a href="#choosing-a-risk-threshold">Choosing a risk threshold</a>.</p>
@@ -552,9 +554,9 @@ window.Quarto = {
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
-<li><strong>It’s the baseline to beat.</strong> A covariate-free KM curve is the null model for the <a href="../03_metrics/3.2_brier_score.html">Brier score</a> — if your model doesn’t beat it, it isn’t learning.</li>
-<li><strong>The headline evaluation figure is the stratified KM plot</strong> (high- vs.&nbsp;low-risk groups + at-risk counts + log-rank p-value). It’s what reviewers and clinicians look at first.</li>
-<li><strong>Censoring shrinks the at-risk set but never drops the curve</strong> — that’s the mechanism that lets KM use incomplete follow-up without bias.</li>
+<li><strong>It is a useful reference prediction.</strong> A covariate-free KM curve is a sensible baseline for the <a href="../03_metrics/3.2_brier_score.html">Brier score</a>; failure to improve on it suggests the model is not adding useful out-of-sample probability information over that window.</li>
+<li><strong>A stratified KM plot is a communication tool, not a complete validation.</strong> Pair it with continuous-score metrics, uncertainty, calibration, and a transparent cutpoint rule.</li>
+<li><strong>Censoring shrinks the at-risk set but never directly drops the curve.</strong> KM is unbiased under its censoring assumptions, not under arbitrary informative loss to follow-up.</li>
 <li><strong>It can’t extrapolate or adjust for covariates</strong> — for individualized, covariate-aware <span class="math inline">S(t)</span> you need a model (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>–<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>).</li>
 </ul>
 </section>

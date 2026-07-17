@@ -444,9 +444,9 @@ window.Quarto = {
 <section id="key-concepts" class="level2">
 <h2 class="anchored" data-anchor-id="key-concepts">Key Concepts</h2>
 <ul>
-<li><strong>Survival function S(t)</strong>: Probability of surviving beyond time <em>t</em> — P(T &gt; t)</li>
-<li><strong>Hazard function h(t)</strong>: Instantaneous rate of the event at time <em>t</em>, given survival up to <em>t</em></li>
-<li><strong>Cumulative hazard H(t)</strong>: Integral of the hazard over time</li>
+<li><strong>Survival function <span class="math inline">S(t)</span></strong>: probability of remaining event-free beyond time <span class="math inline">t</span>, <span class="math inline">P(T &gt; t)</span></li>
+<li><strong>Hazard function <span class="math inline">h(t)</span></strong>: instantaneous event rate at time <span class="math inline">t</span>, conditional on remaining event-free up to <span class="math inline">t</span></li>
+<li><strong>Cumulative hazard <span class="math inline">H(t)</span></strong>: total hazard accumulated from time 0 through <span class="math inline">t</span></li>
 </ul>
 <section id="hazard-vs.-cumulative-hazard" class="level3">
 <h3 class="anchored" data-anchor-id="hazard-vs.-cumulative-hazard">Hazard vs.&nbsp;cumulative hazard</h3>
@@ -468,7 +468,12 @@ window.Quarto = {
 </section>
 <section id="why-not-standard-regression" class="level2">
 <h2 class="anchored" data-anchor-id="why-not-standard-regression">Why Not Standard Regression?</h2>
-<p>Standard regression cannot handle: - <strong>Censored observations</strong> — subjects who haven’t experienced the event yet - <strong>Time-varying risk</strong> — the hazard may change over time. The instantaneous rate h(t) need not be constant: after major surgery, for example, the hazard of death is high in the first days (complications), then drops steeply as the patient recovers. Standard regression predicts a single fixed number and cannot say “risk is high now but low later”; survival analysis models the whole h(t) curve.</p>
+<p>A naive regression on observed follow-up time treats censored times as if they were known event times. A binary classifier for “event by the end of study” has the opposite problem: it discards <em>when</em> the event occurred and gives patients unequal follow-up windows. Survival methods are designed to use both parts of the outcome:</p>
+<ul>
+<li><strong>Incomplete event times</strong> — censored subjects contribute follow-up without being treated as events</li>
+<li><strong>The time scale</strong> — risk may change over follow-up, and predictions can be evaluated at clinically meaningful horizons</li>
+</ul>
+<p>For example, the hazard of death after major surgery may be high in the first few days, fall during recovery, and rise again later. Survival analysis can represent that time pattern instead of reducing the outcome to one observed time or one end-of-study label.</p>
 </section>
 <section id="estimating-these-functions" class="level2">
 <h2 class="anchored" data-anchor-id="estimating-these-functions">Estimating These Functions</h2>
@@ -488,7 +493,7 @@ window.Quarto = {
 </section>
 <section id="in-medical-imaging" class="level2">
 <h2 class="anchored" data-anchor-id="in-medical-imaging">In Medical Imaging</h2>
-<p>In 3D imaging, survival analysis connects imaging biomarkers (radiomic or deep features) to time-to-event outcomes such as recurrence or death.</p>
+<p>In 3D imaging, survival analysis connects imaging biomarkers (radiomic or learned features) to time-to-event outcomes such as recurrence or death. Image acquisition, segmentation, and feature extraction must occur at or before the prediction origin; otherwise information from the future can leak into the model.</p>
 
 
 </section>

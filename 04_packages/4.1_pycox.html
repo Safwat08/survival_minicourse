@@ -406,6 +406,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="key-models" class="level2">
 <h2 class="anchored" data-anchor-id="key-models">Key Models</h2>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Model</th>
@@ -425,24 +430,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Memory-efficient approximation</td>
 </tr>
 <tr class="odd">
-<td><code>DeepHitSingle</code></td>
-<td>DeepHIT</td>
-<td>Single event, discrete time</td>
+<td><code>CoxTime</code></td>
+<td>Cox-Time</td>
+<td>Non-proportional relative-risk model</td>
 </tr>
 <tr class="even">
-<td><code>DeepHit</code></td>
-<td>DeepHIT</td>
-<td>Competing risks</td>
+<td><code>PCHazard</code></td>
+<td>Piecewise-constant hazard NLL</td>
+<td>Continuous-time hazard within intervals</td>
 </tr>
 <tr class="odd">
+<td><code>LogisticHazard</code></td>
+<td>Discrete hazard NLL</td>
+<td>Also called Nnet-survival</td>
+</tr>
+<tr class="even">
+<td><code>DeepHitSingle</code></td>
+<td>DeepHit</td>
+<td>Single event, discrete time</td>
+</tr>
+<tr class="odd">
+<td><code>DeepHit</code></td>
+<td>DeepHit</td>
+<td>Competing risks</td>
+</tr>
+<tr class="even">
 <td><code>MTLR</code></td>
 <td>MTLR</td>
 <td>Multi-task logistic regression</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>PMF</code></td>
-<td>NLL</td>
-<td>Piecewise constant hazard</td>
+<td>PMF NLL</td>
+<td>Direct probability mass over time bins</td>
 </tr>
 </tbody>
 </table>
@@ -452,10 +472,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pycox.models <span class="im">as</span> models</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchtuples <span class="im">as</span> tt</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> tt.practical.MLPVanilla(in_features, [<span class="dv">64</span>, <span class="dv">64</span>], out_features)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> tt.practical.MLPVanilla(in_features, [<span class="dv">64</span>, <span class="dv">64</span>], out_features<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> models.CoxPH(net, tt.optim.Adam)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>model.fit(x_train, (durations_train, events_train), epochs<span class="op">=</span><span class="dv">100</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> model.predict_surv_df(x_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>model.compute_baseline_hazards()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> model.predict_surv_df(x_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For discrete-time models, use the model’s <code>label_transform()</code> to fit time-bin cuts on the training durations, transform every split with those fixed cuts, and set the network output width to the number of bins. <code>pycox.evaluation.EvalSurv</code> provides time-dependent concordance, IPCW Brier scores, and integrated scores.</p>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
@@ -463,7 +485,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Deep learning survival models</li>
 <li>Benchmarking multiple architectures</li>
 <li>Discrete-time and competing risk models</li>
+<li>Research workflows where <code>torchtuples</code> owns the training loop</li>
 </ul>
+<p>For an entirely custom PyTorch training loop—especially an imaging backbone—compare with <a href="../04_packages/4.3_torchsurv.html"><code>torchsurv</code></a>. Also check the package’s supported dependency versions before starting a new production environment.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>

@@ -439,7 +439,7 @@ window.Quarto = {
 
 <section id="brier-score" class="level1">
 <h1>Brier Score</h1>
-<p>The Brier score measures <strong>calibration</strong> — how close a model’s predicted survival <em>probabilities</em> are to what actually happened. It is the complement of the <a href="../03_metrics/3.1_c_index.html">C-index</a>: where the C-index only checks the <em>ordering</em> of patients, the Brier score checks whether the predicted numbers are <em>right</em>.</p>
+<p>The Brier score measures <strong>overall probabilistic prediction error</strong> at a time horizon. It is affected by both calibration and discrimination: well-calibrated probabilities can still score poorly if they do not distinguish patients, and a well-ranked model can score poorly if its probabilities are miscalibrated. Use a calibration curve when calibration itself is the target.</p>
 <section id="definition" class="level2">
 <h2 class="anchored" data-anchor-id="definition">Definition</h2>
 <p>At a fixed time <span class="math inline">t</span>, the Brier score is the <strong>mean squared error</strong> between the predicted survival probability and the observed outcome:</p>
@@ -458,11 +458,16 @@ BS(t) \;=\; \frac{1}{n}\sum_{i=1}^{n}\Big(
 </section>
 <section id="inverse-probability-of-censoring-weighting-ipcw" class="level2">
 <h2 class="anchored" data-anchor-id="inverse-probability-of-censoring-weighting-ipcw">Inverse Probability of Censoring Weighting (IPCW)</h2>
-<p>The raw score above breaks for <strong>censored</strong> subjects: if subject <span class="math inline">i</span> is censored before <span class="math inline">t</span>, the indicator <span class="math inline">\mathbf{1}(T_i &gt; t)</span> is unknown. The IPCW-corrected Brier score handles this by reweighting each subject by the inverse probability of being uncensored, <span class="math inline">w_i</span>:</p>
+<p>The raw score above breaks for <strong>censored</strong> subjects: if subject <span class="math inline">i</span> is censored before <span class="math inline">t</span>, their status at <span class="math inline">t</span> is unknown. Let <span class="math inline">\hat G(u)</span> estimate the probability of remaining uncensored through <span class="math inline">u</span>. The usual IPCW estimator is:</p>
 <p><span class="math display">
-BS_{\text{IPCW}}(t) \;=\; \frac{1}{n}\sum_{i=1}^{n} w_i \,\Big( S(t \mid x_i) - \mathbf{1}(T_i &gt; t) \Big)^2
+BS_{\text{IPCW}}(t) = \frac{1}{n}\sum_{i=1}^{n}
+\left[
+\frac{\mathbf{1}(T_i \le t,\,\delta_i=1)}{\hat G(T_i^-)}\,\hat S(t\mid x_i)^2
++
+\frac{\mathbf{1}(T_i &gt; t)}{\hat G(t)}\,\big(1-\hat S(t\mid x_i)\big)^2
+\right]
 </span></p>
-<p>Subjects who are <em>less</em> likely to be observed get <em>more</em> weight, so the censored data don’t bias the estimate. This is the version the packages compute.</p>
+<p>Subjects with an observed event by <span class="math inline">t</span> and subjects known to be event-free at <span class="math inline">t</span> contribute with censoring weights. Subjects censored before <span class="math inline">t</span> have unknown status and contribute neither term. This correction assumes the censoring model is appropriate; the packages estimate it from training follow-up.</p>
 </section>
 <section id="integrated-brier-score-ibs" class="level2">
 <h2 class="anchored" data-anchor-id="integrated-brier-score-ibs">Integrated Brier Score (IBS)</h2>
@@ -470,28 +475,28 @@ BS_{\text{IPCW}}(t) \;=\; \frac{1}{n}\sum_{i=1}^{n} w_i \,\Big( S(t \mid x_i) - 
 <p><span class="math display">
 IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 </span></p>
-<p>This is the standard one-number summary of calibration across the whole follow-up.</p>
+<p>This is a standard one-number summary of probabilistic prediction error across a specified follow-up window. Always report that window because IBS values from different intervals are not directly comparable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/3.2_brier_curve.svg" class="img-fluid figure-img" alt="Brier score curves over time: a low model curve with shaded area, a higher dashed KM baseline, and a dotted 0.25 reference line."></p>
-<figcaption><span class="math inline">BS(t)</span> over follow-up: lower is better. A useful model (teal) stays well under both the covariate-free Kaplan-Meier baseline (coral) and the uninformative <span class="math inline">0.25</span> line. The shaded area under the model curve, averaged over the window, is the integrated Brier score (IBS).</figcaption>
+<figcaption><span class="math inline">BS(t)</span> over follow-up: lower is better. The covariate-free Kaplan–Meier prediction is a useful reference. A horizontal 0.25 line corresponds only to predicting 0.5 for everyone; it is not a universal null value. The shaded, averaged area is the integrated Brier score (IBS).</figcaption>
 </figure>
 </div>
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
 <ul>
-<li><strong>Lower is better:</strong> <span class="math inline">0</span> = perfect, <span class="math inline">0.25</span> = uninformative (a coin-flip predicting 0.5 everywhere).</li>
-<li>Always compare against the <strong>Kaplan–Meier baseline</strong> (a covariate-free model, see <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>) — a useful model must beat it.</li>
+<li><strong>Lower is better:</strong> <span class="math inline">0</span> is perfect. Predicting 0.5 for everyone produces 0.25, but an uninformative prevalence-based prediction can score below 0.25 when the outcome is imbalanced; a poor model can score above 0.25.</li>
+<li>Compare against a <strong>Kaplan–Meier baseline</strong> fit without covariates (see <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>) on the same evaluation window.</li>
 </ul>
 </section>
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
-<li><strong>It’s your calibration check.</strong> Report it alongside the <a href="../03_metrics/3.1_c_index.html">C-index</a>: discrimination <em>and</em> calibration. A model can ace one and fail the other.</li>
+<li><strong>It is not a calibration metric by itself.</strong> Report it alongside the <a href="../03_metrics/3.1_c_index.html">C-index</a> and a calibration curve or calibration slope/intercept at clinically relevant horizons.</li>
 <li><strong>Use the IPCW version with any real (censored) data</strong> — the raw score is biased. The packages do this for you, but they need the <em>training</em> survival arrays to estimate the censoring weights.</li>
 <li><strong>Keep evaluation times inside the follow-up window</strong> (see pitfall below) — this is the single most common way to get a meaningless Brier score.</li>
-<li><strong>Prefer the IBS for model selection</strong>, individual <span class="math inline">BS(t)</span> values for diagnosing <em>when</em> calibration breaks down.</li>
+<li><strong>Prefer the IBS for model selection</strong> when performance across a window matters; use individual <span class="math inline">BS(t)</span> values to diagnose when prediction error grows.</li>
 </ul>
 </section>
 <section id="implementation" class="level2">
@@ -500,17 +505,19 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> brier_score, integrated_brier_score</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.percentile(time_test[event_test], [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>])      <span class="co"># stay inside the followed-up range</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>surv_prob <span class="op">=</span> np.row_stack([fn(times) <span class="cf">for</span> fn <span class="kw">in</span> model.predict_survival_function(X_test)])</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>t, bs <span class="op">=</span> brier_score(y_train, y_test, surv_prob, times)          <span class="co"># BS at each time</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>ibs   <span class="op">=</span> integrated_brier_score(y_train, y_test, surv_prob, times)  <span class="co"># single summary</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> provides a differentiable/GPU version for in-loop evaluation (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>); <strong>auton-survival</strong> reports IBS with bootstrapped confidence intervals (see <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a>).</p>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.percentile(time_test[event_test], [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>])</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Also verify that these times lie inside the test follow-up range and the</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># support of the censoring distribution estimated from y_train.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>surv_prob <span class="op">=</span> np.vstack([fn(times) <span class="cf">for</span> fn <span class="kw">in</span> model.predict_survival_function(X_test)])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>t, bs <span class="op">=</span> brier_score(y_train, y_test, surv_prob, times)          <span class="co"># BS at each time</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ibs   <span class="op">=</span> integrated_brier_score(y_train, y_test, surv_prob, times)  <span class="co"># single summary</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>torchsurv</strong> provides a native-PyTorch/GPU implementation (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>); compute it on the accumulated evaluation cohort rather than averaging separate batch scores. <strong>auton-survival</strong> includes IBS and reporting utilities (see <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a>).</p>
 <blockquote class="blockquote">
-<p><strong>Pitfall — evaluation times.</strong> Choosing <code>times</code> beyond the last observed event makes the IPCW weights explode and the score meaningless. Keep evaluation times strictly inside the follow-up window, and never let <code>times</code> include the maximum follow-up time.</p>
+<p><strong>Pitfall — evaluation times.</strong> Keep <code>times</code> within test follow-up and within the range over which the training censoring distribution is estimable. Near the tail, few subjects remain at risk and IPCW weights can become unstable; choose a clinically relevant, pre-specified window with adequate support rather than using the maximum follow-up mechanically.</p>
 </blockquote>
 <blockquote class="blockquote">
-<p><strong>Brier complements, not replaces, the C-index.</strong> A model can rank perfectly (high C-index) yet be badly calibrated (high Brier), and vice versa. Report both — discrimination <em>and</em> calibration. See <a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>.</p>
+<p><strong>Brier complements, not replaces, the C-index.</strong> A model can rank well yet have high probability error. Report both, and add a calibration plot when calibration is a stated goal. See <a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>.</p>
 </blockquote>
 
 

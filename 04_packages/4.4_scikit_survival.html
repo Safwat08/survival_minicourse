@@ -408,7 +408,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>Cox PH (with elastic net regularization)</li>
 <li>Survival SVM</li>
-<li>Gradient boosted survival trees (GBM, GBSG)</li>
+<li>Gradient-boosted and component-wise boosted survival models</li>
 <li>Random Survival Forests</li>
 <li>Full sklearn pipeline compatibility (cross-validation, grid search, etc.)</li>
 <li>Evaluation metrics: C-index, Brier score, time-dependent AUC</li>
@@ -418,24 +418,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="common-usage">Common Usage</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.linear_model <span class="im">import</span> CoxPHSurvivalAnalysis</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.ensemble <span class="im">import</span> RandomSurvivalForest</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.util <span class="im">import</span> Surv</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Structured array format required</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.array([(<span class="bu">bool</span>(e), t) <span class="cf">for</span> e, t <span class="kw">in</span> <span class="bu">zip</span>(events, times)],</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>             dtype<span class="op">=</span>[(<span class="st">"event"</span>, <span class="bu">bool</span>), (<span class="st">"time"</span>, <span class="bu">float</span>)])</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> Surv.from_arrays(event<span class="op">=</span>events_train.astype(<span class="bu">bool</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                           time<span class="op">=</span>times_train.astype(<span class="bu">float</span>))</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> CoxPHSurvivalAnalysis()</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>model.fit(X_train, y_train)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>risk_scores <span class="op">=</span> model.predict(X_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>risk_scores <span class="op">=</span> model.predict(X_test)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>surv_functions <span class="op">=</span> model.predict_survival_function(X_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
 <ul>
 <li>Classical ML survival models (tree-based, regularized Cox)</li>
 <li>sklearn-compatible pipelines and cross-validation</li>
-<li>Evaluation metrics (best metrics library in the ecosystem)</li>
+<li>Censoring-aware evaluation metrics in sklearn-style workflows</li>
 <li>Radiomic feature survival models</li>
 </ul>
+<p>For IPCW metrics, pass training outcomes to estimate the censoring distribution and keep test follow-up/evaluation horizons within its supported range. Use pipelines so imputation, encoding, scaling, feature selection, and model fitting are learned inside each training fold rather than on the full dataset.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
