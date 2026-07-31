@@ -211,7 +211,7 @@ def fig_censoring_timeline():
     # legend proxies
     ax.plot([], [], "o", color=PRIMARY, markersize=9, label="event observed ($\\delta=1$)")
     ax.plot([], [], ">", color=ACCENT, markersize=9, label="censored ($\\delta=0$)")
-    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.12),
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.26),
               ncol=2, fontsize=12)
 
     ax.set_yticks([])
@@ -258,7 +258,7 @@ def fig_cif_vs_oneminuss():
             label=r"$\mathrm{CIF}_1(t)$  (correct, Aalen-Johansen)")
     ax.fill_between(t, cif1, naive, color=OXBLOOD, alpha=0.10)
     ax.annotate("overestimation gap", xy=(45, (cif1[45] + naive[45]) / 2),
-                xytext=(28, 0.62), fontsize=12, color=MUTED,
+                xytext=(34, 0.15), fontsize=12, color=MUTED,
                 arrowprops=dict(arrowstyle="->", color=MUTED))
 
     ax.set_xlim(0, 59)
@@ -451,7 +451,7 @@ def fig_cindex_pairs():
     ax.plot([], [], color=OXBLOOD, lw=2.4, label="discordant (wrong order)")
     ax.plot([], [], "o", color=PRIMARY, ms=10, label="event observed")
     ax.plot([], [], "o", mfc=PAPER, mec=PRIMARY, mew=2, ms=10, label="censored")
-    ax.legend(frameon=False, fontsize=11, loc="upper right", ncol=1)
+    ax.legend(frameon=False, fontsize=11, loc="lower right", ncol=1)
 
     ax.text(0.02, 0.02, r"$\hat{C} = 2/3 \approx 0.67$", transform=ax.transAxes,
             fontsize=14.5, color=PRIMARY)
@@ -482,7 +482,7 @@ def fig_brier_curve():
                 arrowprops=dict(arrowstyle="->", color=MUTED))
 
     ax.set_xlim(0, 36)
-    ax.set_ylim(0, 0.3)
+    ax.set_ylim(0, 0.34)
     ax.set_xlabel("time (months)")
     ax.set_ylabel("$BS(t)$  (lower = better)")
     ax.set_title("Brier score: calibration over time — beat the KM baseline")
@@ -563,7 +563,7 @@ def fig_auc_over_time():
     ax.set_xlabel("time horizon $t$ (months)")
     ax.set_ylabel(r"$\mathrm{AUC}(t)$")
     ax.set_title("Time-dependent AUC: when does the model discriminate well?")
-    ax.legend(frameon=False, fontsize=11, loc="lower left")
+    ax.legend(frameon=False, fontsize=11, loc="upper right")
     fig.tight_layout()
     _save(fig, "3.4_auc_over_time")
 
