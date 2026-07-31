@@ -564,13 +564,50 @@ window.Quarto = {
 </tbody>
 </table>
 <p><strong>Development→test discipline (all three methods).</strong> Fit <span class="math inline">\tau</span> using only development data, freeze the entire procedure, then apply it once to the test set. If the model itself was fit on the training set, prefer a separate validation set or nested cross-validation for outcome-guided cutpoint selection. A median training cutpoint does not use outcomes and is a simpler baseline.</p>
+<p>None of the three ships as a ready-made function. <code>scikit-survival</code> (<a href="../04_packages/4.4_scikit_survival.html"><code>4.4</code></a>) provides the IPCW machinery and <code>lifelines</code> (<a href="../04_packages/4.2_lifelines.html"><code>4.2</code></a>) the log-rank test, but you assemble the cutpoint yourself:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> np.median(risk_scores_train)         <span class="co"># or the Youden / max-log-rank cutoff, fit on TRAIN</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>high_risk_test <span class="op">=</span> risk_scores_test <span class="op">&gt;=</span> tau   <span class="co"># apply the frozen cutoff to </span><span class="al">TEST</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.util <span class="im">import</span> Surv</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> CensoringDistributionEstimator</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.statistics <span class="im">import</span> logrank_test</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>ev <span class="op">=</span> E_train.astype(<span class="bu">bool</span>)                        <span class="co"># event indicator as boolean</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> Surv.from_arrays(event<span class="op">=</span>ev, time<span class="op">=</span>T_train)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Median: needs no outcome labels.</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>tau_median <span class="op">=</span> np.median(risk_scores_train)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Youden at horizon t: build the IPCW-weighted cumulative/dynamic ROC,</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#    then take the threshold maximising sens + spec - 1.</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> <span class="fl">24.0</span>                                         <span class="co"># the horizon you will report</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>cde    <span class="op">=</span> CensoringDistributionEstimator().fit(y_train)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>w_case <span class="op">=</span> cde.predict_ipcw(y_train)               <span class="co"># delta_i / G(T_i); 0 if censored</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>G_t    <span class="op">=</span> cde.predict_proba(np.array([t]))[<span class="dv">0</span>]     <span class="co"># G(t), the shared control weight</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>is_case <span class="op">=</span> ev <span class="op">&amp;</span> (T_train <span class="op">&lt;=</span> t)                    <span class="co"># had the event by t</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>is_ctrl <span class="op">=</span> T_train <span class="op">&gt;</span> t                            <span class="co"># known to be event-free at t</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> np.where(is_case, w_case, <span class="fl">0.0</span>) <span class="op">+</span> np.where(is_ctrl, <span class="fl">1.0</span> <span class="op">/</span> G_t, <span class="fl">0.0</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>keep <span class="op">=</span> w <span class="op">&gt;</span> <span class="dv">0</span>                                     <span class="co"># drops anyone censored before t</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>fpr, tpr, thr <span class="op">=</span> roc_curve(is_case[keep], risk_scores_train[keep],</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                          sample_weight<span class="op">=</span>w[keep])</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>tau_youden <span class="op">=</span> thr[np.argmax(tpr <span class="op">-</span> fpr)]</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Max log-rank: scan candidate cutpoints, keep the most separating split.</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> separation(tau):</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    hi <span class="op">=</span> risk_scores_train <span class="op">&gt;=</span> tau</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> hi.<span class="bu">all</span>() <span class="kw">or</span> (<span class="op">~</span>hi).<span class="bu">all</span>():</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">-</span>np.inf</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> logrank_test(T_train[hi], T_train[<span class="op">~</span>hi], ev[hi], ev[<span class="op">~</span>hi]).test_statistic</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>candidates  <span class="op">=</span> np.quantile(risk_scores_train, np.linspace(<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="dv">25</span>))</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>tau_logrank <span class="op">=</span> <span class="bu">max</span>(candidates, key<span class="op">=</span>separation)    <span class="co"># see the warning below</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply ONE frozen cutoff to </span><span class="al">TEST</span><span class="co">.</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>high_risk_test <span class="op">=</span> risk_scores_test <span class="op">&gt;=</span> tau_median  <span class="co"># or tau_youden / tau_logrank</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Youden block is the cumulative/dynamic case/control split of <a href="../03_metrics/3.4_time_dependent_auc.html"><code>3.4</code></a> made explicit: cases carry weight <span class="math inline">1/\hat G(T_i)</span>, controls share <span class="math inline">1/\hat G(t)</span>, and subjects censored before <span class="math inline">t</span> get weight zero because their status at <span class="math inline">t</span> is unknown. Feeding those weights to <code>roc_curve</code> reproduces <code>cumulative_dynamic_auc</code> exactly, so the cutoff you read off it is the cutoff belonging to the AUC you report.</p>
 <blockquote class="blockquote">
 <p><strong>Warning: max log-rank inflates significance.</strong> Scanning many candidate thresholds and keeping the best is multiple testing: the resulting log-rank p-value is <strong>not</strong> a valid significance test. Validate the chosen split on a held-out set or independent cohort, and never report the <em>training</em> p-value as a significance result.</p>
 </blockquote>
-<p>The Youden horizon is the same one you would use for the <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>; the max-log-rank search is the cutpoint cousin of the (removed) log-rank training loss. Package calls: median is plain NumPy; Youden reads the cutoff off the IPCW time-dependent ROC in scikit-survival (<a href="../04_packages/4.4_scikit_survival.html"><code>4.4</code></a>); max log-rank loops <code>lifelines.statistics.logrank_test</code> (<a href="../04_packages/4.2_lifelines.html"><code>4.2</code></a>) over candidate <span class="math inline">\tau</span>.</p>
+<p>Use the same horizon <span class="math inline">t</span> here as the one you report for the <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>. Choosing one horizon there and a different one here leaves the threshold and the discrimination number describing two different clinical questions.</p>
 </section>
 <section id="plotting" class="level2">
 <h2 class="anchored" data-anchor-id="plotting">Plotting</h2>
