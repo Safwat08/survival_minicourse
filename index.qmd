@@ -20,7 +20,7 @@ toc: false
 <table class="hx-outline">
   <tr>
     <td class="hx-num">01</td>
-    <td class="hx-what"><strong>Background</strong><span>What survival analysis is — censoring, events, competing risks, what clinicians want from a model, and how survival attaches to a medical-imaging backbone.</span></td>
+    <td class="hx-what"><strong>Background</strong><span>What survival analysis is — censoring, events, competing risks, and what clinicians want from a model.</span></td>
     <td class="hx-go"><a href="01_background/1.1_what_is_survival_analysis.html">Jump &rarr;</a></td>
   </tr>
   <tr>
@@ -40,8 +40,8 @@ toc: false
   </tr>
   <tr>
     <td class="hx-num">05</td>
-    <td class="hx-what"><strong>Recipes</strong><span>End-to-end progression-free-survival risk stratification.</span></td>
-    <td class="hx-go"><a href="06_recipes/6.1_pfs_stratification.html">Jump &rarr;</a></td>
+    <td class="hx-what"><strong>Medical Image Analysis</strong><span>How survival attaches to an imaging backbone, a full 3D-MRI training walkthrough, and end-to-end risk stratification.</span></td>
+    <td class="hx-go"><a href="05_medical_imaging/5.1_survival_from_medical_images.html">Jump &rarr;</a></td>
   </tr>
 </table>
 ```
