@@ -466,27 +466,46 @@ def fig_cindex_pairs():
 
 # --- 3.2  Brier score over time vs baselines -------------------------------
 def fig_brier_curve():
-    """BS(t) for a model vs the KM baseline vs the uninformative 0.25 line; the
-    shaded area under the model curve is the integrated Brier score."""
+    """BS(t) for a model vs the BS(t) of the covariate-free KM prediction.
+
+    Both curves are *error* curves, not survival curves — the common
+    misreading. Series are labelled directly on the plot rather than in a
+    legend so the emerald/oxblood pair carries a second, non-colour encoding.
+    """
     t = np.linspace(0, 36, 200)
     bs_model = 0.04 + 0.0032 * t - 0.00003 * t ** 2     # good, drifts up mildly
     bs_km = 0.07 + 0.0050 * t - 0.00004 * t ** 2        # covariate-free baseline
-    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    fig, ax = plt.subplots(figsize=(7.6, 4.4))
 
-    ax.axhline(0.25, color=MUTED, ls=":", lw=1.6, label="uninformative (0.25)")
-    ax.plot(t, bs_km, color=OXBLOOD, lw=2.2, ls="--", label="Kaplan-Meier baseline")
-    ax.plot(t, bs_model, color=ACCENT, lw=2.4, label="model")
+    ax.axhline(0.25, color=MUTED, ls=":", lw=1.4)
+    ax.plot(t, bs_km, color=OXBLOOD, lw=2.2, ls="--")
+    ax.plot(t, bs_model, color=ACCENT, lw=2.4)
     ax.fill_between(t, bs_model, color=ACCENT, alpha=0.10)
-    ax.annotate("IBS = area under\nthe model curve", xy=(20, bs_model[110] / 2),
-                xytext=(7, 0.16), fontsize=12, color=MUTED,
-                arrowprops=dict(arrowstyle="->", color=MUTED))
 
-    ax.set_xlim(0, 36)
-    ax.set_ylim(0, 0.34)
+    # direct labels in the right margin, no legend box to collide with the lines
+    ax.text(37, 0.263, "predicting 0.5 for everyone", color=MUTED, fontsize=10.5,
+            va="center")
+    ax.text(37, bs_km[-1], "error of the KM\nprediction (no covariates)",
+            color=OXBLOOD, fontsize=10.5, va="center")
+    ax.text(37, bs_model[-1], "error of your model", color=ACCENT, fontsize=10.5,
+            va="center")
+
+    # the gap is the whole point of plotting the baseline
+    ax.annotate("", xy=(t[191], bs_model[191]), xytext=(t[191], bs_km[191]),
+                arrowprops=dict(arrowstyle="<->", color=BODY, lw=1.3))
+    ax.text(37, (bs_model[191] + bs_km[191]) / 2,
+            "gap = what the\ncovariates buy you", color=BODY, fontsize=10.5,
+            va="center")
+
+    ax.text(1.5, 0.020, "IBS = mean height of the shaded band",
+            color=MUTED, fontsize=10.5, va="center")
+
+    ax.set_xlim(0, 56)
+    ax.set_ylim(0, 0.30)
+    ax.set_xticks([0, 6, 12, 18, 24, 30, 36])
     ax.set_xlabel("time (months)")
-    ax.set_ylabel("$BS(t)$  (lower = better)")
-    ax.set_title("Brier score: calibration over time — beat the KM baseline")
-    ax.legend(frameon=False, fontsize=11, loc="upper left")
+    ax.set_ylabel("$BS(t)$ = prediction error  (lower = better)")
+    ax.set_title("Brier score over time: both curves are error, not survival")
     fig.tight_layout()
     _save(fig, "3.2_brier_curve")
 
