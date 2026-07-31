@@ -55,6 +55,7 @@ website:
           - 01_background/1.3_what_is_an_event.md
           - 01_background/1.4_multi_events_and_competing_risks.md
           - 01_background/1.5_clinician_goals.md
+          - 01_background/1.6_survival_from_medical_images.md
       - section: "2 · Loss Functions"
         contents:
           - 02_loss_functions/2.1_cox_ph_loss.md
