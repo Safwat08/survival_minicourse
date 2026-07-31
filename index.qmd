@@ -20,7 +20,7 @@ toc: false
 <table class="hx-outline">
   <tr>
     <td class="hx-num">01</td>
-    <td class="hx-what"><strong>Background</strong><span>What survival analysis is — censoring, events, competing risks, and what clinicians want from a model.</span></td>
+    <td class="hx-what"><strong>Background</strong><span>What survival analysis is: censoring, events, competing risks, and what clinicians want from a model.</span></td>
     <td class="hx-go"><a href="01_background/1.1_what_is_survival_analysis.html">Jump &rarr;</a></td>
   </tr>
   <tr>
@@ -35,7 +35,7 @@ toc: false
   </tr>
   <tr>
     <td class="hx-num">04</td>
-    <td class="hx-what"><strong>Packages</strong><span>pycox, lifelines, torchsurv, scikit-survival, auton-survival — routed by how much of the training loop you own.</span></td>
+    <td class="hx-what"><strong>Packages</strong><span>pycox, lifelines, torchsurv, scikit-survival, auton-survival, routed by how much of the training loop you own.</span></td>
     <td class="hx-go"><a href="04_packages/4.1_pycox.html">Jump &rarr;</a></td>
   </tr>
   <tr>
@@ -49,7 +49,7 @@ toc: false
 ## How to read it
 
 Start at the top and follow the cross-links. Notation is introduced once, where
-the concept lives, and referenced everywhere else — so if a symbol is unfamiliar,
+the concept lives, and referenced everywhere else, so if a symbol is unfamiliar,
 the link beside it points to its definition.
 
 Figures throughout are generated deterministically from
