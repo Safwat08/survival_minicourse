@@ -485,7 +485,7 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>Survival loss</td>
-<td>one of ten shipped losses — <code>nll</code>, <code>cox</code>, <code>deephit</code>, …</td>
+<td>one of ten shipped losses: <code>nll</code>, <code>cox</code>, <code>deephit</code>, …</td>
 </tr>
 <tr class="odd">
 <td>Evaluation</td>
@@ -494,11 +494,11 @@ window.Quarto = {
 </tbody>
 </table>
 <p>The code lives at <strong><a href="https://github.com/Safwat08/MedSurvival3D" class="uri">https://github.com/Safwat08/MedSurvival3D</a></strong>. Every file path below is relative to a clone of that repository, and step 1 starts by making one.</p>
-<p>It assumes you’re comfortable with Python and a shell but have never seen this codebase. The steps use placeholder names — <code>mydataset</code>, a modality of your choosing, generic column headers — and mark the spots you need to edit. Any cohort of 3D MRI with a clinical table works the same way; substitute your own paths, headers, and filename patterns as you go.</p>
-<p>Steps 3 through 5 — staging, labels, preprocessing — are the work. Everything else is two commands.</p>
+<p>It assumes you’re comfortable with Python and a shell but have never seen this codebase. The steps use placeholder names (<code>mydataset</code>, a modality of your choosing, generic column headers) and mark the spots you need to edit. Any cohort of 3D MRI with a clinical table works the same way; substitute your own paths, headers, and filename patterns as you go.</p>
+<p>Steps 3 through 5 (staging, labels, preprocessing) are the work. Everything else is two commands.</p>
 <section id="what-you-should-already-know" class="level2">
 <h2 class="anchored" data-anchor-id="what-you-should-already-know">What you should already know</h2>
-<p>This tutorial leans on concepts covered earlier in the course. If any of these are unfamiliar, read the linked section first — none take long.</p>
+<p>This tutorial leans on concepts covered earlier in the course. If any of these are unfamiliar, read the linked section first; none take long.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -524,11 +524,16 @@ window.Quarto = {
 <td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html"><code>5.1</code></a></td>
 </tr>
 <tr class="even">
+<td>Pretrain then fine-tune</td>
+<td>why step 6 starts from a checkpoint instead of random weights, and when to freeze the backbone instead</td>
+<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html#transfer-learning"><code>5.1</code></a></td>
+</tr>
+<tr class="odd">
 <td>The losses</td>
 <td>which of the ten to pick, and why <code>nll</code> is a sane default for imaging</td>
 <td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>, <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>C-index</td>
 <td>the checkpoint-selection metric in step 6 and the headline number in step 8</td>
 <td><a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a></td>
@@ -553,7 +558,7 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><strong>NIfTI</strong> (<code>.nii.gz</code>)</td>
-<td>The standard container for a 3D medical volume — a voxel array plus a header giving physical spacing and orientation.</td>
+<td>The standard container for a 3D medical volume: a voxel array plus a header giving physical spacing and orientation.</td>
 </tr>
 <tr class="even">
 <td><strong>Voxel spacing</strong></td>
@@ -577,7 +582,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td><strong>nnU-Net raw layout</strong></td>
-<td>A filename convention — <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index. The preprocessing tier expects it.</td>
+<td>A filename convention, <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index. The preprocessing tier expects it.</td>
 </tr>
 <tr class="even">
 <td><strong>Hydra</strong></td>
@@ -597,7 +602,7 @@ window.Quarto = {
 ├── &lt;IMAGE_DIR&gt;/            # one Blosc2 file per case:  &lt;case_id&gt;.b2nd  → shape [C, X, Y, Z]
 ├── survival_labels.json    # { "&lt;case_id&gt;": {"event": 0|1, "time_years": &lt;float&gt;}, ... }
 └── splits.json             # [ {"train": [...ids...], "val": [...ids...]}, ... ]  (one entry per fold)</code></pre>
-<p>Four things worth knowing before you start:</p>
+<p>Four things to know before you start:</p>
 <ul>
 <li><code>&lt;IMAGE_DIR&gt;</code> is just a config key (<code>data.module.image_dir</code>). Name it anything.</li>
 <li><code>event</code> is 1 when the event (death, say) was observed and 0 when the subject was right-censored, meaning the event hadn’t happened by last follow-up. This is the <span class="math inline">\delta</span> of <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
@@ -614,7 +619,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The same identifier has to appear in three places — the <code>.b2nd</code> filename, the keys of <code>survival_labels.json</code>, and the id lists in <code>splits.json</code>. Step 3 and step 4 must derive it identically. Step 5b gives you a check that catches a mismatch in seconds instead of twenty minutes into a run.</p>
+<p>The same identifier has to appear in three places: the <code>.b2nd</code> filename, the keys of <code>survival_labels.json</code>, and the id lists in <code>splits.json</code>. Step 3 and step 4 must derive it identically. Step 5b gives you a check that catches a mismatch in seconds instead of twenty minutes into a run.</p>
 </div>
 </div>
 </section>
@@ -638,7 +643,7 @@ window.Quarto = {
 </section>
 <section id="bring-your-data" class="level2">
 <h2 class="anchored" data-anchor-id="bring-your-data">2. Bring your data</h2>
-<p>Per subject you need one or more 3D MRI volumes as NIfTI (<code>.nii.gz</code>) — T1, T1-contrast, T2, FLAIR, whatever you have — and a survival label, meaning a follow-up time and an event/censoring flag, usually sitting in a clinical CSV keyed by subject id. Step 3 is where you decide which modality actually goes into the model.</p>
+<p>Per subject you need one or more 3D MRI volumes as NIfTI (<code>.nii.gz</code>), whether T1, T1-contrast, T2, FLAIR, or whatever you have, plus a survival label, meaning a follow-up time and an event/censoring flag, usually sitting in a clinical CSV keyed by subject id. Step 3 is where you decide which modality actually goes into the model.</p>
 <p>If you’re pulling from a public archive such as TCIA and it offers a pre-skull-stripped NIfTI distribution, take that over DICOM. It makes step 5 considerably easier.</p>
 <p>Land everything on the GPU box:</p>
 <pre><code>$HOME/data/mydataset/
@@ -651,7 +656,7 @@ window.Quarto = {
 <section id="stage-into-nnu-net-raw-layout" class="level2">
 <h2 class="anchored" data-anchor-id="stage-into-nnu-net-raw-layout">3. Stage into nnU-Net “raw” layout</h2>
 <p>The preprocessing tier (<code>src/medsurvival3d/data/preprocessing/datasets/template_brain_preprocessing.py</code>) wants the nnU-Net raw layout: a folder <code>imagesTr/</code> in which each file is named <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index (<code>0000</code>, <code>0001</code>, and so on).</p>
-<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint — see the modality table in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for"><code>5.1</code></a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
+<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for"><code>5.1</code></a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
 <p>Symlink your chosen modality into the <code>_0000</code> slot. Set <code>MOD</code> to whatever token identifies that modality in your filenames, and adjust the glob and the id derivation to match what step 2 showed you (<code>t1c</code> here is only an example):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">RAW</span><span class="op">=</span><span class="va">$HOME</span>/data/mydataset</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">MOD</span><span class="op">=</span>t1c                                                        <span class="co"># &lt;- the modality token in YOUR filenames</span></span>
@@ -678,11 +683,11 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>A column named <code>censored</code> is the <strong>inverse</strong> of the <code>event</code> the model wants. Getting this backwards produces a model that trains happily, reports plausible losses, and means nothing — you will have taught it to rank the censored subjects as the high-risk ones. There is no downstream error that catches this; the only defence is reading the column definition and then checking the output of this step.</p>
+<p>A column named <code>censored</code> is the <strong>inverse</strong> of the <code>event</code> the model wants. Getting this backwards produces a model that trains happily, reports plausible losses, and means nothing. You will have taught it to rank the censored subjects as the high-risk ones. There is no downstream error that catches this; the only defence is reading the column definition and then checking the output of this step.</p>
 </div>
 </div>
 <p>Look at your headers, then fill in the three column names:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># build_survival_labels.py  — run with your venv python (from anywhere)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># build_survival_labels.py  (run with your venv python, from anywhere)</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json, re</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -724,15 +729,15 @@ window.Quarto = {
 <span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"WARNING: </span><span class="sc">{</span><span class="bu">len</span>(missing)<span class="sc">}</span><span class="ss"> staged cases had no clinical row: </span><span class="sc">{</span><span class="bu">sorted</span>(missing)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> build_survival_labels.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Check three things in the output: the count should be roughly your cohort size, <code>event</code> should be a mix of 0s and 1s (all 1s means you inverted the censoring column), and the <code>time_years</code> values should be physically plausible.</p>
-<p>The proportion of <code>event == 1</code> is worth noting now, because it — not your subject count — sets your effective sample size. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</p>
+<p>The proportion of <code>event == 1</code> is worth noting now, because it sets your effective sample size, not your subject count. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</p>
 </section>
 <section id="preprocess-to-.b2nd" class="level2">
 <h2 class="anchored" data-anchor-id="preprocess-to-.b2nd">5. Preprocess to <code>.b2nd</code></h2>
 <p>The repo’s own preprocessing produces the Blosc2 tensors and a cross-validation split file. For each case, <code>load_crop_brainextract_normalize_images</code> in <code>.../datasets/template_brain_preprocessing.py</code> resamples to the target spacing, crops a fixed field of view around the brain-mask centre, z-score normalises, and writes a <code>.b2nd</code>. Then <code>generate_crossval_split</code> (<code>cross_validation.py</code>) writes <code>splits.json</code>.</p>
 <p>You need to adapt two things, both minor.</p>
-<p><code>run_case</code> expects a brain mask at <code>masks/&lt;case&gt;_0000_bet.nii.gz</code>, which it uses for both cropping and masked normalisation. If your NIfTI is already skull-stripped you can derive one from the nonzero voxels, as below. Otherwise call <code>hd_bet_predict(&lt;nnraw&gt;)</code> from the same module — it works on any brain MRI and needs the HD-BET weights.</p>
+<p><code>run_case</code> expects a brain mask at <code>masks/&lt;case&gt;_0000_bet.nii.gz</code>, which it uses for both cropping and masked normalisation. If your NIfTI is already skull-stripped you can derive one from the nonzero voxels, as below. Otherwise call <code>hd_bet_predict(&lt;nnraw&gt;)</code> from the same module; it works on any brain MRI and needs the HD-BET weights.</p>
 <p>The other is field of view: preprocess to a crop size at least as large as the <code>data.patch_size</code> you’ll train with in step 6. Below uses <code>[128,128,128]</code> at 1 mm with a <code>[64,64,64]</code> training patch.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># preprocess.py — run with your venv python (from anywhere)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># preprocess.py  (run with your venv python, from anywhere)</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np, SimpleITK <span class="im">as</span> sitk</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> medsurvival3d.data.preprocessing.datasets.template_brain_preprocessing <span class="im">import</span> (</span>
@@ -766,12 +771,12 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases — dataset-level intensity harmonisation, feature selection — must be fit on training folds only. See the leakage checklist in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#leakage-the-imaging-specific-trap"><code>5.1</code></a>.</p>
+<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#leakage-failures"><code>5.1</code></a>.</p>
 </div>
 </div>
 <section id="b.-check-what-preprocessing-produced" class="level3">
 <h3 class="anchored" data-anchor-id="b.-check-what-preprocessing-produced">5b. Check what preprocessing produced</h3>
-<p>You get one <code>&lt;case&gt;.b2nd</code> per case — every modality you staged stacked into a single <code>[C, X, Y, Z]</code> array — which is exactly the filename <code>SurvivalData</code> loads. <code>splits.json</code> stays where preprocessing put it, inside <code>images_b2nd/</code>; you point <code>split_file</code> at it in step 6 rather than moving it.</p>
+<p>You get one <code>&lt;case&gt;.b2nd</code> per case, with every modality you staged stacked into a single <code>[C, X, Y, Z]</code> array, which is exactly the filename <code>SurvivalData</code> loads. <code>splits.json</code> stays where preprocessing put it, inside <code>images_b2nd/</code>; you point <code>split_file</code> at it in step 6 rather than moving it.</p>
 <p>Now confirm the ids line up. This check saves you from a confusing crash twenty minutes into a run:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> <span class="at">-</span> <span class="op">&lt;&lt;'PY'</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">import json, pathlib</span></span>
@@ -788,7 +793,7 @@ window.Quarto = {
 <section id="configure-and-train" class="level2">
 <h2 class="anchored" data-anchor-id="configure-and-train">6. Configure and train</h2>
 <p>Configs ship as package data under <code>src/medsurvival3d/cli_configs/</code>. With the editable install from step 1 you edit them in place and Hydra picks up the changes live. <code>CFG=src/medsurvival3d/cli_configs</code> below just keeps the paths short.</p>
-<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss — which, per <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, is the one component that makes this a survival model rather than a classifier.</p>
+<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, is the one component that makes this a survival model rather than a classifier.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="va">CFG</span><span class="op">=</span>src/medsurvival3d/cli_configs</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="va">$CFG</span>/data/survival.yaml <span class="va">$CFG</span>/data/survival_mine.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -801,7 +806,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>They carry a loss, but they’re wired to a different datamodule (<code>COCACombinedB2NDDataModule</code>), and they all set <code>save_top_k: 0</code> — so a run finishes having saved no checkpoint.</p>
+<p>They carry a loss, but they’re wired to a different datamodule (<code>COCACombinedB2NDDataModule</code>), and they all set <code>save_top_k: 0</code>, so a run finishes having saved no checkpoint.</p>
 </div>
 </div>
 <p>Add the loss under <code>model:</code> in <code>survival_mine.yaml</code>:</p>
@@ -849,7 +854,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Two more depend on your cohort. <code>data.cv.k</code> has to match the number of folds in your <code>splits.json</code> — step 5 passed <code>n_splits=3</code>, so set <code>data.cv.k</code> to <code>3</code>. (Both default to <code>5</code>; the pair just has to agree, or training walks off the end of the splits list.) And <code>trainer.accumulate_grad_batches</code> ships at <code>48</code>, an effective batch of 96; on a few dozen subjects that’s a wider window than you have batches, so lower it to something like <code>4</code>.</p>
+<p>Two more depend on your cohort. <code>data.cv.k</code> has to match the number of folds in your <code>splits.json</code>; step 5 passed <code>n_splits=3</code>, so set <code>data.cv.k</code> to <code>3</code>. (Both default to <code>5</code>; the pair just has to agree, or training walks off the end of the splits list.) And <code>trainer.accumulate_grad_batches</code> ships at <code>48</code>, an effective batch of 96; on a few dozen subjects that’s a wider window than you have batches, so lower it to something like <code>4</code>.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -860,7 +865,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem — one concrete reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#where-the-analogy-leaks"><code>5.1</code></a>.</p>
+<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#objective-and-metric-failures"><code>5.1</code></a>.</p>
 </div>
 </div>
 <p>Finally, point Hydra at writable paths. <code>$CFG/env/local.yaml</code> ships as placeholders:</p>
@@ -878,7 +883,7 @@ window.Quarto = {
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$HOME</span>/experiments/smoke <span class="dt">\</span></span>
 <span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  trainer.logger.offline=true <span class="dt">\</span></span>
 <span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  +trainer.fast_dev_run=true</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>One thing needs explaining: don’t set <code>seed</code>. It defaults to <code>False</code>, which keeps <code>deterministic=False</code>, and the <code>avg_pool3d</code> backward has no deterministic CUDA kernel, so setting a seed crashes the run.</p>
+<p>Don’t set <code>seed</code>. It defaults to <code>False</code>, which keeps <code>deterministic=False</code>, and the <code>avg_pool3d</code> backward has no deterministic CUDA kernel, so setting a seed crashes the run.</p>
 <p>Success looks like <code>`Trainer.fit` stopped: `max_steps=1` reached.</code> and exit 0.</p>
 </section>
 <section id="c.-the-real-run" class="level3">
@@ -893,7 +898,7 @@ window.Quarto = {
 </section>
 <section id="swapping-the-loss" class="level2">
 <h2 class="anchored" data-anchor-id="swapping-the-loss">7. Swapping the loss</h2>
-<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped — this is the head swap of <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, exposed as a single config key:</p>
+<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, exposed as a single config key:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -931,7 +936,7 @@ window.Quarto = {
 <tr class="even">
 <td><code>composite</code></td>
 <td>Weighted combination of the above</td>
-<td>—</td>
+<td>n/a</td>
 </tr>
 </tbody>
 </table>
@@ -967,7 +972,7 @@ window.Quarto = {
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  pred_dir=<span class="va">$RUN</span>/preds <span class="dt">\</span></span>
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  folds=<span class="pp">[</span><span class="ss">0,1,2</span><span class="pp">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If <code>select_best_checkpoint</code> reports finding no checkpoints, <code>exp_dir</code> is pointing one level off from the fold directories.</p>
-<p>Alongside the per-fold predictions you get <code>preds/ensemble/</code>. Because each fold predicts on its own held-out subjects, that table is the pooled out-of-fold result: every subject scored exactly once, by the one model that did not train on them. It covers the whole cohort, so it is the number to quote — but it is still cross-validated, not a held-out test set.</p>
+<p>Alongside the per-fold predictions you get <code>preds/ensemble/</code>. Because each fold predicts on its own held-out subjects, that table is the pooled out-of-fold result: every subject scored exactly once, by the one model that did not train on them. It covers the whole cohort, so it is the number to quote, though it is still cross-validated, not a held-out test set.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -978,7 +983,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a> covers choosing one cutpoint on development data and freezing it — including the multiple-testing trap that makes a KM plot look better than the model is.</p>
+<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a> covers choosing one cutpoint on development data and freezing it, including the multiple-testing trap that makes a KM plot look better than the model is.</p>
 </div>
 </div>
 </section>
@@ -998,11 +1003,11 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><code>imagesTr/&lt;case&gt;_0000.nii.gz</code></td>
-<td>you (step 3) — symlink chosen modality</td>
+<td>you (step 3), symlink chosen modality</td>
 </tr>
 <tr class="even">
 <td><code>masks/&lt;case&gt;_0000_bet.nii.gz</code></td>
-<td>you (step 5) — nonzero mask, or <code>hd_bet_predict</code></td>
+<td>you (step 5), nonzero mask or <code>hd_bet_predict</code></td>
 </tr>
 <tr class="odd">
 <td><code>&lt;case&gt;.b2nd</code></td>
@@ -1014,7 +1019,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td><code>survival_labels.json</code></td>
-<td>you (step 4) — the one survival-specific artifact</td>
+<td>you (step 4), the one survival-specific artifact</td>
 </tr>
 <tr class="even">
 <td>trained checkpoint</td>
@@ -1036,9 +1041,9 @@ window.Quarto = {
 </div>
 <div class="callout-body-container callout-body">
 <p><strong>Verified end to end</strong> on the target workstation: the environment install, the <code>SurvivalDataModule</code> data contract, and all ten losses via <code>fast_dev_run</code> on the S3D checkpoint (torch 2.11+cu128, torchsurv 0.2.0, Python 3.12, RTX 6000 Ada).</p>
-<p><strong>Verified against a real run tree:</strong> the directory layout step 8 depends on — <code>config.yaml</code> and the per-fold checkpoint directories together under a single <code>&lt;run-id&gt;</code>. They used to land in sibling directories, so if you have seen this pipeline before and remember copying <code>config.yaml</code> by hand, that step is gone.</p>
-<p><strong>Not run:</strong> the step-6 recipe builds on <code>survival.yaml</code> rather than the <code>survival_&lt;loss&gt;.yaml</code> configs the loss sweep used, so the specific edits in that table are read off the configs, not executed. And <code>medsurvival3d-infer</code> has never been run to completion — the layout it consumes is confirmed, the command is not.</p>
-<p><strong>Yours to run:</strong> anything depending on your data — the download, staging (step 3), the label build (step 4), preprocessing (step 5). The checks at each step are there to catch what goes wrong.</p>
+<p><strong>Verified against a real run tree:</strong> the directory layout step 8 depends on, namely <code>config.yaml</code> and the per-fold checkpoint directories together under a single <code>&lt;run-id&gt;</code>. They used to land in sibling directories, so if you have seen this pipeline before and remember copying <code>config.yaml</code> by hand, that step is gone.</p>
+<p><strong>Not run:</strong> the step-6 recipe builds on <code>survival.yaml</code> rather than the <code>survival_&lt;loss&gt;.yaml</code> configs the loss sweep used, so the specific edits in that table are read off the configs, not executed. And <code>medsurvival3d-infer</code> has never been run to completion; the layout it consumes is confirmed, the command is not.</p>
+<p><strong>Yours to run:</strong> anything depending on your data: the download, staging (step 3), the label build (step 4), preprocessing (step 5). The checks at each step are there to catch what goes wrong.</p>
 </div>
 </div>
 

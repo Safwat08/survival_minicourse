@@ -446,7 +446,7 @@ window.Quarto = {
 
 <section id="time-dependent-auc" class="level1">
 <h1>Time-Dependent AUC</h1>
-<p>Standard ROC-AUC applies to a fixed binary outcome. <strong>Time-dependent AUC</strong> extends it to survival data by re-defining who counts as a “case” and a “control” <em>at each time point</em> <span class="math inline">t</span> — turning a single number into a curve over time. Where the <a href="../03_metrics/3.1_c_index.html">C-index</a> gives one global discrimination score, this shows <em>when</em> the model discriminates well.</p>
+<p>Standard ROC-AUC applies to a fixed binary outcome. <strong>Time-dependent AUC</strong> extends it to survival data by re-defining who counts as a “case” and a “control” <em>at each time point</em> <span class="math inline">t</span>, turning a single number into a curve over time. Where the <a href="../03_metrics/3.1_c_index.html">C-index</a> gives one global discrimination score, this shows <em>when</em> the model discriminates well.</p>
 <section id="definition" class="level2">
 <h2 class="anchored" data-anchor-id="definition">Definition</h2>
 <p>At a chosen time <span class="math inline">t</span>, split patients into cases and controls, then ask the same concordance question as the C-index:</p>
@@ -464,9 +464,53 @@ window.Quarto = {
 <li><strong>Incident/Dynamic:</strong> <strong>cases</strong> = only those whose event falls in a narrow window <em>around</em> <span class="math inline">t</span> (<span class="math inline">T_i \in [t-\Delta, t]</span>); controls as above. Useful for “how well does the model flag risk <em>right now</em>?”</li>
 </ul>
 <blockquote class="blockquote">
-<p><strong>Worked example — AUC at <span class="math inline">t = 12</span> (cumulative/dynamic).</strong> Four patients, evaluated at month 12: | Patient | Time <span class="math inline">T</span> | Event | Role at <span class="math inline">t=12</span> | Risk <span class="math inline">r</span> | |—|—|—|—|—| | A | 6 | 1 | case (failed by 12) | 0.9 | | B | 9 | 1 | case (failed by 12) | 0.5 | | C | 18 | 1 | control (event-free at 12) | 0.4 | | D | 20 | 0 | control (event-free at 12) | 0.2 |</p>
-<p>Compare each case against each control (4 case–control pairs); count those where the case is scored riskier: - A(0.9) &gt; C(0.4) ✓, A(0.9) &gt; D(0.2) ✓, B(0.5) &gt; C(0.4) ✓, B(0.5) &gt; D(0.2) ✓ → 4/4</p>
-<p><span class="math inline">\text{AUC}(12) = 1.0</span> — at this horizon the model perfectly separates those who have failed from those still at risk. Computing it at <span class="math inline">t = 8</span> instead (only A is a case) would probe a different, earlier horizon.</p>
+<p><strong>Worked example: AUC at <span class="math inline">t = 12</span> (cumulative/dynamic).</strong> Four patients, evaluated at month 12:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Patient</th>
+<th>Time <span class="math inline">T</span></th>
+<th>Event</th>
+<th>Role at <span class="math inline">t=12</span></th>
+<th>Risk <span class="math inline">r</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>6</td>
+<td>1</td>
+<td>case (failed by 12)</td>
+<td>0.9</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>9</td>
+<td>1</td>
+<td>case (failed by 12)</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>18</td>
+<td>1</td>
+<td>control (event-free at 12)</td>
+<td>0.4</td>
+</tr>
+<tr class="even">
+<td>D</td>
+<td>20</td>
+<td>0</td>
+<td>control (event-free at 12)</td>
+<td>0.2</td>
+</tr>
+</tbody>
+</table>
+<p>Compare each case against each control (4 case–control pairs); count those where the case is scored riskier:</p>
+<ul>
+<li>A(0.9) &gt; C(0.4) ✓, A(0.9) &gt; D(0.2) ✓, B(0.5) &gt; C(0.4) ✓, B(0.5) &gt; D(0.2) ✓ → 4/4</li>
+</ul>
+<p><span class="math inline">\text{AUC}(12) = 1.0</span>, so at this horizon the model perfectly separates those who have failed from those still at risk. Computing it at <span class="math inline">t = 8</span> instead (only A is a case) would probe a different, earlier horizon.</p>
 </blockquote>
 </section>
 <section id="mean-auc" class="level2">
@@ -478,7 +522,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/3.4_auc_over_time.svg" class="img-fluid figure-img" alt="Two AUC-over-time curves: one staying flat near 0.82, one declining from 0.86 toward 0.6, above a dotted chance line at 0.5."></p>
-<figcaption>Why a single C-index can mislead. Both models might share a similar average, but the curve shows <em>when</em> each discriminates: the green model stays high across horizons, while the red one starts strong and sags at long horizons — predictions degrade far out. The C-index hides that; <span class="math inline">\text{AUC}(t)</span> exposes it.</figcaption>
+<figcaption>Why a single C-index can mislead. Both models might share a similar average, but the curve shows <em>when</em> each discriminates: the green model stays high across horizons, while the red one starts strong and sags at long horizons, so predictions degrade far out. The C-index hides that; <span class="math inline">\text{AUC}(t)</span> exposes it.</figcaption>
 </figure>
 </div>
 </section>
@@ -486,21 +530,21 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
 <li><strong>Use it when the time horizon matters.</strong> If a clinical decision is made at “2 years,” report <span class="math inline">\text{AUC}</span>(2 yr) directly instead of a horizon-agnostic C-index. The horizon you pick here is the natural one for the <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">Youden threshold</a> cutoff.</li>
-<li><strong>It diagnoses <em>when</em> a model is good.</strong> A flat-high AUC curve is robust; one that sags at long horizons tells you predictions degrade far out — something a single C-index hides.</li>
+<li><strong>It diagnoses <em>when</em> a model is good.</strong> A flat-high AUC curve is robust; one that sags at long horizons tells you predictions degrade far out, something a single C-index hides.</li>
 <li><strong>Cumulative/Dynamic is the default</strong>; reach for Incident/Dynamic only when you specifically care about risk <em>in a window</em> rather than cumulative risk.</li>
-<li><strong>Same IPCW time-window caveat as Brier</strong> (below) — evaluation times must have adequate follow-up and censoring support.</li>
+<li><strong>Same IPCW time-window caveat as Brier</strong> (below): evaluation times must have adequate follow-up and censoring support.</li>
 <li><strong>Report uncertainty and the horizon definition.</strong> AUC values at many nearby times are correlated; do not cherry-pick the best point on the curve.</li>
 </ul>
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>scikit-survival</strong> — cumulative/dynamic AUC over a vector of time horizons (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong>: cumulative/dynamic AUC over a vector of time horizons (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> cumulative_dynamic_auc</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.percentile(time_test[event_test], [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>])     <span class="co"># within follow-up range</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>auc, mean_auc <span class="op">=</span> cumulative_dynamic_auc(y_train, y_test, risk_scores, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> — AUC as a native PyTorch metric (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>). Compute final values on accumulated evaluation predictions rather than averaging batch-wise AUCs:</p>
+<p><strong>torchsurv</strong>: AUC as a native PyTorch metric (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>). Compute final values on accumulated evaluation predictions rather than averaging batch-wise AUCs:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.auc <span class="im">import</span> Auc</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>auc <span class="op">=</span> Auc()(log_hz, events, times, new_time<span class="op">=</span>eval_times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <blockquote class="blockquote">

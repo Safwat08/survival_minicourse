@@ -415,9 +415,9 @@ window.Quarto = {
 <p>Modules <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>–<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a> each cover one loss in depth. This page is the cross-cutting view: how they trade off, what they assume, what they output, and how to pick one. Use it as a cheat-sheet; follow the links for the full treatment of any single loss.</p>
 <p>The three families:</p>
 <ul>
-<li><strong>Cox PH</strong> (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>) — ranks subjects via the partial likelihood; leaves the baseline hazard unspecified.</li>
-<li><strong>Parametric / discrete NLL</strong> (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) — writes the time distribution down explicitly and maximizes its likelihood.</li>
-<li><strong>DeepHit</strong> (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) — a discrete joint distribution over time and event type; likelihood + ranking, competing risks native.</li>
+<li><strong>Cox PH</strong> (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): ranks subjects via the partial likelihood; leaves the baseline hazard unspecified.</li>
+<li><strong>Parametric / discrete NLL</strong> (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>): writes the time distribution down explicitly and maximizes its likelihood.</li>
+<li><strong>DeepHit</strong> (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>): a discrete joint distribution over time and event type; likelihood + ranking, competing risks native.</li>
 </ul>
 <section id="at-a-glance" class="level2">
 <h2 class="anchored" data-anchor-id="at-a-glance">At a glance</h2>
@@ -598,7 +598,7 @@ window.Quarto = {
 </tbody>
 </table>
 <blockquote class="blockquote">
-<p><strong>Ranking vs.&nbsp;probability.</strong> Evaluate a bare risk score with discrimination metrics such as the <a href="../03_metrics/3.1_c_index.html">C-index</a>. Whenever a model is used to report <span class="math inline">S(t)</span> or a CIF—including Cox after baseline estimation—also assess calibration and overall probabilistic error with the Brier score.</p>
+<p><strong>Ranking vs.&nbsp;probability.</strong> Evaluate a bare risk score with discrimination metrics such as the <a href="../03_metrics/3.1_c_index.html">C-index</a>. Whenever a model is used to report <span class="math inline">S(t)</span> or a CIF (including Cox after baseline estimation), also assess calibration and overall probabilistic error with the Brier score.</p>
 </blockquote>
 </section>
 <section id="variants-cheat-sheet" class="level2">
@@ -621,7 +621,7 @@ window.Quarto = {
 <tr class="even">
 <td></td>
 <td><code>CoxCC</code></td>
-<td>Case-control sampling — SGD-friendly, large data (<a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists"><code>2.1</code></a>)</td>
+<td>Case-control sampling; SGD-friendly, large data (<a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists"><code>2.1</code></a>)</td>
 </tr>
 <tr class="odd">
 <td></td>
@@ -672,8 +672,8 @@ window.Quarto = {
 <ol type="1">
 <li><strong>Are there competing risks</strong> (multiple mutually exclusive event types)? → Start with descriptive Aalen–Johansen and cause-specific or Fine–Gray baselines; consider <strong>DeepHit</strong> (<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>) or <strong>DSM</strong> when a flexible joint prediction model is justified. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
 <li><strong>Do you need smooth, model-based extrapolation beyond follow-up, with a defensible distributional assumption?</strong> → <strong>Parametric NLL</strong> (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) or <strong>DSM</strong>. Validate extrapolation separately.</li>
-<li><strong>Do you suspect non-proportional hazards</strong> (effects that flip or fade over time)? → <strong>DeepHit</strong>, <strong>discrete-time NLL</strong>, or <strong>CoxTime</strong> — avoid plain Cox.</li>
-<li><strong>Otherwise — you just need a solid risk ranking?</strong> → <strong>Cox PH</strong> (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>). It’s the default for a reason: no distributional assumption, strong baseline, well-tooled.</li>
+<li><strong>Do you suspect non-proportional hazards</strong> (effects that flip or fade over time)? → <strong>DeepHit</strong>, <strong>discrete-time NLL</strong>, or <strong>CoxTime</strong>; avoid plain Cox.</li>
+<li><strong>Otherwise, you just need a solid risk ranking?</strong> → <strong>Cox PH</strong> (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>). It’s the usual default: no distributional assumption, a strong baseline, and good tooling.</li>
 </ol>
 <blockquote class="blockquote">
 <p><strong>Rule of thumb.</strong> Start with a well-validated <strong>Cox</strong> baseline. Move to a parametric or discrete NLL when its time representation matches the clinical question. Consider DeepHit or DSM for competing risks, but compare them with simpler cause-specific and CIF-based baselines.</p>

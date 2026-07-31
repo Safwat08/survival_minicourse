@@ -462,19 +462,54 @@ C \;=\; P\big(\,
 \,\big)
 </span></p>
 <p>where <span class="math inline">r_i</span> is subject <span class="math inline">i</span>’s <strong>risk score</strong> (higher = more risk), <span class="math inline">T_i</span> is the observed time, and <span class="math inline">\delta_i</span> the event indicator (the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>).</p>
-<p>In practice it’s computed by counting <strong>concordant pairs</strong> — pairs the model got in the right order — over all comparable pairs:</p>
+<p>In practice it’s computed by counting <strong>concordant pairs</strong> (pairs the model got in the right order) over all comparable pairs:</p>
 <p><span class="math display">
 \hat{C} \;=\; \frac{\#\{\text{concordant pairs}\} + 0.5\,\#\{\text{risk-score ties}\}}{\#\{\text{comparable pairs}\}}
 </span></p>
 </section>
 <section id="comparable-pairs" class="level2">
 <h2 class="anchored" data-anchor-id="comparable-pairs">Comparable pairs</h2>
-<p>A pair <span class="math inline">(i, j)</span> is <strong>comparable</strong> when we can actually tell who failed first: subject <span class="math inline">i</span> has an <em>observed event</em> (<span class="math inline">\delta_i = 1</span>) at a time <em>earlier</em> than subject <span class="math inline">j</span>’s observed time (<span class="math inline">T_i &lt; T_j</span>). Crucially, <span class="math inline">j</span> may be <strong>censored</strong> — we still know <span class="math inline">i</span> failed before <span class="math inline">j</span> left the study.</p>
-<p>A pair is <strong>not</strong> comparable when censoring hides the order — e.g.&nbsp;a subject censored at time 3 versus one who fails at time 7: the first might have failed at 4 or at 40, so the pair is dropped.</p>
+<p>A pair <span class="math inline">(i, j)</span> is <strong>comparable</strong> when we can actually tell who failed first: subject <span class="math inline">i</span> has an <em>observed event</em> (<span class="math inline">\delta_i = 1</span>) at a time <em>earlier</em> than subject <span class="math inline">j</span>’s observed time (<span class="math inline">T_i &lt; T_j</span>). Note that <span class="math inline">j</span> may be <strong>censored</strong>; we still know <span class="math inline">i</span> failed before <span class="math inline">j</span> left the study.</p>
+<p>A pair is <strong>not</strong> comparable when censoring hides the order, e.g.&nbsp;a subject censored at time 3 versus one who fails at time 7: the first might have failed at 4 or at 40, so the pair is dropped.</p>
 <blockquote class="blockquote">
-<p><strong>Worked example — counting concordance.</strong> Three patients: | Patient | Time <span class="math inline">T</span> | Event <span class="math inline">\delta</span> | Risk score <span class="math inline">r</span> | |—|—|—|—| | A | 2 | 1 (event) | 0.9 | | B | 5 | 1 (event) | 0.4 | | C | 8 | 0 (censored) | 0.7 |</p>
-<p>Comparable pairs and whether the model ordered them correctly (riskier patient fails first): - <strong>(A, B):</strong> A fails first; is A riskier? <span class="math inline">0.9 &gt; 0.4</span> ✓ <strong>concordant</strong> - <strong>(A, C):</strong> A fails at 2, before C’s censoring at 8 → comparable; <span class="math inline">0.9 &gt; 0.7</span> ✓ <strong>concordant</strong> - <strong>(B, C):</strong> B fails at 5, before C’s censoring at 8 → comparable; is B riskier? <span class="math inline">0.4 &gt; 0.7</span> ✗ <strong>discordant</strong></p>
-<p><span class="math inline">\hat{C} = 2/3 \approx 0.67</span>. Note (A, C) counts even though C is censored — A’s event time is unambiguously earlier.</p>
+<p><strong>Worked example: counting concordance.</strong> Three patients:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Patient</th>
+<th>Time <span class="math inline">T</span></th>
+<th>Event <span class="math inline">\delta</span></th>
+<th>Risk score <span class="math inline">r</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>2</td>
+<td>1 (event)</td>
+<td>0.9</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>5</td>
+<td>1 (event)</td>
+<td>0.4</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>8</td>
+<td>0 (censored)</td>
+<td>0.7</td>
+</tr>
+</tbody>
+</table>
+<p>Comparable pairs and whether the model ordered them correctly (riskier patient fails first):</p>
+<ul>
+<li><strong>(A, B):</strong> A fails first; is A riskier? <span class="math inline">0.9 &gt; 0.4</span> ✓ <strong>concordant</strong></li>
+<li><strong>(A, C):</strong> A fails at 2, before C’s censoring at 8 → comparable; <span class="math inline">0.9 &gt; 0.7</span> ✓ <strong>concordant</strong></li>
+<li><strong>(B, C):</strong> B fails at 5, before C’s censoring at 8 → comparable; is B riskier? <span class="math inline">0.4 &gt; 0.7</span> ✗ <strong>discordant</strong></li>
+</ul>
+<p><span class="math inline">\hat{C} = 2/3 \approx 0.67</span>. Note (A, C) counts even though C is censored; A’s event time is unambiguously earlier.</p>
 </blockquote>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -495,8 +530,8 @@ C \;=\; P\big(\,
 <h2 class="anchored" data-anchor-id="harrell-vs.-uno-ipcw">Harrell vs.&nbsp;Uno (IPCW)</h2>
 <p>There are two C-indices in common use:</p>
 <ul>
-<li><strong>Harrell’s C</strong> — counts all comparable pairs equally. Simple, but becomes <em>optimistically biased</em> as censoring increases (it quietly drops the hard-to-order censored pairs).</li>
-<li><strong>Uno’s C (IPCW)</strong> — reweights pairs by the <strong>inverse probability of censoring</strong>, giving a consistent estimate under heavier censoring. Prefer it when censoring is non-trivial; it needs the <em>training</em> survival distribution to estimate the censoring weights.</li>
+<li><strong>Harrell’s C</strong>: counts all comparable pairs equally. Simple, but becomes <em>optimistically biased</em> as censoring increases (it quietly drops the hard-to-order censored pairs).</li>
+<li><strong>Uno’s C (IPCW)</strong>: reweights pairs by the <strong>inverse probability of censoring</strong>, giving a consistent estimate under heavier censoring. Prefer it when censoring is non-trivial; it needs the <em>training</em> survival distribution to estimate the censoring weights.</li>
 </ul>
 </section>
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
@@ -504,22 +539,22 @@ C \;=\; P\big(\,
 <ul>
 <li><strong>It scores ranking, not probabilities.</strong> A model can have a high C-index yet predict poor survival probabilities. Pair it with the <a href="../03_metrics/3.2_brier_score.html">Brier score</a> for overall probabilistic error and a calibration curve for calibration itself.</li>
 <li><strong>Consider Uno’s C when censoring is substantial or follow-up differs.</strong> Harrell’s C can drift optimistic as censoring rises. Uno’s estimator uses IPCW, but it still relies on a valid censoring model and a supported truncation horizon <span class="math inline">\tau</span>.</li>
-<li><strong>Mind the sign convention.</strong> Some APIs (e.g.&nbsp;lifelines) expect a quantity that <em>increases with survival</em> — pass the <strong>negative</strong> risk score, or you’ll report <span class="math inline">1 - C</span> by mistake.</li>
+<li><strong>Mind the sign convention.</strong> Some APIs (e.g.&nbsp;lifelines) expect a quantity that <em>increases with survival</em>, so pass the <strong>negative</strong> risk score, or you’ll report <span class="math inline">1 - C</span> by mistake.</li>
 <li><strong>It’s a single summary.</strong> It can’t tell you <em>when</em> the model discriminates well. For time-resolved discrimination use the <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>.</li>
 <li><strong>Estimate it out of sample.</strong> Hyperparameter tuning, feature selection, and model fitting must be separated from the test cohort; add a confidence interval when comparing models.</li>
 </ul>
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>lifelines</strong> — Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<p><strong>lifelines</strong>: Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.utils <span class="im">import</span> concordance_index</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> concordance_index(event_times, <span class="op">-</span>risk_scores, event_observed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>scikit-survival</strong> — both estimators (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong>: both estimators (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> concordance_index_censored, concordance_index_ipcw</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>harrell <span class="op">=</span> concordance_index_censored(event_test, time_test, risk_scores)[<span class="dv">0</span>]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>uno     <span class="op">=</span> concordance_index_ipcw(y_train, y_test, risk_scores, tau<span class="op">=</span>t_max)[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> — GPU-compatible, for in-loop monitoring of a PyTorch model (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
+<p><strong>torchsurv</strong>: GPU-compatible, for in-loop monitoring of a PyTorch model (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.cindex <span class="im">import</span> ConcordanceIndex</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> ConcordanceIndex()(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
@@ -528,7 +563,7 @@ C \;=\; P\big(\,
 <ul>
 <li>Sensitive to censoring patterns (use Uno’s C to mitigate)</li>
 <li>Does not assess calibration</li>
-<li>A single number — does not capture time-varying discrimination</li>
+<li>A single number, so it does not capture time-varying discrimination</li>
 </ul>
 
 

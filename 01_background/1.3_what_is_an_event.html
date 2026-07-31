@@ -450,22 +450,22 @@ window.Quarto = {
 </section>
 <section id="types-of-events" class="level2">
 <h2 class="anchored" data-anchor-id="types-of-events">Types of Events</h2>
-<p>The examples above fall into two broad families — <strong>recurrence</strong> and <strong>death</strong> — each with finer subtypes that define different endpoints.</p>
+<p>The examples above fall into two broad families, <strong>recurrence</strong> and <strong>death</strong>, each with finer subtypes that define different endpoints.</p>
 <section id="recurrence" class="level3">
 <h3 class="anchored" data-anchor-id="recurrence">Recurrence</h3>
 <p>Reappearance of cancer after treatment. By location:</p>
 <ul>
-<li><strong>Local recurrence</strong> — at the original tumor site</li>
-<li><strong>Regional recurrence</strong> — in nearby lymph nodes</li>
-<li><strong>Distant recurrence / metastasis</strong> — in other organs</li>
+<li><strong>Local recurrence</strong>: at the original tumor site</li>
+<li><strong>Regional recurrence</strong>: in nearby lymph nodes</li>
+<li><strong>Distant recurrence / metastasis</strong>: in other organs</li>
 </ul>
 <p>Recurrence endpoints drive <strong>disease-free survival (DFS)</strong> and <strong>recurrence-free survival (RFS)</strong> analyses.</p>
 </section>
 <section id="death" class="level3">
 <h3 class="anchored" data-anchor-id="death">Death</h3>
 <ul>
-<li><strong>Overall survival (OS)</strong> — time from treatment to death from <em>any</em> cause. It is a hard, unambiguous endpoint that avoids cause-of-death adjudication, but often requires long follow-up and can dilute disease-specific effects.</li>
-<li><strong>Cancer-specific survival (CSS)</strong> — time to death attributed to <em>the cancer</em>. More targeted, but requires accurate cause-of-death records and is subject to misclassification.</li>
+<li><strong>Overall survival (OS)</strong>: time from treatment to death from <em>any</em> cause. It is a hard, unambiguous endpoint that avoids cause-of-death adjudication, but often requires long follow-up and can dilute disease-specific effects.</li>
+<li><strong>Cancer-specific survival (CSS)</strong>: time to death attributed to <em>the cancer</em>. More targeted, but requires accurate cause-of-death records and is subject to misclassification.</li>
 </ul>
 </section>
 <section id="choosing-the-right-endpoint" class="level3">
@@ -520,7 +520,7 @@ window.Quarto = {
 <blockquote class="blockquote">
 <p><strong>PFS event = progression <em>OR</em> death, whichever comes first.</strong></p>
 </blockquote>
-<p>This stays a single binary indicator — you do <strong>not</strong> create a second event or a second time:</p>
+<p>This stays a single binary indicator; you do <strong>not</strong> create a second event or a second time:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -543,7 +543,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Because death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you genuinely need to distinguish event <em>types</em> — that is the competing-risks design in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4_multi_events_and_competing_risks.md</code></a>, and it uses one time plus an event-<em>type</em> label, still never two times per patient.</p>
+<p>Because death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you need to distinguish event <em>types</em>; that is the competing-risks design in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4_multi_events_and_competing_risks.md</code></a>, and it uses one time plus an event-<em>type</em> label, still never two times per patient.</p>
 <p>For choosing and freezing a risk cutpoint on a composite PFS endpoint, see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a>.</p>
 </section>
 <section id="event-vs.-censoring" class="level2">

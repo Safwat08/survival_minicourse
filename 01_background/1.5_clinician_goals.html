@@ -411,13 +411,13 @@ window.Quarto = {
 
 <section id="clinician-goals-in-survival-analysis" class="level1">
 <h1>Clinician Goals in Survival Analysis</h1>
-<p>Survival models can translate imaging and clinical data into prognostic outputs. Whether those outputs should change care requires external validation, assessment of clinical utility, and comparison with current practice—not predictive accuracy alone.</p>
+<p>Survival models can translate imaging and clinical data into prognostic outputs. Whether those outputs should change care requires external validation, assessment of clinical utility, and comparison with current practice, not predictive accuracy alone.</p>
 <section id="risk-score" class="level2">
 <h2 class="anchored" data-anchor-id="risk-score">Risk Score</h2>
 <p>A continuous score that ranks patients by their estimated risk. Higher score = higher hazard. Used to compare patients or cohorts.</p>
 <ul>
 <li>Output of Cox PH (the proportional-hazards model defined in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <em>linear predictor</em>, <span class="math inline">\beta^\top x</span>. Relative to the reference covariate vector, <span class="math inline">\exp(\beta^\top x)</span> is a hazard ratio. A positive score is higher risk than that reference and a negative score is lower; the score is <strong>not necessarily centered at zero in the study cohort</strong>.</li>
-<li>Output of deep models (e.g.&nbsp;DeepSurv, the neural Cox of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <strong>scalar</strong> risk score per patient — i.e.&nbsp;<em>one single number</em> for each patient (not a list or a curve), the network’s <span class="math inline">\varphi(x)</span> standing in for the linear <span class="math inline">\beta^\top x</span>. Like the linear predictor it only <em>ranks</em> patients; it is not a probability. For absolute probabilities you need a full S(t) curve — see “Event Probability by Time” below.</li>
+<li>Output of deep models (e.g.&nbsp;DeepSurv, the neural Cox of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>): a <strong>scalar</strong> risk score per patient, i.e.&nbsp;<em>one single number</em> for each patient (not a list or a curve), the network’s <span class="math inline">\varphi(x)</span> standing in for the linear <span class="math inline">\beta^\top x</span>. Like the linear predictor it only <em>ranks</em> patients; it is not a probability. For absolute probabilities you need a full S(t) curve; see “Event Probability by Time” below.</li>
 </ul>
 <p><strong>Symbols used above</strong> (all defined in full where the concept lives):</p>
 <table class="caption-top table">
@@ -431,22 +431,22 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><span class="math inline">x</span></td>
-<td>the patient’s <em>covariate vector</em> — their features stacked into a list, e.g.&nbsp;<code>[age, tumor_size, biomarker]</code></td>
+<td>the patient’s <em>covariate vector</em>, their features stacked into a list, e.g.&nbsp;<code>[age, tumor_size, biomarker]</code></td>
 <td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a></td>
 </tr>
 <tr class="even">
 <td><span class="math inline">\beta</span></td>
-<td>the <em>coefficient vector</em> — one learned weight per feature</td>
+<td>the <em>coefficient vector</em>, one learned weight per feature</td>
 <td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a></td>
 </tr>
 <tr class="odd">
 <td><span class="math inline">\beta^\top x</span></td>
-<td>the <em>linear predictor</em> — the dot product <span class="math inline">\beta_1 x_1 + \beta_2 x_2 + \dots</span>, a single number (<span class="math inline">\top</span> = transpose, <strong>not</strong> the survival time <span class="math inline">T</span>)</td>
+<td>the <em>linear predictor</em>, the dot product <span class="math inline">\beta_1 x_1 + \beta_2 x_2 + \dots</span>, a single number (<span class="math inline">\top</span> = transpose, <strong>not</strong> the survival time <span class="math inline">T</span>)</td>
 <td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a></td>
 </tr>
 <tr class="even">
 <td><span class="math inline">\exp(\beta^\top x)</span></td>
-<td>the <em>hazard ratio</em> — how many times the patient’s hazard is vs.&nbsp;baseline (<span class="math inline">&gt;1</span> higher, <span class="math inline">&lt;1</span> lower)</td>
+<td>the <em>hazard ratio</em>, how many times the patient’s hazard is vs.&nbsp;baseline (<span class="math inline">&gt;1</span> higher, <span class="math inline">&lt;1</span> lower)</td>
 <td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a></td>
 </tr>
 <tr class="odd">
@@ -456,7 +456,7 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td><span class="math inline">S(t)</span></td>
-<td>the <em>survival function</em> — P(still event-free past time <span class="math inline">t</span>)</td>
+<td>the <em>survival function</em>, P(still event-free past time <span class="math inline">t</span>)</td>
 <td><a href="../01_background/1.1_what_is_survival_analysis.html"><code>1.1</code></a></td>
 </tr>
 </tbody>
@@ -469,7 +469,7 @@ window.Quarto = {
 </section>
 <section id="event-probability-by-time" class="level2">
 <h2 class="anchored" data-anchor-id="event-probability-by-time">Event Probability by Time</h2>
-<p>Estimates the probability that a patient experiences the event by a specific time point — e.g., “60% probability of recurrence within 2 years.”</p>
+<p>Estimates the probability that a patient experiences the event by a specific time point, e.g.&nbsp;“60% probability of recurrence within 2 years.”</p>
 <ul>
 <li>For a single-event endpoint, derived from the survival function: <span class="math inline">P(T \le t) = 1-S(t)</span></li>
 <li>More clinically interpretable than a raw risk score</li>
@@ -478,7 +478,7 @@ window.Quarto = {
 </section>
 <section id="which-output-comes-from-which-call" class="level2">
 <h2 class="anchored" data-anchor-id="which-output-comes-from-which-call">Which Output Comes From Which Call</h2>
-<p>Each goal maps to a distinct prediction method — knowing which one a package exposes tells you what the model can actually deliver.</p>
+<p>Each goal maps to a distinct prediction method; knowing which one a package exposes tells you what the model can actually deliver.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -506,7 +506,7 @@ window.Quarto = {
 <tr class="even">
 <td>Risk stratification</td>
 <td>group label</td>
-<td>threshold the risk score — see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>03_metrics/</code></a></td>
+<td>threshold the risk score (see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>03_metrics/</code></a>)</td>
 </tr>
 </tbody>
 </table>

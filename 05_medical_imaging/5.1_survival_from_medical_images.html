@@ -397,9 +397,15 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#diagnosis-vs.-prognosis" id="toc-diagnosis-vs.-prognosis" class="nav-link" data-scroll-target="#diagnosis-vs.-prognosis">Diagnosis vs.&nbsp;Prognosis</a></li>
   <li><a href="#which-modality-and-what-it-is-good-for" id="toc-which-modality-and-what-it-is-good-for" class="nav-link" data-scroll-target="#which-modality-and-what-it-is-good-for">Which Modality, and What It Is Good For</a></li>
-  <li><a href="#survival-is-a-head" id="toc-survival-is-a-head" class="nav-link" data-scroll-target="#survival-is-a-head">Survival Is a Head</a></li>
-  <li><a href="#where-the-analogy-leaks" id="toc-where-the-analogy-leaks" class="nav-link" data-scroll-target="#where-the-analogy-leaks">Where the Analogy Leaks</a></li>
-  <li><a href="#leakage-the-imaging-specific-trap" id="toc-leakage-the-imaging-specific-trap" class="nav-link" data-scroll-target="#leakage-the-imaging-specific-trap">Leakage: The Imaging-Specific Trap</a></li>
+  <li><a href="#survival-is-a-head" id="toc-survival-is-a-head" class="nav-link" data-scroll-target="#survival-is-a-head">Survival Is a Head</a>
+  <ul class="collapse">
+  <li><a href="#transfer-learning" id="toc-transfer-learning" class="nav-link" data-scroll-target="#transfer-learning">Transfer learning</a></li>
+  </ul></li>
+  <li><a href="#failure-modes" id="toc-failure-modes" class="nav-link" data-scroll-target="#failure-modes">Failure Modes</a>
+  <ul class="collapse">
+  <li><a href="#objective-and-metric-failures" id="toc-objective-and-metric-failures" class="nav-link" data-scroll-target="#objective-and-metric-failures">Objective and metric failures</a></li>
+  <li><a href="#leakage-failures" id="toc-leakage-failures" class="nav-link" data-scroll-target="#leakage-failures">Leakage failures</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -412,11 +418,11 @@ window.Quarto = {
 
 <section id="survival-from-medical-images" class="level1">
 <h1>Survival from Medical Images</h1>
-<p>Everything so far has treated the patient as a row of numbers — a covariate vector <span class="math inline">x</span> of age, stage, biomarker values. In medical image computing the input is a scan instead: a 2D radiograph, a 3D volume, or a 4D time series. This section is about what changes when the covariates <em>are</em> the image, and what does not.</p>
-<p>The short answer: <strong>almost nothing changes except the last layer and the loss.</strong></p>
+<p>Everything so far has treated the patient as a row of numbers: a covariate vector <span class="math inline">x</span> of age, stage, biomarker values. In medical image computing the input is a scan instead, whether a 2D radiograph, a 3D volume, or a 4D time series. This section is about what changes when the covariates <em>are</em> the image.</p>
+<p>Almost nothing changes except the last layer and the loss.</p>
 <section id="diagnosis-vs.-prognosis" class="level2">
 <h2 class="anchored" data-anchor-id="diagnosis-vs.-prognosis">Diagnosis vs.&nbsp;Prognosis</h2>
-<p>Clinicians read images for two different kinds of question, and the distinction decides which modelling task you are in.</p>
+<p>Clinicians read images for two kinds of question, and the distinction decides which modelling task you are in.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -444,7 +450,7 @@ window.Quarto = {
 <tr class="odd">
 <td>Label</td>
 <td>Available at scan time (biopsy, radiologist read)</td>
-<td>Requires <strong>follow-up</strong> — months to years</td>
+<td>Requires <strong>follow-up</strong> of months to years</td>
 </tr>
 <tr class="even">
 <td>ML task</td>
@@ -454,20 +460,20 @@ window.Quarto = {
 <tr class="odd">
 <td>Outcome shape</td>
 <td>A class <span class="math inline">y \in \{0,1\}</span></td>
-<td>A pair <span class="math inline">(T, \delta)</span> — time and event indicator</td>
+<td>A pair <span class="math inline">(T, \delta)</span>: time and event indicator</td>
 </tr>
 </tbody>
 </table>
-<p>That last row is the whole reason this course exists. A diagnostic label is a fact about the image. A prognostic label is a fact about the <em>future</em>, which means:</p>
+<p>That last row is why this course exists. A diagnostic label is a fact about the image. A prognostic label is a fact about the <em>future</em>, which means:</p>
 <ul>
-<li>Some patients have not had the event yet when the study closes — their labels are <strong>censored</strong>, not missing. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
+<li>Some patients have not had the event yet when the study closes; their labels are <strong>censored</strong>, not missing. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
 <li>You must state a <strong>prediction origin</strong>: the clock has to start somewhere, and it is normally the scan date. See <a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a>.</li>
-<li>More than one thing can happen first — progression, death, transplant. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
+<li>More than one thing can happen first: progression, death, transplant. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
 </ul>
 </section>
 <section id="which-modality-and-what-it-is-good-for" class="level2">
 <h2 class="anchored" data-anchor-id="which-modality-and-what-it-is-good-for">Which Modality, and What It Is Good For</h2>
-<p>Modality choice is not a free parameter; it is set by the clinical question, the organ, and what the hospital already acquires as standard of care. A prognostic model is only deployable if its input is a scan that patients actually get.</p>
+<p>Modality choice is not a free parameter; it is set by the clinical question, the organ, and what the hospital already acquires as standard of care. A prognostic model is only deployable if its input is a scan that patients actually get. Many imaging modalities are utilized for different diagnostic and prognostic tasks, with their own use-cases and constraints. A few of the most common modalities are described below:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -493,13 +499,13 @@ window.Quarto = {
 <tr class="even">
 <td><strong>MRI</strong></td>
 <td>Tissue magnetic properties; multi-sequence (T1, T2, FLAIR, DWI, contrast-enhanced)</td>
-<td>Brain, prostate, breast, musculoskeletal — best soft-tissue contrast</td>
+<td>Brain, prostate, breast, musculoskeletal (best soft-tissue contrast)</td>
 <td>Glioma subtype and infiltration; enhancement patterns</td>
 </tr>
 <tr class="odd">
 <td><strong>X-ray (radiography)</strong></td>
 <td>2D projection attenuation</td>
-<td>Chest, fracture, screening — cheap, fast, ubiquitous</td>
+<td>Chest, fracture, screening (cheap, fast, ubiquitous)</td>
 <td>Cardiothoracic and parenchymal findings linked to mortality risk</td>
 </tr>
 <tr class="even">
@@ -510,19 +516,12 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Two more that MICCAI-adjacent work often uses: <strong>PET</strong> adds metabolic activity (FDG uptake) and is frequently fused with CT, and <strong>digital pathology</strong> (whole-slide images) supplies cellular-level morphology. Both are commonly paired with time-to-event endpoints.</p>
-<p>Practical constraints worth internalising early:</p>
-<ul>
-<li><strong>CT and X-ray</strong> involve ionising radiation, so serial imaging is limited.</li>
-<li><strong>MRI</strong> is slow and expensive, and sequence protocols vary between sites — a major source of distribution shift.</li>
-<li><strong>Ultrasound</strong> is operator-dependent; the same patient can yield different images from different sonographers.</li>
-</ul>
 </section>
 <section id="survival-is-a-head" class="level2">
 <h2 class="anchored" data-anchor-id="survival-is-a-head">Survival Is a Head</h2>
-<p>Here is the unifying idea. A deep imaging model is conventionally split in two:</p>
+<p>A deep imaging model is conventionally split in two:</p>
 <pre><code>image  →  [ backbone ]  →  z ∈ R^d  →  [ head ]  →  prediction</code></pre>
-<p>The <strong>backbone</strong> (ResNet, U-Net encoder, 3D CNN, ViT, or a foundation-model encoder) turns the image into an embedding vector <span class="math inline">z</span>. The <strong>head</strong> is a small final layer that maps <span class="math inline">z</span> to whatever the task needs. Swapping the task means swapping the head and the loss — the backbone is largely indifferent.</p>
+<p>The <strong>backbone</strong> (ResNet, U-Net encoder, 3D CNN, ViT, or a foundation-model encoder) turns the image into an embedding vector <span class="math inline">z</span>. The <strong>head</strong> is a small final layer that maps <span class="math inline">z</span> to whatever the task needs. Swapping the task means swapping the head and the loss; the backbone is largely indifferent.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -571,37 +570,115 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>Read the middle of that table carefully. A <strong>Cox head is architecturally a regression head</strong> — one output neuron. A <strong>discrete-time survival head is architecturally a <span class="math inline">K</span>-class classifier</strong> — the tensor shapes are identical to predicting one of <span class="math inline">K</span> labels. You could take a working classification model, change nothing but the loss function, and have a survival model.</p>
-<p>So the practical recipe is:</p>
+<p>The middle rows are the ones that matter. A <strong>Cox head is architecturally a regression head</strong>: one output neuron. A <strong>discrete-time survival head is architecturally a <span class="math inline">K</span>-class classifier</strong>, with tensor shapes identical to predicting one of <span class="math inline">K</span> labels. You could take a working classification model, change nothing but the loss function, and have a survival model.</p>
+<p>The practical recipe:</p>
 <ol type="1">
 <li>Take any imaging backbone that works for your modality.</li>
 <li>Replace the classification head with a survival head from the table above.</li>
-<li>Replace cross-entropy with a survival loss — the subject of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02</code></a>.</li>
-<li>Evaluate with survival metrics, not accuracy — the subject of <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>.</li>
+<li>Replace cross-entropy with a survival loss, the subject of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02</code></a>.</li>
+<li>Evaluate with survival metrics, not accuracy, the subject of <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>.</li>
 </ol>
-<p>Transfer learning carries over unchanged: pretrain the backbone on a large labelled or self-supervised corpus, then fine-tune with the survival head attached.</p>
-</section>
-<section id="where-the-analogy-leaks" class="level2">
-<h2 class="anchored" data-anchor-id="where-the-analogy-leaks">Where the Analogy Leaks</h2>
-<p>The head swap is real, but two things genuinely differ from classification, and both bite hardest in 3D imaging.</p>
-<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
-<p><strong>2. Labels are censored, so you cannot shuffle carelessly.</strong> Accuracy is undefined here; a patient censored at 6 months is not a negative. Every metric in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a> exists to handle this.</p>
-</section>
-<section id="leakage-the-imaging-specific-trap" class="level2">
-<h2 class="anchored" data-anchor-id="leakage-the-imaging-specific-trap">Leakage: The Imaging-Specific Trap</h2>
-<p>Because the prediction origin is usually the scan date, everything the model sees must have existed <strong>at or before</strong> that date:</p>
+<section id="transfer-learning" class="level3">
+<h3 class="anchored" data-anchor-id="transfer-learning">Transfer learning</h3>
+<p>Because only the head and the loss change, the <strong>pretraining</strong> half of a standard imaging pipeline needs no changes at all. Whatever you would do to get a good backbone for classification, you do here; only the final stage becomes survival-specific. The workflow has two stages, and only the second one <em>has</em> to see your survival labels:</p>
+<ol type="1">
+<li><strong>Pretrain the backbone</strong> on a large image collection to learn general-purpose features. The pretraining objective does not have to match the objective you fine-tune with, so any of these works:
 <ul>
-<li><strong>Acquisition</strong> — no scan taken after the origin.</li>
-<li><strong>Segmentation</strong> — if an ROI was drawn by someone who knew the outcome, that knowledge can leak through the mask.</li>
-<li><strong>Feature extraction and normalisation</strong> — fit intensity normalisation, feature selection, and harmonisation on the training split only.</li>
-<li><strong>Splitting</strong> — split by <em>patient</em>, never by slice or by scan; the same patient’s slices must never straddle train and test. Split by <em>site</em> as well when you intend to claim geographic generalisation.</li>
-</ul>
+<li><strong>Labelled pretraining</strong>: train on a <em>different</em> task that does have labels, such as ImageNet classification or a large diagnostic dataset, then keep the backbone and throw away that task’s head. Note that 2D ImageNet weights do not drop straight into a 3D network; you either inflate them across the third axis or start from a checkpoint that was pretrained on volumes.</li>
+<li><strong>Self-supervised pretraining</strong>: train on raw scans with <strong>no labels at all</strong>, using an objective the images supply themselves (reconstructing masked patches, or matching two augmented views of the same volume). This suits medical imaging because unlabelled scans are plentiful while outcome-labelled ones are scarce.</li>
+<li><strong>Survival pretraining</strong>: nothing prevents the pretraining objective from being a survival loss itself, on a larger or public cohort that has follow-up. When such a checkpoint exists it is the strongest available starting point, because the features were already shaped by the risk-ranking task.</li>
+</ul></li>
+<li><strong>Fine-tune with the survival head attached.</strong> Discard the pretraining head, attach a survival head from the table above, and keep training on your own cohort with a survival loss. This is the stage that needs your follow-up times and event indicators.</li>
+</ol>
+<p>In practice the checkpoint you start from is usually one of the first two kinds: a general-purpose backbone that was never trained on anything survival-related. That is fine, and is the normal case rather than a compromise. Generic self-supervised features transfer to survival perfectly well, because what fine-tuning has to learn is the mapping from those features to a risk score, not the features themselves.</p>
+<p>Pretraining matters <em>more</em> here than in classification, because survival cohorts are small twice over: few patients, and fewer <strong>events</strong>. Censoring means your effective sample size is the number of observed events rather than the number of subjects (<a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>), so a 300-patient study might carry only 40 deaths’ worth of signal. A 3D backbone has millions of parameters; pretraining is what makes it trainable on a cohort that size.</p>
+<p>If the event count is very small, <strong>freeze</strong> the backbone and train only the head (a <em>linear probe</em>): far fewer parameters, so far less to overfit. Fine-tune the whole network once you have enough events to support it.</p>
+<p><a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a> is stage 2 in full, starting from a self-supervised 3D MRI checkpoint and fine-tuning it with a survival head.</p>
+</section>
+</section>
+<section id="failure-modes" class="level2">
+<h2 class="anchored" data-anchor-id="failure-modes">Failure Modes</h2>
+<p>The head swap is real, but a survival head is easier to break than a classification head, and the breakages are quiet: most of them raise your reported score rather than lower it. They fall into two families. The first three are ways the <strong>survival objective</strong> fails to train or be measured properly. The last four are ways information <strong>leaks</strong>, either across the prediction origin or across the train/test boundary.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Failure mode</th>
+<th>Why imaging makes it worse</th>
+<th>Symptom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Risk set truncated by the batch</td>
+<td>3D volumes force batches of 2 to 8</td>
+<td>Cox loss is unstable; results move with batch size</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Classification metrics on censored labels</td>
+<td>Habit carried over from diagnosis work</td>
+<td>“Accuracy” is reported; censored patients scored as negatives</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>More parameters than events</td>
+<td>3D backbones are large, event counts are small</td>
+<td>Train C-index near 1.0, test C-index near 0.5</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Per-slice or per-scan split</td>
+<td>One volume yields hundreds of near-duplicate slices</td>
+<td>Excellent held-out C-index that vanishes on new patients</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Outcome-aware annotation</td>
+<td>ROIs are usually drawn retrospectively</td>
+<td>Model beats clinical baselines by an implausible margin</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Preprocessing fit on all the data</td>
+<td>Harmonisation and feature selection are dataset-level by default</td>
+<td>Optimistic cross-validation, poor external validation</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Information from after the origin</td>
+<td>Follow-up scans sit in the same archive as baseline ones</td>
+<td>Very high performance driven by one post-origin variable</td>
+</tr>
+</tbody>
+</table>
+<section id="objective-and-metric-failures" class="level3">
+<h3 class="anchored" data-anchor-id="objective-and-metric-failures">Objective and metric failures</h3>
+<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not decompose. It compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is frequently underestimated; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is a reason to prefer them for imaging.</p>
+<p><strong>2. Censored labels are not negative labels.</strong> Accuracy is undefined here; a patient censored at 6 months has not been observed to be event-free forever, so scoring them as a negative class is simply wrong, and it biases the score in an uncontrolled direction. Binarising the outcome at a fixed horizon and reporting plain ROC-AUC has the same defect. Use the metrics in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>, which are built to consume <span class="math inline">(T, \delta)</span>: C-index for discrimination, time-dependent AUC at a stated horizon, and Brier score for calibration.</p>
+<p><strong>3. Parameters vastly outnumber events.</strong> Censoring makes the effective sample size the number of observed <strong>events</strong>, not the number of patients, so a 3D backbone with millions of parameters is often being fit to a few dozen informative labels. This is the single most common reason an imaging survival model does not replicate. The mitigations are the ones in <a href="#transfer-learning">transfer learning</a> above: pretrain the backbone, and freeze it as a linear probe until the event count justifies fine-tuning the whole network.</p>
+</section>
+<section id="leakage-failures" class="level3">
+<h3 class="anchored" data-anchor-id="leakage-failures">Leakage failures</h3>
+<p>The prediction origin is usually the scan date, so everything the model sees must have existed <strong>at or before</strong> that date, and nothing that identifies a patient may appear on both sides of a split.</p>
+<p><strong>4. Splitting.</strong> Split by <em>patient</em>, never by slice or by scan; the same patient’s slices must never straddle train and test. Split by <em>site</em> as well when you intend to claim geographic generalisation, since scanner and protocol differences are a shortcut the model will happily take if site correlates with outcome.</p>
 <blockquote class="blockquote">
 <p><strong>The most common silent failure in imaging survival work is a per-slice split.</strong> A 3D volume contributes hundreds of correlated slices. Splitting on slices puts near-duplicate images in both train and test, and the C-index looks excellent until the model meets a new patient.</p>
 </blockquote>
-<p>Next: <a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a> — this picture instantiated, as a full walkthrough of finetuning a self-supervised 3D backbone with a survival head.</p>
+<p><strong>5. Annotation.</strong> If an ROI was drawn by someone who knew the outcome, that knowledge can leak through the mask, and the model reads the annotator’s hindsight rather than the image.</p>
+<p><strong>6. Preprocessing.</strong> Fit intensity normalisation, feature selection, and harmonisation on the training split only. Per-case operations (resampling, cropping, per-image normalisation) are safe; anything estimated <em>across</em> cases is not.</p>
+<p><strong>7. Acquisition.</strong> No scan taken after the origin, and no covariate recorded after it either. Baseline and follow-up scans are usually stored side by side, so this one is easy to do by accident.</p>
+<p>Next: <a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a>, this picture instantiated as a full walkthrough of finetuning a self-supervised 3D backbone with a survival head.</p>
 
 
+</section>
 </section>
 </section>
 

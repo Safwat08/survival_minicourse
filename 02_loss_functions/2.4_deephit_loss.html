@@ -433,8 +433,8 @@ window.Quarto = {
   <li><a href="#model-output" id="toc-model-output" class="nav-link" data-scroll-target="#model-output">Model output</a></li>
   <li><a href="#from-data-to-loss" id="toc-from-data-to-loss" class="nav-link" data-scroll-target="#from-data-to-loss">From data to loss</a>
   <ul class="collapse">
-  <li><a href="#term-1-the-likelihood-loss-probabilistic-accuracy" id="toc-term-1-the-likelihood-loss-probabilistic-accuracy" class="nav-link" data-scroll-target="#term-1-the-likelihood-loss-probabilistic-accuracy">Term 1 — the likelihood loss (probabilistic accuracy)</a></li>
-  <li><a href="#term-2-the-ranking-loss-discrimination" id="toc-term-2-the-ranking-loss-discrimination" class="nav-link" data-scroll-target="#term-2-the-ranking-loss-discrimination">Term 2 — the ranking loss (discrimination)</a></li>
+  <li><a href="#term-1-the-likelihood-loss-probabilistic-accuracy" id="toc-term-1-the-likelihood-loss-probabilistic-accuracy" class="nav-link" data-scroll-target="#term-1-the-likelihood-loss-probabilistic-accuracy">Term 1: the likelihood loss (probabilistic accuracy)</a></li>
+  <li><a href="#term-2-the-ranking-loss-discrimination" id="toc-term-2-the-ranking-loss-discrimination" class="nav-link" data-scroll-target="#term-2-the-ranking-loss-discrimination">Term 2: the ranking loss (discrimination)</a></li>
   <li><a href="#combined" id="toc-combined" class="nav-link" data-scroll-target="#combined">Combined</a></li>
   </ul></li>
   <li><a href="#pros-and-cons" id="toc-pros-and-cons" class="nav-link" data-scroll-target="#pros-and-cons">Pros and cons</a></li>
@@ -462,11 +462,11 @@ window.Quarto = {
 \;=\; P(T = t,\; K = k \mid x)
 </span></p>
 <ul>
-<li><strong><span class="math inline">t</span></strong> — a discrete time bin.</li>
-<li><strong><span class="math inline">k \in \{1, \dots, K\}</span></strong> — the event <em>type</em> (cause), e.g.&nbsp;<span class="math inline">k=1</span> relapse, <span class="math inline">k=2</span> death. With a single event type, <span class="math inline">K = 1</span>.</li>
+<li><strong><span class="math inline">t</span></strong> is a discrete time bin.</li>
+<li><strong><span class="math inline">k \in \{1, \dots, K\}</span></strong> is the event <em>type</em> (cause), e.g.&nbsp;<span class="math inline">k=1</span> relapse, <span class="math inline">k=2</span> death. With a single event type, <span class="math inline">K = 1</span>.</li>
 <li>All cells sum to at most 1; the leftover mass is the probability of never experiencing any event within the observed horizon.</li>
 </ul>
-<p>Two quantities are read off this table by <strong>summing cells</strong> — no extra model needed:</p>
+<p>Two quantities are read off this table by <strong>summing cells</strong>, with no extra model needed:</p>
 <p><span class="math display">
 \underbrace{F_k(t \mid x)}_{\text{CIF for cause } k}
 = \sum_{\tau \le t} p_k(\tau \mid x),
@@ -474,14 +474,14 @@ window.Quarto = {
 \underbrace{S(t \mid x)}_{\text{event-free survival}}
 = 1 - \sum_{k=1}^{K}\sum_{\tau \le t} p_k(\tau \mid x)
 </span></p>
-<p><span class="math inline">F_k</span> is the <strong>cumulative incidence function</strong> — the probability of having had cause <span class="math inline">k</span> by time <span class="math inline">t</span>, the competing-risks quantity defined in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>. <span class="math inline">S</span> is the probability of escaping <em>all</em> causes through <span class="math inline">t</span>.</p>
+<p><span class="math inline">F_k</span> is the <strong>cumulative incidence function</strong>, the probability of having had cause <span class="math inline">k</span> by time <span class="math inline">t</span>, the competing-risks quantity defined in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>. <span class="math inline">S</span> is the probability of escaping <em>all</em> causes through <span class="math inline">t</span>.</p>
 <blockquote class="blockquote">
-<p><strong>Worked example — one patient’s table.</strong> With two causes (relapse, death) and monthly bins, the network might place <span class="math inline">0.04</span> on (relapse, month 6) and <span class="math inline">0.01</span> on (death, month 6). Then the relapse CIF <span class="math inline">F_1(6)</span> is the sum of all relapse cells up to month 6, and <span class="math inline">S(6)</span> is <span class="math inline">1</span> minus <em>every</em> cell (both causes) up to month 6.</p>
+<p><strong>Worked example: one patient’s table.</strong> With two causes (relapse, death) and monthly bins, the network might place <span class="math inline">0.04</span> on (relapse, month 6) and <span class="math inline">0.01</span> on (death, month 6). Then the relapse CIF <span class="math inline">F_1(6)</span> is the sum of all relapse cells up to month 6, and <span class="math inline">S(6)</span> is <span class="math inline">1</span> minus <em>every</em> cell (both causes) up to month 6.</p>
 </blockquote>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/2.4_deephit_pmf.svg" class="img-fluid figure-img" alt="Left: grouped bar chart of probability mass for two causes across time bins. Right: cumulative incidence step curves for the two causes plus a descending event-free survival curve."></p>
-<figcaption>Left: the network emits one probability per (cause, time-bin) cell—the joint mass <span class="math inline">p_k(t\mid x)</span>. Right: each cause’s CIF is a running sum of its cells, and event-free survival <span class="math inline">S(t)</span> is 1 minus every event cell accumulated so far.</figcaption>
+<figcaption>Left: the network emits one probability per (cause, time-bin) cell, the joint mass <span class="math inline">p_k(t\mid x)</span>. Right: each cause’s CIF is a running sum of its cells, and event-free survival <span class="math inline">S(t)</span> is 1 minus every event cell accumulated so far.</figcaption>
 </figure>
 </div>
 </section>
@@ -496,8 +496,8 @@ window.Quarto = {
 </span></p>
 <p>The ratio <span class="math inline">a:b</span> controls the trade-off. The <code>pycox</code> API later uses a parameter named <code>alpha</code>, but defines it specifically as <span class="math inline">a=\alpha</span> and <span class="math inline">b=1-\alpha</span>.</p>
 <section id="term-1-the-likelihood-loss-probabilistic-accuracy" class="level3">
-<h3 class="anchored" data-anchor-id="term-1-the-likelihood-loss-probabilistic-accuracy">Term 1 — the likelihood loss (probabilistic accuracy)</h3>
-<p>This is the <strong>same negative-log-likelihood recipe as <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></strong> — product of per-subject likelihoods, log, negate — with one change: an <em>observed event</em> contributes the probability <strong>mass</strong> of its specific (time, cause) cell instead of a density, because time is now discrete.</p>
+<h3 class="anchored" data-anchor-id="term-1-the-likelihood-loss-probabilistic-accuracy">Term 1: the likelihood loss (probabilistic accuracy)</h3>
+<p>This is the <strong>same negative-log-likelihood recipe as <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></strong> (product of per-subject likelihoods, log, negate) with one change: an <em>observed event</em> contributes the probability <strong>mass</strong> of its specific (time, cause) cell instead of a density, because time is now discrete.</p>
 <p><span class="math display">
 L_{\text{likelihood}} \;=\; -\sum_i \Big[\,
 \underbrace{\delta_i \,\log p_{k_i}(T_i \mid x_i)}_{\text{event of type } k_i \text{ in bin } T_i}
@@ -508,20 +508,20 @@ L_{\text{likelihood}} \;=\; -\sum_i \Big[\,
 <p>where <span class="math inline">\delta_i</span> is the event indicator (1 = event seen, 0 = censored) and <span class="math inline">k_i</span> is subject <span class="math inline">i</span>’s event type. The switch is identical to <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html#the-likelihood"><code>2.2</code></a>: a patient who had the event is scored by the cell they landed in; a censored patient is scored by the probability of having survived as long as they did.</p>
 </section>
 <section id="term-2-the-ranking-loss-discrimination" class="level3">
-<h3 class="anchored" data-anchor-id="term-2-the-ranking-loss-discrimination">Term 2 — the ranking loss (discrimination)</h3>
-<p>The likelihood term rewards accurate probabilities but does not guarantee calibration in finite data or directly emphasize the <strong>ordering</strong> of patients—which is what the <a href="../03_metrics/3.1_c_index.html">C-index</a> measures. The ranking term adds that pressure with a smooth, differentiable penalty over <strong>comparable pairs</strong>.</p>
+<h3 class="anchored" data-anchor-id="term-2-the-ranking-loss-discrimination">Term 2: the ranking loss (discrimination)</h3>
+<p>The likelihood term rewards accurate probabilities but does not guarantee calibration in finite data or directly emphasize the <strong>ordering</strong> of patients, which is what the <a href="../03_metrics/3.1_c_index.html">C-index</a> measures. The ranking term adds that pressure with a smooth, differentiable penalty over <strong>comparable pairs</strong>.</p>
 <p>A pair <span class="math inline">(i, j)</span> is <em>comparable for cause <span class="math inline">k</span></em> when patient <span class="math inline">i</span> actually had event <span class="math inline">k</span> at time <span class="math inline">T_i</span> while patient <span class="math inline">j</span> was still event-free at that moment (<span class="math inline">T_j &gt; T_i</span>). For such a pair, the patient who failed should have the <strong>higher predicted incidence</strong> at <span class="math inline">T_i</span>: <span class="math inline">F_k(T_i \mid x_i) &gt; F_k(T_i \mid x_j)</span>. The loss penalizes violations:</p>
 <p><span class="math display">
 L_{\text{rank}} \;=\; \sum_{k=1}^{K}\;\sum_{(i,j)\,\in\,\mathcal{A}_k}\;
 \underbrace{\exp\!\left(-\frac{F_k(T_i \mid x_i) - F_k(T_i \mid x_j)}{\sigma}\right)}_{\text{small when } i \text{ correctly ranked above } j;\ \text{large when not}}
 </span></p>
 <ul>
-<li><strong><span class="math inline">\mathcal{A}_k = \{(i,j) : \delta_i = 1,\; k_i = k,\; T_j &gt; T_i\}</span></strong> — the acceptable (comparable) pairs for cause <span class="math inline">k</span>.</li>
-<li><strong><span class="math inline">\sigma</span></strong> (sigma) — a scale controlling how sharply the penalty reacts to the CIF gap. Smaller <span class="math inline">\sigma</span> → steeper penalty for mis-ordered pairs.</li>
-<li>Because we <em>minimize</em> <span class="math inline">L_{\text{rank}}</span>, the exponential drives the gap <span class="math inline">F_k(T_i \mid x_i) - F_k(T_i \mid x_j)</span> to be <strong>large and positive</strong> — exactly the concordant ordering the C-index rewards.</li>
+<li><strong><span class="math inline">\mathcal{A}_k = \{(i,j) : \delta_i = 1,\; k_i = k,\; T_j &gt; T_i\}</span></strong> is the set of acceptable (comparable) pairs for cause <span class="math inline">k</span>.</li>
+<li><strong><span class="math inline">\sigma</span></strong> (sigma) is a scale controlling how sharply the penalty reacts to the CIF gap. Smaller <span class="math inline">\sigma</span> → steeper penalty for mis-ordered pairs.</li>
+<li>Because we <em>minimize</em> <span class="math inline">L_{\text{rank}}</span>, the exponential drives the gap <span class="math inline">F_k(T_i \mid x_i) - F_k(T_i \mid x_j)</span> to be <strong>large and positive</strong>, exactly the concordant ordering the C-index rewards.</li>
 </ul>
 <blockquote class="blockquote">
-<p><strong>Worked example — one ranking pair.</strong> Patient A relapses at month 6; patient B is still relapse-free at month 6 (so <span class="math inline">T_B &gt; 6</span>). This is a comparable pair for the relapse cause. DeepHit wants <span class="math inline">F_1(6 \mid x_A) &gt; F_1(6 \mid x_B)</span> — A’s predicted relapse incidence at month 6 above B’s. If the model instead predicts B as the higher-risk one, the gap goes negative and the <span class="math inline">\exp(\cdot)</span> penalty blows up, pushing the network to fix the ordering.</p>
+<p><strong>Worked example: one ranking pair.</strong> Patient A relapses at month 6; patient B is still relapse-free at month 6 (so <span class="math inline">T_B &gt; 6</span>). This is a comparable pair for the relapse cause. DeepHit wants <span class="math inline">F_1(6 \mid x_A) &gt; F_1(6 \mid x_B)</span>, i.e.&nbsp;A’s predicted relapse incidence at month 6 above B’s. If the model instead predicts B as the higher-risk one, the gap goes negative and the <span class="math inline">\exp(\cdot)</span> penalty blows up, pushing the network to fix the ordering.</p>
 </blockquote>
 </section>
 <section id="combined" class="level3">
@@ -538,39 +538,39 @@ L \;=\; a\,L_{\text{likelihood}} \;+\; b\,L_{\text{rank}}
 <table class="caption-top table">
 <tbody>
 <tr class="odd">
-<td>✅ <strong>No PH assumption</strong> — effects can flip or fade over time (the surgery case that breaks Cox, <a href="../02_loss_functions/2.1_cox_ph_loss.html#the-proportional-hazards-assumption"><code>2.1</code></a>).</td>
-<td>❌ <strong>Needs time binning</strong> — you must discretize the time axis; bin count is a tuning choice, and predictions live only on that grid.</td>
+<td>✅ <strong>No PH assumption</strong>: effects can flip or fade over time (the surgery case that breaks Cox, <a href="../02_loss_functions/2.1_cox_ph_loss.html#the-proportional-hazards-assumption"><code>2.1</code></a>).</td>
+<td>❌ <strong>Needs time binning</strong>: you must discretize the time axis; bin count is a tuning choice, and predictions live only on that grid.</td>
 </tr>
 <tr class="even">
-<td>✅ <strong>No distributional assumption</strong> — the PMF takes any shape the data supports, unlike the fixed families in <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html#common-distributions"><code>2.2</code></a>.</td>
-<td>❌ <strong>No extrapolation</strong> beyond the last bin — unlike a parametric NLL, the curve simply stops.</td>
+<td>✅ <strong>No distributional assumption</strong>: the PMF takes any shape the data supports, unlike the fixed families in <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html#common-distributions"><code>2.2</code></a>.</td>
+<td>❌ <strong>No extrapolation</strong> beyond the last bin; unlike a parametric NLL, the curve simply stops.</td>
 </tr>
 <tr class="odd">
-<td>✅ <strong>Competing risks are native</strong> — one head per cause, cause-specific CIFs (<a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>).</td>
-<td>❌ <strong>Two hyperparameters</strong> (<span class="math inline">\alpha</span>, <span class="math inline">\sigma</span>) to tune, plus the bin grid — more knobs than Cox.</td>
+<td>✅ <strong>Competing risks are native</strong>: one head per cause, cause-specific CIFs (<a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>).</td>
+<td>❌ <strong>Two hyperparameters</strong> (<span class="math inline">\alpha</span>, <span class="math inline">\sigma</span>) to tune, plus the bin grid, so more knobs than Cox.</td>
 </tr>
 <tr class="even">
 <td>✅ <strong>Targets probability quality and ranking</strong> in one objective.</td>
-<td>❌ <strong>Data-hungry</strong> — predicting a full PMF can require more events than fitting a small coefficient model.</td>
+<td>❌ <strong>Data-hungry</strong>: predicting a full PMF can require more events than fitting a small coefficient model.</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
-<p>If you just need to train and use DeepHit — not derive it — these are the points that matter:</p>
+<p>If you just need to train and use DeepHit rather than derive it, these are the points that matter:</p>
 <ul>
 <li><strong>Reach for it when competing risks are in play.</strong> Multiple mutually exclusive event types (relapse <em>vs.</em> death) with cause-specific predictions is DeepHit’s home turf; for a single event, Cox or a discrete-time NLL is usually simpler. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
-<li><strong>It outputs full probabilities</strong> — per-cause CIFs <span class="math inline">F_k(t)</span> and event-free <span class="math inline">S(t)</span> — not just a ranking. Evaluate discrimination, Brier prediction error, and calibration separately.</li>
+<li><strong>It outputs full probabilities</strong>, namely per-cause CIFs <span class="math inline">F_k(t)</span> and event-free <span class="math inline">S(t)</span>, not just a ranking. Evaluate discrimination, Brier prediction error, and calibration separately.</li>
 <li><strong><code>alpha</code>, <code>sigma</code>, and the time grid need validation.</strong> In <code>pycox</code>, <code>alpha</code> weights the NLL and <code>1-alpha</code> weights ranking; <code>sigma</code> sets how sharply mis-ordered pairs are penalized. More bins give finer nominal resolution but also sparser supervision.</li>
 <li><strong>Don’t trust it past the last time bin.</strong> DeepHit can’t extrapolate; if you need predictions beyond follow-up, use a parametric model (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) or DSM.</li>
-<li><strong>Censoring is handled by the likelihood term</strong> (the <span class="math inline">S(T_i)</span> part) — pass <code>(times, events)</code> and, for competing risks, the event-type labels.</li>
+<li><strong>Censoring is handled by the likelihood term</strong> (the <span class="math inline">S(T_i)</span> part); pass <code>(times, events)</code> and, for competing risks, the event-type labels.</li>
 </ul>
 <p>For how DeepHit stacks up against Cox, NLL, and DSM, see <a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a>.</p>
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>pycox</strong> is the reference implementation — <code>DeepHitSingle</code> for one event, <code>DeepHit</code> for competing risks (see <a href="../04_packages/4.1_pycox.html"><code>04_packages/4.1_pycox.md</code></a>). Like all discrete-time models it needs a label transform to bin the time axis:</p>
+<p><strong>pycox</strong> is the reference implementation: <code>DeepHitSingle</code> for one event, <code>DeepHit</code> for competing risks (see <a href="../04_packages/4.1_pycox.html"><code>04_packages/4.1_pycox.md</code></a>). Like all discrete-time models it needs a label transform to bin the time axis:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pycox.models <span class="im">import</span> DeepHitSingle</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>labtrans <span class="op">=</span> DeepHitSingle.label_transform(num_durations<span class="op">=</span><span class="dv">20</span>)</span>

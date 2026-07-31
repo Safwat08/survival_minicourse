@@ -461,8 +461,44 @@ BS(t) \;=\; \frac{1}{n}\sum_{i=1}^{n}\Big(
 </span></p>
 <p>The indicator <span class="math inline">\mathbf{1}(T_i &gt; t)</span> is the ground truth: 1 if subject <span class="math inline">i</span> was still event-free at <span class="math inline">t</span>, 0 if the event had already happened. A perfect model predicts <span class="math inline">S(t \mid x_i) = 1</span> for survivors and <span class="math inline">0</span> for those who failed, giving <span class="math inline">BS(t) = 0</span>.</p>
 <blockquote class="blockquote">
-<p><strong>Worked example — one time point.</strong> Evaluate at <span class="math inline">t = 12</span> months for three patients who all survived past 12 (so each ground-truth indicator is 1): | Patient | Predicted <span class="math inline">S(12)</span> | Truth <span class="math inline">\mathbf{1}(T&gt;12)</span> | Squared error | |—|—|—|—| | A | 0.9 | 1 | <span class="math inline">0.01</span> | | B | 0.6 | 1 | <span class="math inline">0.16</span> | | C | 0.8 | 1 | <span class="math inline">0.04</span> |</p>
-<p><span class="math inline">BS(12) = (0.01 + 0.16 + 0.04)/3 \approx 0.07</span>. Patient B hurts the score most — the model under-predicted a survivor’s chances.</p>
+<p><strong>Worked example: one time point.</strong> Evaluate at <span class="math inline">t = 12</span> months for three patients who all survived past 12 (so each ground-truth indicator is 1):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Patient</th>
+<th>Predicted <span class="math inline">S(12)</span></th>
+<th>Truth <span class="math inline">\mathbf{1}(T&gt;12)</span></th>
+<th>Squared error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>0.9</td>
+<td>1</td>
+<td><span class="math inline">0.01</span></td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>0.6</td>
+<td>1</td>
+<td><span class="math inline">0.16</span></td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>0.8</td>
+<td>1</td>
+<td><span class="math inline">0.04</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">BS(12) = (0.01 + 0.16 + 0.04)/3 \approx 0.07</span>. Patient B hurts the score most; the model under-predicted a survivor’s chances.</p>
 </blockquote>
 </section>
 <section id="inverse-probability-of-censoring-weighting-ipcw" class="level2">
@@ -503,8 +539,8 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
 <li><strong>It is not a calibration metric by itself.</strong> Report it alongside the <a href="../03_metrics/3.1_c_index.html">C-index</a> and a calibration curve or calibration slope/intercept at clinically relevant horizons.</li>
-<li><strong>Use the IPCW version with any real (censored) data</strong> — the raw score is biased. The packages do this for you, but they need the <em>training</em> survival arrays to estimate the censoring weights.</li>
-<li><strong>Keep evaluation times inside the follow-up window</strong> (see pitfall below) — this is the single most common way to get a meaningless Brier score.</li>
+<li><strong>Use the IPCW version with any real (censored) data</strong>, since the raw score is biased. The packages do this for you, but they need the <em>training</em> survival arrays to estimate the censoring weights.</li>
+<li><strong>Keep evaluation times inside the follow-up window</strong> (see pitfall below). This is the single most common way to get a meaningless Brier score.</li>
 <li><strong>Prefer the IBS for model selection</strong> when performance across a window matters; use individual <span class="math inline">BS(t)</span> values to diagnose when prediction error grows.</li>
 </ul>
 </section>
@@ -523,7 +559,7 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ibs   <span class="op">=</span> integrated_brier_score(y_train, y_test, surv_prob, times)  <span class="co"># single summary</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>torchsurv</strong> provides a native-PyTorch/GPU implementation (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>); compute it on the accumulated evaluation cohort rather than averaging separate batch scores. <strong>auton-survival</strong> includes IBS and reporting utilities (see <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a>).</p>
 <blockquote class="blockquote">
-<p><strong>Pitfall — evaluation times.</strong> Keep <code>times</code> within test follow-up and within the range over which the training censoring distribution is estimable. Near the tail, few subjects remain at risk and IPCW weights can become unstable; choose a clinically relevant, pre-specified window with adequate support rather than using the maximum follow-up mechanically.</p>
+<p><strong>Pitfall: evaluation times.</strong> Keep <code>times</code> within test follow-up and within the range over which the training censoring distribution is estimable. Near the tail, few subjects remain at risk and IPCW weights can become unstable; choose a clinically relevant, pre-specified window with adequate support rather than using the maximum follow-up mechanically.</p>
 </blockquote>
 <blockquote class="blockquote">
 <p><strong>Brier complements, not replaces, the C-index.</strong> A model can rank well yet have high probability error. Report both, and add a calibration plot when calibration is a stated goal. See <a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>.</p>

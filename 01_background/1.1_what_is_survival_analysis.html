@@ -461,7 +461,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="hazard-vs.-cumulative-hazard">Hazard vs.&nbsp;cumulative hazard</h3>
 <p>These two are easy to confuse. The difference is <em>rate at an instant</em> versus <em>total accumulated so far</em>:</p>
 <ul>
-<li><strong>Hazard h(t)</strong> is a <strong>speedometer</strong>: given you’ve survived up to <em>t</em>, how fast is the event happening <em>right now</em>, at this exact moment? It is a rate (events per unit time), not a probability — it can even exceed 1.</li>
+<li><strong>Hazard h(t)</strong> is a <strong>speedometer</strong>: given you’ve survived up to <em>t</em>, how fast is the event happening <em>right now</em>, at this exact moment? It is a rate (events per unit time), not a probability; it can even exceed 1.</li>
 <li><strong>Cumulative hazard H(t)</strong> is an <strong>odometer</strong>: how much total risk has piled up between time 0 and time <em>t</em>? It is the running total of all those instantaneous rates.</li>
 </ul>
 <p>They are tied together by integration, and the survival function follows directly:</p>
@@ -479,30 +479,30 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="why-not-standard-regression">Why Not Standard Regression?</h2>
 <p>A naive regression on observed follow-up time treats censored times as if they were known event times. A binary classifier for “event by the end of study” has the opposite problem: it discards <em>when</em> the event occurred and gives patients unequal follow-up windows. Survival methods are designed to use both parts of the outcome:</p>
 <ul>
-<li><strong>Incomplete event times</strong> — censored subjects contribute follow-up without being treated as events</li>
-<li><strong>The time scale</strong> — risk may change over follow-up, and predictions can be evaluated at clinically meaningful horizons</li>
+<li><strong>Incomplete event times</strong>: censored subjects contribute follow-up without being treated as events</li>
+<li><strong>The time scale</strong>: risk may change over follow-up, and predictions can be evaluated at clinically meaningful horizons</li>
 </ul>
 <p>For example, the hazard of death after major surgery may be high in the first few days, fall during recovery, and rise again later. Survival analysis can represent that time pattern instead of reducing the outcome to one observed time or one end-of-study label.</p>
 </section>
 <section id="estimating-these-functions" class="level2">
 <h2 class="anchored" data-anchor-id="estimating-these-functions">Estimating These Functions</h2>
-<p>You rarely compute S(t) and H(t) by hand. They can be estimated directly from the data — <em>non-parametrically</em>, meaning without assuming any equation for their shape. The two standard estimators come from <code>lifelines</code> (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<p>You rarely compute S(t) and H(t) by hand. They can be estimated directly from the data <em>non-parametrically</em>, meaning without assuming any equation for their shape. The two standard estimators come from <code>lifelines</code> (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter, NelsonAalenFitter</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>KaplanMeierFitter().fit(T, E)      <span class="co"># estimates S(t)  — the survival function</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>NelsonAalenFitter().fit(T, E)      <span class="co"># estimates H(t)  — the cumulative hazard</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Here <code>T</code> is each subject’s observed time and <code>E</code> is the event indicator — the <code>(T, δ)</code> notation introduced in <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>. The <strong>Kaplan-Meier</strong> estimator is the workhorse of survival analysis; it gets a full treatment in <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>.</p>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>KaplanMeierFitter().fit(T, E)      <span class="co"># estimates S(t): the survival function</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>NelsonAalenFitter().fit(T, E)      <span class="co"># estimates H(t): the cumulative hazard</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Here <code>T</code> is each subject’s observed time and <code>E</code> is the event indicator, the <code>(T, δ)</code> notation introduced in <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>. The <strong>Kaplan-Meier</strong> estimator is the workhorse of survival analysis; it gets a full treatment in <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/1.1_km_step.svg" class="img-fluid figure-img" alt="A descending step-function survival curve with small vertical tick marks indicating censoring times."></p>
 <figcaption>The Kaplan-Meier estimate of <span class="math inline">S(t)</span> is a step function: it holds flat between events and drops at each observed event. Censored subjects (ticks) leave the at-risk set without causing a drop. Full treatment in <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>.</figcaption>
 </figure>
 </div>
-<p>These are the <em>descriptive</em> baseline — they summarise a whole group. Linking individual patient features (<strong>covariates</strong>) to risk is the job of the models in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02_loss_functions/</code></a>.</p>
+<p>These are the <em>descriptive</em> baseline; they summarise a whole group. Linking individual patient features (<strong>covariates</strong>) to risk is the job of the models in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02_loss_functions/</code></a>.</p>
 </section>
 <section id="in-medical-imaging" class="level2">
 <h2 class="anchored" data-anchor-id="in-medical-imaging">In Medical Imaging</h2>
-<p>When the covariates are a scan rather than a table of clinical variables, survival analysis connects imaging biomarkers — radiomic or learned — to time-to-event outcomes such as recurrence or death. The modelling change is smaller than it sounds: a survival model is an imaging backbone with a different final layer and a different loss.</p>
+<p>When the covariates are a scan rather than a table of clinical variables, survival analysis connects imaging biomarkers, radiomic or learned, to time-to-event outcomes such as recurrence or death. The modelling change is smaller than it sounds: a survival model is an imaging backbone with a different final layer and a different loss.</p>
 <p>Full treatment, including modalities and the leakage traps specific to imaging, in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html"><code>5.1</code></a>.</p>
 
 

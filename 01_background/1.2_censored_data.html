@@ -451,7 +451,7 @@ window.Quarto = {
 <section id="types-of-censoring" class="level2">
 <h2 class="anchored" data-anchor-id="types-of-censoring">Types of Censoring</h2>
 <ul>
-<li><strong>Right censoring</strong> (most common): Subject exits before the event — lost to follow-up, or study ends</li>
+<li><strong>Right censoring</strong> (most common): Subject exits before the event, whether lost to follow-up or study ends</li>
 <li><strong>Left censoring</strong>: Event occurred before observation began</li>
 <li><strong>Interval censoring</strong>: Event is known to have occurred within a time window</li>
 </ul>
@@ -462,7 +462,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/figures/1.2_censoring_timeline.svg" class="img-fluid figure-img" alt="Horizontal timeline with one row per subject; some rows end in a filled dot (event) and others in an arrow at or before the study-end line (censored)."></p>
-<figcaption>Each subject is followed from entry to their last-seen time. A filled dot marks an observed event (<span class="math inline">\delta=1</span>); an arrow marks a censored subject (<span class="math inline">\delta=0</span>) — either lost to follow-up or still event-free when the study ends. The censored subjects are <em>not</em> discarded: their follow-up still counts up to the arrow.</figcaption>
+<figcaption>Each subject is followed from entry to their last-seen time. A filled dot marks an observed event (<span class="math inline">\delta=1</span>); an arrow marks a censored subject (<span class="math inline">\delta=0</span>), either lost to follow-up or still event-free when the study ends. The censored subjects are <em>not</em> discarded: their follow-up still counts up to the arrow.</figcaption>
 </figure>
 </div>
 </section>
@@ -470,22 +470,22 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="notation">Notation</h2>
 <p>Let <span class="math inline">T^*</span> be the true event time and <span class="math inline">C</span> the censoring time. With right censoring, the data contain:</p>
 <ul>
-<li><span class="math inline">T = \min(T^*, C)</span> — the observed follow-up time</li>
-<li><span class="math inline">\delta = \mathbf{1}(T^* \le C)</span> — the event indicator (1 = event observed, 0 = censored)</li>
+<li><span class="math inline">T = \min(T^*, C)</span>: the observed follow-up time</li>
+<li><span class="math inline">\delta = \mathbf{1}(T^* \le C)</span>: the event indicator (1 = event observed, 0 = censored)</li>
 </ul>
 <p>In code, <span class="math inline">\delta</span> is usually stored in a column or array named <code>E</code> or <code>event</code>.</p>
 </section>
 <section id="the-assumption-behind-standard-methods" class="level2">
 <h2 class="anchored" data-anchor-id="the-assumption-behind-standard-methods">The assumption behind standard methods</h2>
 <p>Kaplan–Meier, Cox regression, and the IPCW metrics later in the course usually assume <strong>independent (non-informative) censoring</strong>. For an unadjusted Kaplan–Meier curve, censoring should be independent of event time in that group. Regression can use a conditional version of the assumption: after accounting for included covariates, censoring should not carry additional information about event time.</p>
-<p>Administrative censoring at a planned study end is often plausible. Loss to follow-up can be informative—for example, if rapidly deteriorating patients stop attending visits. Standard methods cannot repair that bias automatically; examine censoring patterns and consider sensitivity analyses or models for informative censoring when the assumption is doubtful.</p>
+<p>Administrative censoring at a planned study end is often plausible. Loss to follow-up can be informative, for example if rapidly deteriorating patients stop attending visits. Standard methods cannot repair that bias automatically; examine censoring patterns and consider sensitivity analyses or models for informative censoring when the assumption is doubtful.</p>
 <blockquote class="blockquote">
 <p><strong>Censoring is not a competing event.</strong> Censoring hides the future event time. A competing event makes the event of interest impossible. The latter requires the methods in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</p>
 </blockquote>
 </section>
 <section id="how-packages-encode-t-δ" class="level2">
 <h2 class="anchored" data-anchor-id="how-packages-encode-t-δ">How Packages Encode (T, δ)</h2>
-<p>The same two columns, but the expected container differs per package — a frequent source of silent bugs:</p>
+<p>The same two columns, but the expected container differs per package, a frequent source of silent bugs:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
