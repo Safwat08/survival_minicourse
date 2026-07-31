@@ -458,7 +458,7 @@ window.Quarto = {
 \underbrace{j \text{ is a control at } t}_{\text{still event-free at } t}
 \,\big)
 </span></p>
-<p>where <span class="math inline">r_i</span> is a risk score. For a model whose risk changes with the horizon, <span class="math inline">r_i(t)</span> can be supplied instead. Subjects censored before <span class="math inline">t</span> have unknown case status, so they cannot be assigned to either group. Estimators handle this by reweighting the subjects who <em>are</em> classifiable at <span class="math inline">t</span>, using the same <strong>IPCW</strong> correction the Brier score uses (<a href="../03_metrics/3.2_brier_score.html#inverse-probability-of-censoring-weighting-ipcw"><code>3.2</code></a>).</p>
+<p>where <span class="math inline">r_i</span> is a risk score. For a model whose risk changes with the horizon, <span class="math inline">r_i(t)</span> can be supplied instead. Subjects censored before <span class="math inline">t</span> have unknown case status, so they cannot be assigned to either group. Estimators handle this by reweighting the subjects who <em>are</em> classifiable at <span class="math inline">t</span>, using the same <strong>IPCW</strong> correction the Brier score uses (see <a href="../03_metrics/3.2_brier_score.html#inverse-probability-of-censoring-weighting-ipcw">3.2 Brier Score</a>).</p>
 <p>That weighting is what limits which horizons you may evaluate. The weights are estimated from the censoring distribution seen in <em>training</em>, so an <span class="math inline">\text{AUC}(t)</span> at a <span class="math inline">t</span> beyond that range, or far into the tail where few subjects remain at risk, is unstable however good the model is. Choose horizons with real follow-up behind them rather than reading <span class="math inline">t_{\max}</span> off the data.</p>
 <p>The case/control definition itself comes in two common flavors:</p>
 <ul>
@@ -540,13 +540,13 @@ window.Quarto = {
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>scikit-survival</strong>: cumulative/dynamic AUC over a vector of time horizons (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong>: cumulative/dynamic AUC over a vector of time horizons (see <a href="../04_packages/4.4_scikit_survival.html">4.4 scikit-survival</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> cumulative_dynamic_auc</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.percentile(time_test[event_test], [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>])     <span class="co"># within follow-up range</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>auc, mean_auc <span class="op">=</span> cumulative_dynamic_auc(y_train, y_test, risk_scores, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong>: AUC as a native PyTorch metric (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>). Compute final values on accumulated evaluation predictions rather than averaging batch-wise AUCs:</p>
+<p><strong>torchsurv</strong>: AUC as a native PyTorch metric (see <a href="../04_packages/4.3_torchsurv.html">4.3 torchsurv</a>). Compute final values on accumulated evaluation predictions rather than averaging batch-wise AUCs:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.auc <span class="im">import</span> Auc</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>auc <span class="op">=</span> Auc()(log_hz, events, times, new_time<span class="op">=</span>eval_times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 

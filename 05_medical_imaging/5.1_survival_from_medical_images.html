@@ -466,9 +466,9 @@ window.Quarto = {
 </table>
 <p>That last row is why this course exists. A diagnostic label is a fact about the image. A prognostic label is a fact about the <em>future</em>, which means:</p>
 <ul>
-<li>Some patients have not had the event yet when the study closes; their labels are <strong>censored</strong>, not missing. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
-<li>You must state a <strong>prediction origin</strong>: the clock has to start somewhere, and it is normally the scan date. See <a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a>.</li>
-<li>More than one thing can happen first: progression, death, transplant. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
+<li>Some patients have not had the event yet when the study closes; their labels are <strong>censored</strong>, not missing. See <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>.</li>
+<li>You must state a <strong>prediction origin</strong>: the clock has to start somewhere, and it is normally the scan date. See <a href="../01_background/1.3_what_is_an_event.html">1.3 What is an Event?</a>.</li>
+<li>More than one thing can happen first: progression, death, transplant. See <a href="../01_background/1.4_multi_events_and_competing_risks.html">1.4 Multi-Events and Competing Risks</a>.</li>
 </ul>
 </section>
 <section id="which-modality-and-what-it-is-good-for" class="level2">
@@ -575,8 +575,8 @@ window.Quarto = {
 <ol type="1">
 <li>Take any imaging backbone that works for your modality.</li>
 <li>Replace the classification head with a survival head from the table above.</li>
-<li>Replace cross-entropy with a survival loss, the subject of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02</code></a>.</li>
-<li>Evaluate with survival metrics, not accuracy, the subject of <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>.</li>
+<li>Replace cross-entropy with a survival loss, the subject of <a href="../02_loss_functions/2.1_cox_ph_loss.html">02 Loss Functions</a>.</li>
+<li>Evaluate with survival metrics, not accuracy, the subject of <a href="../03_metrics/3.1_c_index.html">03 Metrics</a>.</li>
 </ol>
 <section id="transfer-learning" class="level3">
 <h3 class="anchored" data-anchor-id="transfer-learning">Transfer learning</h3>
@@ -591,9 +591,9 @@ window.Quarto = {
 <li><strong>Fine-tune with the survival head attached.</strong> Discard the pretraining head, attach a survival head from the table above, and keep training on your own cohort with a survival loss. This is the stage that needs your follow-up times and event indicators.</li>
 </ol>
 <p>In practice the checkpoint you start from is usually one of the first two kinds: a general-purpose backbone that was never trained on anything survival-related. That is fine, and is the normal case rather than a compromise. Generic self-supervised features transfer to survival perfectly well, because what fine-tuning has to learn is the mapping from those features to a risk score, not the features themselves.</p>
-<p>Pretraining matters <em>more</em> here than in classification, because survival cohorts are small twice over: few patients, and fewer <strong>events</strong>. Censoring means your effective sample size is the number of observed events rather than the number of subjects (<a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>), so a 300-patient study might carry only 40 deaths’ worth of signal. A 3D backbone has millions of parameters; pretraining is what makes it trainable on a cohort that size.</p>
+<p>Pretraining matters <em>more</em> here than in classification, because survival cohorts are small twice over: few patients, and fewer <strong>events</strong>. Censoring means your effective sample size is the number of observed events rather than the number of subjects (see <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>), so a 300-patient study might carry only 40 deaths’ worth of signal. A 3D backbone has millions of parameters; pretraining is what makes it trainable on a cohort that size.</p>
 <p>If the event count is very small, <strong>freeze</strong> the backbone and train only the head (a <em>linear probe</em>): far fewer parameters, so far less to overfit. Fine-tune the whole network once you have enough events to support it.</p>
-<p><a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a> is stage 2 in full, starting from a self-supervised 3D MRI checkpoint and fine-tuning it with a survival head.</p>
+<p><a href="../05_medical_imaging/5.2_3d_mri_survival.html">5.2 Training a Survival Model on 3D MRI</a> is stage 2 in full, starting from a self-supervised 3D MRI checkpoint and fine-tuning it with a survival head.</p>
 </section>
 </section>
 <section id="failure-modes" class="level2">
@@ -661,8 +661,8 @@ window.Quarto = {
 </table>
 <section id="objective-and-metric-failures" class="level3">
 <h3 class="anchored" data-anchor-id="objective-and-metric-failures">Objective and metric failures</h3>
-<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not decompose. It compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is frequently underestimated; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is a reason to prefer them for imaging.</p>
-<p><strong>2. Censored labels are not negative labels.</strong> Accuracy is undefined here; a patient censored at 6 months has not been observed to be event-free forever, so scoring them as a negative class is simply wrong, and it biases the score in an uncontrolled direction. Binarising the outcome at a fixed horizon and reporting plain ROC-AUC has the same defect. Use the metrics in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>, which are built to consume <span class="math inline">(T, \delta)</span>: C-index for discrimination, time-dependent AUC at a stated horizon, and Brier score for calibration.</p>
+<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not decompose. It compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is frequently underestimated; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>. Discrete-time losses (see <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html">2.2 Negative Log-Likelihood Loss</a>) do decompose per-sample, which is a reason to prefer them for imaging.</p>
+<p><strong>2. Censored labels are not negative labels.</strong> Accuracy is undefined here; a patient censored at 6 months has not been observed to be event-free forever, so scoring them as a negative class is simply wrong, and it biases the score in an uncontrolled direction. Binarising the outcome at a fixed horizon and reporting plain ROC-AUC has the same defect. Use the metrics in <a href="../03_metrics/3.1_c_index.html">03 Metrics</a>, which are built to consume <span class="math inline">(T, \delta)</span>: C-index for discrimination, time-dependent AUC at a stated horizon, and Brier score for calibration.</p>
 <p><strong>3. Parameters vastly outnumber events.</strong> Censoring makes the effective sample size the number of observed <strong>events</strong>, not the number of patients, so a 3D backbone with millions of parameters is often being fit to a few dozen informative labels. This is the single most common reason an imaging survival model does not replicate. The mitigations are the ones in <a href="#transfer-learning">transfer learning</a> above: pretrain the backbone, and freeze it as a linear probe until the event count justifies fine-tuning the whole network.</p>
 </section>
 <section id="leakage-failures" class="level3">
@@ -675,7 +675,7 @@ window.Quarto = {
 <p><strong>5. Annotation.</strong> If an ROI was drawn by someone who knew the outcome, that knowledge can leak through the mask, and the model reads the annotator’s hindsight rather than the image.</p>
 <p><strong>6. Preprocessing.</strong> Fit intensity normalisation, feature selection, and harmonisation on the training split only. Per-case operations (resampling, cropping, per-image normalisation) are safe; anything estimated <em>across</em> cases is not.</p>
 <p><strong>7. Acquisition.</strong> No scan taken after the origin, and no covariate recorded after it either. Baseline and follow-up scans are usually stored side by side, so this one is easy to do by accident.</p>
-<p>Next: <a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a>, this picture instantiated as a full walkthrough of finetuning a self-supervised 3D backbone with a survival head.</p>
+<p>Next: <a href="../05_medical_imaging/5.2_3d_mri_survival.html">5.2 Training a Survival Model on 3D MRI</a>, this picture instantiated as a full walkthrough of finetuning a self-supervised 3D backbone with a survival head.</p>
 
 
 </section>

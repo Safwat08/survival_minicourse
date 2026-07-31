@@ -452,7 +452,7 @@ window.Quarto = {
 
 <section id="kaplan-meier-curves" class="level1">
 <h1>Kaplan-Meier Curves</h1>
-<p>The Kaplan–Meier (KM) estimator is the standard <strong>non-parametric</strong> way to estimate the survival function <span class="math inline">S(t)</span> for a cohort or group, with no covariates and no assumed curve shape. It is a useful descriptive reference, not a personalized prediction model. Like the other standard methods here, it relies on independent censoring (<a href="../01_background/1.2_censored_data.html#the-assumption-behind-standard-methods"><code>1.2</code></a>).</p>
+<p>The Kaplan–Meier (KM) estimator is the standard <strong>non-parametric</strong> way to estimate the survival function <span class="math inline">S(t)</span> for a cohort or group, with no covariates and no assumed curve shape. It is a useful descriptive reference, not a personalized prediction model. Like the other standard methods here, it relies on independent censoring (see <a href="../01_background/1.2_censored_data.html#the-assumption-behind-standard-methods">1.2 Censored Data</a>).</p>
 <section id="estimator" class="level2">
 <h2 class="anchored" data-anchor-id="estimator">Estimator</h2>
 <p>KM walks through the event times and multiplies together the fraction surviving each one:</p>
@@ -462,7 +462,7 @@ window.Quarto = {
 <p>where, at each distinct event time <span class="math inline">t_i</span>:</p>
 <ul>
 <li><strong><span class="math inline">d_i</span></strong> is the number of <strong>events</strong> (e.g.&nbsp;deaths) at <span class="math inline">t_i</span>.</li>
-<li><strong><span class="math inline">n_i</span></strong> is the number <strong>at risk</strong> <em>just before</em> <span class="math inline">t_i</span>: everyone who has neither had the event nor been censored yet (the risk set from <a href="../02_loss_functions/2.1_cox_ph_loss.html#partial-likelihood"><code>2.1</code></a>).</li>
+<li><strong><span class="math inline">n_i</span></strong> is the number <strong>at risk</strong> <em>just before</em> <span class="math inline">t_i</span>: everyone who has neither had the event nor been censored yet (the risk set from <a href="../02_loss_functions/2.1_cox_ph_loss.html#partial-likelihood">2.1 Cox Proportional Hazards Loss</a>).</li>
 </ul>
 <p>Each factor <span class="math inline">(1 - d_i/n_i)</span> is the conditional probability of remaining event-free through <span class="math inline">t_i</span> given survival up to it; the running product produces the estimated survival curve, a <strong>step function</strong> that drops at events and stays flat between them.</p>
 <blockquote class="blockquote">
@@ -564,7 +564,7 @@ window.Quarto = {
 </tbody>
 </table>
 <p><strong>Development→test discipline (all three methods).</strong> Fit <span class="math inline">\tau</span> using only development data, freeze the entire procedure, then apply it once to the test set. If the model itself was fit on the training set, prefer a separate validation set or nested cross-validation for outcome-guided cutpoint selection. A median training cutpoint does not use outcomes and is a simpler baseline.</p>
-<p>None of the three ships as a ready-made function. <code>scikit-survival</code> (<a href="../04_packages/4.4_scikit_survival.html"><code>4.4</code></a>) provides the IPCW machinery and <code>lifelines</code> (<a href="../04_packages/4.2_lifelines.html"><code>4.2</code></a>) the log-rank test, but you assemble the cutpoint yourself:</p>
+<p>None of the three ships as a ready-made function. <code>scikit-survival</code> (see <a href="../04_packages/4.4_scikit_survival.html">4.4 scikit-survival</a>) provides the IPCW machinery and <code>lifelines</code> (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>) the log-rank test, but you assemble the cutpoint yourself:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.util <span class="im">import</span> Surv</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> CensoringDistributionEstimator</span>
@@ -603,7 +603,7 @@ window.Quarto = {
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply ONE frozen cutoff to </span><span class="al">TEST</span><span class="co">.</span></span>
 <span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>high_risk_test <span class="op">=</span> risk_scores_test <span class="op">&gt;=</span> tau_median  <span class="co"># or tau_youden / tau_logrank</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The Youden block is the cumulative/dynamic case/control split of <a href="../03_metrics/3.4_time_dependent_auc.html"><code>3.4</code></a> made explicit: cases carry weight <span class="math inline">1/\hat G(T_i)</span>, controls share <span class="math inline">1/\hat G(t)</span>, and subjects censored before <span class="math inline">t</span> get weight zero because their status at <span class="math inline">t</span> is unknown. Feeding those weights to <code>roc_curve</code> reproduces <code>cumulative_dynamic_auc</code> exactly, so the cutoff you read off it is the cutoff belonging to the AUC you report.</p>
+<p>The Youden block is the cumulative/dynamic case/control split of <a href="../03_metrics/3.4_time_dependent_auc.html">3.4 Time-Dependent AUC</a> made explicit: cases carry weight <span class="math inline">1/\hat G(T_i)</span>, controls share <span class="math inline">1/\hat G(t)</span>, and subjects censored before <span class="math inline">t</span> get weight zero because their status at <span class="math inline">t</span> is unknown. Feeding those weights to <code>roc_curve</code> reproduces <code>cumulative_dynamic_auc</code> exactly, so the cutoff you read off it is the cutoff belonging to the AUC you report.</p>
 <blockquote class="blockquote">
 <p><strong>Warning: max log-rank inflates significance.</strong> Scanning many candidate thresholds and keeping the best is multiple testing: the resulting log-rank p-value is <strong>not</strong> a valid significance test. Validate the chosen split on a held-out set or independent cohort, and never report the <em>training</em> p-value as a significance result.</p>
 </blockquote>
@@ -617,7 +617,7 @@ window.Quarto = {
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>kmf.plot_survival_function()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="stratified-plot-the-evaluation-use-case" class="level3">
 <h3 class="anchored" data-anchor-id="stratified-plot-the-evaluation-use-case">Stratified plot (the evaluation use case)</h3>
-<p>The clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<p>The clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.plotting <span class="im">import</span> add_at_risk_counts</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -644,7 +644,7 @@ window.Quarto = {
 <li><strong>It is a useful reference prediction.</strong> A covariate-free KM curve is a sensible baseline for the <a href="../03_metrics/3.2_brier_score.html">Brier score</a>; failure to improve on it suggests the model is not adding useful out-of-sample probability information over that window.</li>
 <li><strong>A stratified KM plot is a communication tool, not a complete validation.</strong> Pair it with continuous-score metrics, uncertainty, calibration, and a transparent cutpoint rule.</li>
 <li><strong>Censoring shrinks the at-risk set but never directly drops the curve.</strong> KM is unbiased under its censoring assumptions, not under arbitrary informative loss to follow-up.</li>
-<li><strong>It can’t extrapolate or adjust for covariates.</strong> For individualized, covariate-aware <span class="math inline">S(t)</span> you need a model (<a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>–<a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a>).</li>
+<li><strong>It can’t extrapolate or adjust for covariates.</strong> For individualized, covariate-aware <span class="math inline">S(t)</span> you need a model (see <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>–<a href="../02_loss_functions/2.4_deephit_loss.html">2.4 DeepHit Loss</a>).</li>
 </ul>
 </section>
 <section id="limitations" class="level2">

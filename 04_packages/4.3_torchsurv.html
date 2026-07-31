@@ -433,7 +433,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>cindex <span class="op">=</span> ConcordanceIndex()</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> cindex(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Metrics should normally be computed on accumulated validation/test predictions, not averaged from separate mini-batch metric values: comparable pairs and censoring weights can cross batch boundaries. The Cox training loss has the same risk-set caveat; see <a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists"><code>2.1</code></a>.</p>
+<p>Metrics should normally be computed on accumulated validation/test predictions, not averaged from separate mini-batch metric values: comparable pairs and censoring weights can cross batch boundaries. The Cox training loss has the same risk-set caveat; see <a href="../02_loss_functions/2.1_cox_ph_loss.html#key-takeaways-for-applied-ml-scientists">2.1 Cox Proportional Hazards Loss</a>.</p>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>

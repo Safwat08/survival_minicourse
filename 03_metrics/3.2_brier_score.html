@@ -532,7 +532,7 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
 <ul>
 <li><strong>Lower is better:</strong> <span class="math inline">0</span> is perfect. Predicting 0.5 for everyone produces 0.25, but an uninformative prevalence-based prediction can score below 0.25 when the outcome is imbalanced; a poor model can score above 0.25.</li>
-<li>Compare against a <strong>Kaplan–Meier baseline</strong> fit without covariates (see <a href="../03_metrics/3.3_km_curves.html"><code>3.3</code></a>) on the same evaluation window.</li>
+<li>Compare against a <strong>Kaplan–Meier baseline</strong> fit without covariates (see <a href="../03_metrics/3.3_km_curves.html">3.3 Kaplan-Meier Curves</a>) on the same evaluation window.</li>
 </ul>
 </section>
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
@@ -546,7 +546,7 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>scikit-survival</strong> is the reference implementation. Both functions take the <em>training</em> and <em>test</em> structured arrays (for the IPCW censoring estimate) plus the model’s predicted survival probabilities <code>S(t)</code> at each evaluation time (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong> is the reference implementation. Both functions take the <em>training</em> and <em>test</em> structured arrays (for the IPCW censoring estimate) plus the model’s predicted survival probabilities <code>S(t)</code> at each evaluation time (see <a href="../04_packages/4.4_scikit_survival.html">4.4 scikit-survival</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> brier_score, integrated_brier_score</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -557,12 +557,12 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>t, bs <span class="op">=</span> brier_score(y_train, y_test, surv_prob, times)          <span class="co"># BS at each time</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ibs   <span class="op">=</span> integrated_brier_score(y_train, y_test, surv_prob, times)  <span class="co"># single summary</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> provides a native-PyTorch/GPU implementation (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>); compute it on the accumulated evaluation cohort rather than averaging separate batch scores. <strong>auton-survival</strong> includes IBS and reporting utilities (see <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a>).</p>
+<p><strong>torchsurv</strong> provides a native-PyTorch/GPU implementation (see <a href="../04_packages/4.3_torchsurv.html">4.3 torchsurv</a>); compute it on the accumulated evaluation cohort rather than averaging separate batch scores. <strong>auton-survival</strong> includes IBS and reporting utilities (see <a href="../04_packages/4.5_auton_survival.html">4.5 auton-survival</a>).</p>
 <blockquote class="blockquote">
 <p><strong>Pitfall: evaluation times.</strong> Keep <code>times</code> within test follow-up and within the range over which the training censoring distribution is estimable. Near the tail, few subjects remain at risk and IPCW weights can become unstable; choose a clinically relevant, pre-specified window with adequate support rather than using the maximum follow-up mechanically.</p>
 </blockquote>
 <blockquote class="blockquote">
-<p><strong>Brier complements, not replaces, the C-index.</strong> A model can rank well yet have high probability error. Report both, and add a calibration plot when calibration is a stated goal. See <a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>.</p>
+<p><strong>Brier complements, not replaces, the C-index.</strong> A model can rank well yet have high probability error. Report both, and add a calibration plot when calibration is a stated goal. See <a href="../03_metrics/3.1_c_index.html">3.1 Concordance Index (C-index)</a>.</p>
 </blockquote>
 
 

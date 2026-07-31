@@ -461,7 +461,7 @@ C \;=\; P\big(\,
 \underbrace{\delta_i = 1}_{i\text{'s event is observed}}
 \,\big)
 </span></p>
-<p>where <span class="math inline">r_i</span> is subject <span class="math inline">i</span>’s <strong>risk score</strong> (higher = more risk), <span class="math inline">T_i</span> is the observed time, and <span class="math inline">\delta_i</span> the event indicator (the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>).</p>
+<p>where <span class="math inline">r_i</span> is subject <span class="math inline">i</span>’s <strong>risk score</strong> (higher = more risk), <span class="math inline">T_i</span> is the observed time, and <span class="math inline">\delta_i</span> the event indicator (the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>).</p>
 <p>In practice it’s computed by counting <strong>concordant pairs</strong> (pairs the model got in the right order) over all comparable pairs:</p>
 <p><span class="math display">
 \hat{C} \;=\; \frac{\#\{\text{concordant pairs}\} + 0.5\,\#\{\text{risk-score ties}\}}{\#\{\text{comparable pairs}\}}
@@ -546,15 +546,15 @@ C \;=\; P\big(\,
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>lifelines</strong>: Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<p><strong>lifelines</strong>: Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.utils <span class="im">import</span> concordance_index</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> concordance_index(event_times, <span class="op">-</span>risk_scores, event_observed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>scikit-survival</strong>: both estimators (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
+<p><strong>scikit-survival</strong>: both estimators (see <a href="../04_packages/4.4_scikit_survival.html">4.4 scikit-survival</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> concordance_index_censored, concordance_index_ipcw</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>harrell <span class="op">=</span> concordance_index_censored(event_test, time_test, risk_scores)[<span class="dv">0</span>]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>uno     <span class="op">=</span> concordance_index_ipcw(y_train, y_test, risk_scores, tau<span class="op">=</span>t_max)[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong>: GPU-compatible, for in-loop monitoring of a PyTorch model (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
+<p><strong>torchsurv</strong>: GPU-compatible, for in-loop monitoring of a PyTorch model (see <a href="../04_packages/4.3_torchsurv.html">4.3 torchsurv</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.cindex <span class="im">import</span> ConcordanceIndex</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> ConcordanceIndex()(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>

@@ -461,12 +461,12 @@ window.Quarto = {
 
 <section id="training-a-survival-model-on-3d-mri" class="level1">
 <h1>Training a Survival Model on 3D MRI</h1>
-<p><a href="../05_medical_imaging/5.1_survival_from_medical_images.html"><code>5.1</code></a> argued that a survival model is an imaging backbone with a different head and a different loss. This section is that claim made concrete: a full walkthrough of taking a cohort of 3D MRI volumes with per-subject survival labels and finetuning a self-supervised backbone on them.</p>
+<p><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a> argued that a survival model is an imaging backbone with a different head and a different loss. This section is that claim made concrete: a full walkthrough of taking a cohort of 3D MRI volumes with per-subject survival labels and finetuning a self-supervised backbone on them.</p>
 <p>Mapped onto the backbone/head picture:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>Abstract (<a href="../05_medical_imaging/5.1_survival_from_medical_images.html"><code>5.1</code></a>)</th>
+<th>Abstract (see <a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a>)</th>
 <th>Concrete (this tutorial)</th>
 </tr>
 </thead>
@@ -511,32 +511,32 @@ window.Quarto = {
 <tr class="odd">
 <td>Censoring</td>
 <td><code>event = 0</code> means the subject was right-censored, not event-free forever</td>
-<td><a href="../01_background/1.2_censored_data.html"><code>1.2</code></a></td>
+<td><a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a></td>
 </tr>
 <tr class="even">
 <td>Prediction origin</td>
 <td>your clock starts at the scan; everything the model sees must predate it</td>
-<td><a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a></td>
+<td><a href="../01_background/1.3_what_is_an_event.html">1.3 What is an Event?</a></td>
 </tr>
 <tr class="odd">
 <td>Backbone + head</td>
 <td>what you are actually assembling in step 6</td>
-<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html"><code>5.1</code></a></td>
+<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="even">
 <td>Pretrain then fine-tune</td>
 <td>why step 6 starts from a checkpoint instead of random weights, and when to freeze the backbone instead</td>
-<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html#transfer-learning"><code>5.1</code></a></td>
+<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html#transfer-learning">5.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="odd">
 <td>The losses</td>
 <td>which of the ten to pick, and why <code>nll</code> is a sane default for imaging</td>
-<td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>, <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></td>
+<td><a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>, <a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html">2.2 Negative Log-Likelihood Loss</a></td>
 </tr>
 <tr class="even">
 <td>C-index</td>
 <td>the checkpoint-selection metric in step 6 and the headline number in step 8</td>
-<td><a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a></td>
+<td><a href="../03_metrics/3.1_c_index.html">3.1 Concordance Index (C-index)</a></td>
 </tr>
 </tbody>
 </table>
@@ -605,7 +605,7 @@ window.Quarto = {
 <p>Four things to know before you start:</p>
 <ul>
 <li><code>&lt;IMAGE_DIR&gt;</code> is just a config key (<code>data.module.image_dir</code>). Name it anything.</li>
-<li><code>event</code> is 1 when the event (death, say) was observed and 0 when the subject was right-censored, meaning the event hadn’t happened by last follow-up. This is the <span class="math inline">\delta</span> of <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
+<li><code>event</code> is 1 when the event (death, say) was observed and 0 when the subject was right-censored, meaning the event hadn’t happened by last follow-up. This is the <span class="math inline">\delta</span> of <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>.</li>
 <li>The label loader in <code>survival.py</code> accepts <code>time_years</code>, <code>time_months</code>, or <code>time</code>. We’ll emit <code>time_years</code>.</li>
 <li><code>case_id</code> must be identical across the <code>.b2nd</code> filename, the label keys, and the split lists.</li>
 </ul>
@@ -656,7 +656,7 @@ window.Quarto = {
 <section id="stage-into-nnu-net-raw-layout" class="level2">
 <h2 class="anchored" data-anchor-id="stage-into-nnu-net-raw-layout">3. Stage into nnU-Net “raw” layout</h2>
 <p>The preprocessing tier (<code>src/medsurvival3d/data/preprocessing/datasets/template_brain_preprocessing.py</code>) wants the nnU-Net raw layout: a folder <code>imagesTr/</code> in which each file is named <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index (<code>0000</code>, <code>0001</code>, and so on).</p>
-<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for"><code>5.1</code></a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
+<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for">5.1 Survival from Medical Images</a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
 <p>Symlink your chosen modality into the <code>_0000</code> slot. Set <code>MOD</code> to whatever token identifies that modality in your filenames, and adjust the glob and the id derivation to match what step 2 showed you (<code>t1c</code> here is only an example):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">RAW</span><span class="op">=</span><span class="va">$HOME</span>/data/mydataset</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">MOD</span><span class="op">=</span>t1c                                                        <span class="co"># &lt;- the modality token in YOUR filenames</span></span>
@@ -729,7 +729,7 @@ window.Quarto = {
 <span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"WARNING: </span><span class="sc">{</span><span class="bu">len</span>(missing)<span class="sc">}</span><span class="ss"> staged cases had no clinical row: </span><span class="sc">{</span><span class="bu">sorted</span>(missing)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> build_survival_labels.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Check three things in the output: the count should be roughly your cohort size, <code>event</code> should be a mix of 0s and 1s (all 1s means you inverted the censoring column), and the <code>time_years</code> values should be physically plausible.</p>
-<p>The proportion of <code>event == 1</code> is worth noting now, because it sets your effective sample size, not your subject count. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</p>
+<p>The proportion of <code>event == 1</code> is worth noting now, because it sets your effective sample size, not your subject count. See <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>.</p>
 </section>
 <section id="preprocess-to-.b2nd" class="level2">
 <h2 class="anchored" data-anchor-id="preprocess-to-.b2nd">5. Preprocess to <code>.b2nd</code></h2>
@@ -771,7 +771,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#leakage-failures"><code>5.1</code></a>.</p>
+<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#leakage-failures">5.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
 <section id="b.-check-what-preprocessing-produced" class="level3">
@@ -793,7 +793,7 @@ window.Quarto = {
 <section id="configure-and-train" class="level2">
 <h2 class="anchored" data-anchor-id="configure-and-train">6. Configure and train</h2>
 <p>Configs ship as package data under <code>src/medsurvival3d/cli_configs/</code>. With the editable install from step 1 you edit them in place and Hydra picks up the changes live. <code>CFG=src/medsurvival3d/cli_configs</code> below just keeps the paths short.</p>
-<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, is the one component that makes this a survival model rather than a classifier.</p>
+<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head">5.1 Survival from Medical Images</a>, is the one component that makes this a survival model rather than a classifier.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="va">CFG</span><span class="op">=</span>src/medsurvival3d/cli_configs</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="va">$CFG</span>/data/survival.yaml <span class="va">$CFG</span>/data/survival_mine.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -865,7 +865,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#objective-and-metric-failures"><code>5.1</code></a>.</p>
+<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a> and <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#objective-and-metric-failures">5.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
 <p>Finally, point Hydra at writable paths. <code>$CFG/env/local.yaml</code> ships as placeholders:</p>
@@ -898,7 +898,7 @@ window.Quarto = {
 </section>
 <section id="swapping-the-loss" class="level2">
 <h2 class="anchored" data-anchor-id="swapping-the-loss">7. Swapping the loss</h2>
-<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head"><code>5.1</code></a>, exposed as a single config key:</p>
+<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head">5.1 Survival from Medical Images</a>, exposed as a single config key:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -911,22 +911,22 @@ window.Quarto = {
 <tr class="odd">
 <td><code>cox</code></td>
 <td>Continuous-time proportional hazards</td>
-<td><a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a></td>
+<td><a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a></td>
 </tr>
 <tr class="even">
 <td><code>nll</code>, <code>pmf</code>, <code>mtlr</code>, <code>bcesurv</code>, <code>pchazard</code></td>
 <td>Discrete-time likelihood variants</td>
-<td><a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a></td>
+<td><a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html">2.2 Negative Log-Likelihood Loss</a></td>
 </tr>
 <tr class="odd">
 <td><code>deephit</code></td>
 <td>Discrete-time, ranking-augmented, competing-risk capable</td>
-<td><a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a></td>
+<td><a href="../02_loss_functions/2.4_deephit_loss.html">2.4 DeepHit Loss</a></td>
 </tr>
 <tr class="even">
 <td><code>weibull</code></td>
 <td>Fully parametric</td>
-<td><a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a></td>
+<td><a href="../02_loss_functions/2.5_loss_comparison.html">2.5 Loss Functions Compared</a></td>
 </tr>
 <tr class="odd">
 <td><code>soft_logrank</code></td>
@@ -950,15 +950,15 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Don’t reach for it to make a development KM plot look more separated. It optimises the later visualisation rather than the ranking, adds another weight to tune, and can overfit whichever grouping rule you happened to pick. Start with a survival objective, evaluate the continuous score honestly, and choose a cutpoint afterwards as in <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a>.</p>
+<p>Don’t reach for it to make a development KM plot look more separated. It optimises the later visualisation rather than the ranking, adds another weight to tune, and can overfit whichever grouping rule you happened to pick. Start with a survival objective, evaluate the continuous score honestly, and choose a cutpoint afterwards as in <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">3.3 Kaplan-Meier Curves</a>.</p>
 </div>
 </div>
 <p>To try a different one, copy the <code>model.survival_loss</code> block from <code>$CFG/data/survival_&lt;name&gt;.yaml</code> into your config. Each block encodes that loss’s own hyperparameters: <code>deephit</code> needs <code>alpha</code> and <code>sigma</code>, <code>composite</code> takes a weighted <code>components</code> list with a <code>primary</code>, and so on. If you want to sanity-check the whole install, <code>fast_dev_run</code> each loss the way step 6b does.</p>
-<p><a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a> compares these on assumptions and failure modes, which is the better basis for a first choice than sweeping all ten.</p>
+<p><a href="../02_loss_functions/2.5_loss_comparison.html">2.5 Loss Functions Compared</a> compares these on assumptions and failure modes, which is the better basis for a first choice than sweeping all ten.</p>
 </section>
 <section id="reading-the-results" class="level2">
 <h2 class="anchored" data-anchor-id="reading-the-results">8. Reading the results</h2>
-<p><code>Val/C-index</code>, the checkpoint monitor, is the survival analogue of AUC: the fraction of comparable subject pairs the model ranks in the correct risk order. 0.5 is chance, 1.0 is perfect ranking. Full treatment in <a href="../03_metrics/3.1_c_index.html"><code>3.1</code></a>.</p>
+<p><code>Val/C-index</code>, the checkpoint monitor, is the survival analogue of AUC: the fraction of comparable subject pairs the model ranks in the correct risk order. 0.5 is chance, 1.0 is perfect ranking. Full treatment in <a href="../03_metrics/3.1_c_index.html">3.1 Concordance Index (C-index)</a>.</p>
 <p>On a small cohort the C-index will be wide and noisy, and a mean near 0.5 usually means too few subjects and events rather than broken code. For a pipeline check, the right success criterion is a stable, reproducible number across folds, not a good one.</p>
 <p>Keep censoring in mind when you interpret anything. The C-index and the <a href="../03_metrics/3.3_km_curves.html">KM</a> and <a href="../03_metrics/3.2_brier_score.html">Brier</a> curves the trainer logs all account for right-censoring, but your effective sample size is the number of observed events, not the number of subjects.</p>
 <p>For per-subject risk predictions from a trained checkpoint, use the other console command, <code>medsurvival3d-infer</code> (<code>src/medsurvival3d/inference/survival.py</code>, config <code>$CFG/inference_survival.yaml</code>).</p>
@@ -983,7 +983,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a> covers choosing one cutpoint on development data and freezing it, including the multiple-testing trap that makes a KM plot look better than the model is.</p>
+<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">3.3 Kaplan-Meier Curves</a> covers choosing one cutpoint on development data and freezing it, including the multiple-testing trap that makes a KM plot look better than the model is.</p>
 </div>
 </div>
 </section>

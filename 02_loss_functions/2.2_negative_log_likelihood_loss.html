@@ -448,11 +448,11 @@ window.Quarto = {
 
 <section id="negative-log-likelihood-loss" class="level1">
 <h1>Negative Log-Likelihood Loss</h1>
-<p>Negative log-likelihood (NLL) is a general fitting principle. This lesson covers two common survival versions: <strong>fully parametric</strong> models, which choose a distribution for event time, and <strong>discrete-time</strong> models, which assign probability across time bins. Cox also minimizes a negative log-likelihood, but of a <em>partial</em> likelihood; see <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>.</p>
+<p>Negative log-likelihood (NLL) is a general fitting principle. This lesson covers two common survival versions: <strong>fully parametric</strong> models, which choose a distribution for event time, and <strong>discrete-time</strong> models, which assign probability across time bins. Cox also minimizes a negative log-likelihood, but of a <em>partial</em> likelihood; see <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>.</p>
 <section id="the-likelihood" class="level2">
 <h2 class="anchored" data-anchor-id="the-likelihood">The likelihood</h2>
 <p>Parametric models are fit by <strong>maximum likelihood</strong>: choose the parameters that make the data you actually observed most probable. The <em>likelihood</em> is that probability, read as a function of the model’s parameters.</p>
-<p>Each subject <span class="math inline">i</span> (with observed time <span class="math inline">T_i</span> and event indicator <span class="math inline">\delta_i</span>, where 1 = event seen and 0 = censored; the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>) contributes <strong>one factor</strong>, depending on what we saw:</p>
+<p>Each subject <span class="math inline">i</span> (with observed time <span class="math inline">T_i</span> and event indicator <span class="math inline">\delta_i</span>, where 1 = event seen and 0 = censored; the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>) contributes <strong>one factor</strong>, depending on what we saw:</p>
 <ul>
 <li><strong>Event observed</strong> (<span class="math inline">\delta_i = 1</span>): we know it happened at <span class="math inline">T_i</span> → contribute the density <span class="math inline">f(T_i \mid x_i)</span>.</li>
 <li><strong>Censored</strong> (<span class="math inline">\delta_i = 0</span>): we only know they lasted past <span class="math inline">T_i</span> → contribute the survival probability <span class="math inline">S(T_i \mid x_i)</span>.</li>
@@ -465,7 +465,7 @@ window.Quarto = {
 </section>
 <section id="from-likelihood-to-loss" class="level2">
 <h2 class="anchored" data-anchor-id="from-likelihood-to-loss">From likelihood to loss</h2>
-<p>Two standard moves turn that product into a trainable loss, the <strong>same two steps</strong> Cox applies to its partial likelihood in <a href="../02_loss_functions/2.1_cox_ph_loss.html#the-loss"><code>2.1</code></a>:</p>
+<p>Two standard moves turn that product into a trainable loss, the <strong>same two steps</strong> Cox applies to its partial likelihood in <a href="../02_loss_functions/2.1_cox_ph_loss.html#the-loss">2.1 Cox Proportional Hazards Loss</a>:</p>
 <ol type="1">
 <li><strong>Take the log → the <em>log-likelihood</em>.</strong> The log of a product is a sum of logs, so <span class="math inline">\log \mathcal{L} = \sum_i \ell_i</span>. The log is monotonic (it doesn’t move the maximizer), it turns an underflow-prone product of tiny probabilities into a stable sum, and it yields cleaner gradients.</li>
 <li><strong>Negate → the <em>negative</em> log-likelihood.</strong> Optimizers minimize, so flip the sign: maximizing <span class="math inline">\log \mathcal{L}</span> is the same as minimizing <span class="math inline">-\log \mathcal{L}</span>. That negative is the loss, <strong>NLL</strong>.</li>
@@ -481,7 +481,7 @@ window.Quarto = {
 L \;=\; -\sum_i \ell_i \quad\text{(the negative log-likelihood, summed over all subjects)}
 </span></p>
 <blockquote class="blockquote">
-<p><strong>The recipe is the same as Cox.</strong> Both losses are <em>negative log-likelihoods of a product</em>: write the likelihood as a product → take the log to get a sum → negate to get a loss. The only difference is <strong>which</strong> product. Cox uses a <em>partial</em> likelihood: one softmax factor per event, built so the baseline hazard cancels (<a href="../02_loss_functions/2.1_cox_ph_loss.html#partial-likelihood"><code>2.1</code></a>). NLL uses the <em>full</em> likelihood: one <span class="math inline">f</span>-or-<span class="math inline">S</span> factor per subject, which is why it needs a distribution but, in return, predicts absolute probabilities.</p>
+<p><strong>The recipe is the same as Cox.</strong> Both losses are <em>negative log-likelihoods of a product</em>: write the likelihood as a product → take the log to get a sum → negate to get a loss. The only difference is <strong>which</strong> product. Cox uses a <em>partial</em> likelihood: one softmax factor per event, built so the baseline hazard cancels (see <a href="../02_loss_functions/2.1_cox_ph_loss.html#partial-likelihood">2.1 Cox Proportional Hazards Loss</a>). NLL uses the <em>full</em> likelihood: one <span class="math inline">f</span>-or-<span class="math inline">S</span> factor per subject, which is why it needs a distribution but, in return, predicts absolute probabilities.</p>
 </blockquote>
 <p>Spelling out the two functions, both derived from the chosen distribution:</p>
 <ul>
@@ -555,7 +555,7 @@ L \;=\; -\sum_i \ell_i \quad\text{(the negative log-likelihood, summed over all 
 <p><strong>1. Parametric: predict distribution parameters.</strong> The network maps each patient <span class="math inline">x</span> to the <em>parameters</em> of a chosen distribution (e.g.&nbsp;a Weibull’s shape <span class="math inline">k</span> and scale <span class="math inline">\lambda</span>), so every patient gets their own curve. Plug those into the closed-form <span class="math inline">f</span> and <span class="math inline">S</span> above and minimize the NLL.</p>
 <ul>
 <li><em>“Parameterize the distribution”</em> means exactly this: the net’s outputs <strong>are</strong> the distribution’s parameters, as a function of the input.</li>
-<li>Example model: <strong>Deep Survival Machines (DSM)</strong>, which predicts a <em>mixture</em> of parametric distributions (see <a href="../02_loss_functions/2.4_deephit_loss.html"><code>2.4</code></a> and <a href="../04_packages/4.5_auton_survival.html"><code>04_packages/4.5_auton_survival.md</code></a>).</li>
+<li>Example model: <strong>Deep Survival Machines (DSM)</strong>, which predicts a <em>mixture</em> of parametric distributions (see <a href="../02_loss_functions/2.4_deephit_loss.html">2.4 DeepHit Loss</a> and <a href="../04_packages/4.5_auton_survival.html">4.5 auton-survival</a>).</li>
 </ul>
 <p><strong>2. Discrete-time: predict a hazard per time bin.</strong> The continuous time axis is chopped into bins, and the network predicts the conditional event probability (a discrete hazard) in each bin. The NLL is then a sum of per-bin Bernoulli terms. This sidesteps choosing a parametric family at all.</p>
 <ul>
@@ -576,28 +576,28 @@ L \;=\; -\sum_i \ell_i \quad\text{(the negative log-likelihood, summed over all 
 <li><strong>The distributional assumption is the risk.</strong> A wrong family biases the whole <span class="math inline">S(t)</span>. Sanity-check the fit against a non-parametric <a href="../01_background/1.1_what_is_survival_analysis.html">Kaplan–Meier</a> curve before trusting the numbers; if no standard shape fits, switch to the discrete flavor or <a href="../02_loss_functions/2.4_deephit_loss.html">DeepHit</a>.</li>
 <li><strong>Censoring is handled by the loss itself.</strong> You don’t drop or impute censored subjects; they enter through the <span class="math inline">S(T_i)</span> term automatically. Just pass <code>(times, events)</code> correctly.</li>
 </ul>
-<p>For how NLL stacks up against the other losses, see <a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a>.</p>
+<p>For how NLL stacks up against the other losses, see <a href="../02_loss_functions/2.5_loss_comparison.html">2.5 Loss Functions Compared</a>.</p>
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
 <p>The two flavors map to two kinds of API call.</p>
-<p><strong>torchsurv</strong>: parametric Weibull AFT loss for a custom model; the network predicts log-shape and log-scale (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
+<p><strong>torchsurv</strong>: parametric Weibull AFT loss for a custom model; the network predicts log-shape and log-scale (see <a href="../04_packages/4.3_torchsurv.html">4.3 torchsurv</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.loss.weibull <span class="im">import</span> neg_log_likelihood_weibull</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>log_params <span class="op">=</span> model(x)             <span class="co"># network predicts log shape &amp; log scale per subject</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> neg_log_likelihood_weibull(log_params, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>pycox</strong>: discrete-time NLL models; the continuous time axis is binned first via a label transform (see <a href="../04_packages/4.1_pycox.html"><code>04_packages/4.1_pycox.md</code></a>):</p>
+<p><strong>pycox</strong>: discrete-time NLL models; the continuous time axis is binned first via a label transform (see <a href="../04_packages/4.1_pycox.html">4.1 pycox</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pycox.models <span class="im">as</span> models</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># LogisticHazard / PMF / MTLR all minimise a discrete-time NLL</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>labtrans <span class="op">=</span> models.LogisticHazard.label_transform(num_durations<span class="op">=</span><span class="dv">20</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> labtrans.fit_transform(durations, events)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> models.LogisticHazard(net, optimizer, duration_index<span class="op">=</span>labtrans.cuts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>lifelines</strong>: classical parametric fitters, one per distribution (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
+<p><strong>lifelines</strong>: classical parametric fitters, one per distribution (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> WeibullFitter, LogNormalFitter, WeibullAFTFitter</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>WeibullFitter().fit(T, E)                          <span class="co"># univariate</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>WeibullAFTFitter().fit(df, <span class="st">"T"</span>, <span class="st">"E"</span>)               <span class="co"># with covariates</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <blockquote class="blockquote">
-<p><strong>Parametric vs.&nbsp;Cox.</strong> Parametric NLL gives a full predicted <span class="math inline">S(t)</span> and a formula that can extend beyond observed follow-up, at the cost of a distributional assumption Cox avoids. Cox can also produce <span class="math inline">S(t)</span> after estimating its baseline, but does not parametrically extrapolate that baseline. For a side-by-side, see <a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a>.</p>
+<p><strong>Parametric vs.&nbsp;Cox.</strong> Parametric NLL gives a full predicted <span class="math inline">S(t)</span> and a formula that can extend beyond observed follow-up, at the cost of a distributional assumption Cox avoids. Cox can also produce <span class="math inline">S(t)</span> after estimating its baseline, but does not parametrically extrapolate that baseline. For a side-by-side, see <a href="../02_loss_functions/2.5_loss_comparison.html">2.5 Loss Functions Compared</a>.</p>
 </blockquote>
 
 
