@@ -78,7 +78,6 @@ website:
         contents:
           - 05_medical_imaging/5.1_survival_from_medical_images.md
           - 05_medical_imaging/5.2_3d_mri_survival.md
-          - 05_medical_imaging/5.3_pfs_stratification.md
 
 format:
   html:
