@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>c_index – Survival Analysis Mini-Course</title>
+<title>survival_from_medical_images – Survival Analysis Mini-Course</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,41 +26,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -71,8 +36,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../03_metrics/3.2_brier_score.html" rel="next">
-<link href="../02_loss_functions/2.5_loss_comparison.html" rel="prev">
+<link href="../02_loss_functions/2.1_cox_ph_loss.html" rel="next">
+<link href="../01_background/1.5_clinician_goals.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -217,7 +182,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../03_metrics/3.1_c_index.html">3 · Metrics</a></li><li class="breadcrumb-item"><a href="../03_metrics/3.1_c_index.html">Concordance Index (C-index)</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.6_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -245,13 +210,13 @@ window.Quarto = {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">1 · Background</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../01_background/1.1_what_is_survival_analysis.html" class="sidebar-item-text sidebar-link">
@@ -284,7 +249,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../01_background/1.6_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+  <a href="../01_background/1.6_survival_from_medical_images.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
@@ -327,16 +292,16 @@ window.Quarto = {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
  <span class="menu-text">3 · Metrics</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../03_metrics/3.1_c_index.html" class="sidebar-item-text sidebar-link active">
+  <a href="../03_metrics/3.1_c_index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Concordance Index (C-index)</span></a>
   </div>
 </li>
@@ -428,108 +393,213 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#concordance-index-c-index" id="toc-concordance-index-c-index" class="nav-link active" data-scroll-target="#concordance-index-c-index">Concordance Index (C-index)</a>
+  <li><a href="#survival-from-medical-images" id="toc-survival-from-medical-images" class="nav-link active" data-scroll-target="#survival-from-medical-images">Survival from Medical Images</a>
   <ul class="collapse">
-  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition">Definition</a></li>
-  <li><a href="#comparable-pairs" id="toc-comparable-pairs" class="nav-link" data-scroll-target="#comparable-pairs">Comparable pairs</a></li>
-  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a></li>
-  <li><a href="#harrell-vs.-uno-ipcw" id="toc-harrell-vs.-uno-ipcw" class="nav-link" data-scroll-target="#harrell-vs.-uno-ipcw">Harrell vs.&nbsp;Uno (IPCW)</a></li>
-  <li><a href="#key-takeaways-for-applied-ml-scientists" id="toc-key-takeaways-for-applied-ml-scientists" class="nav-link" data-scroll-target="#key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</a></li>
-  <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#diagnosis-vs.-prognosis" id="toc-diagnosis-vs.-prognosis" class="nav-link" data-scroll-target="#diagnosis-vs.-prognosis">Diagnosis vs.&nbsp;Prognosis</a></li>
+  <li><a href="#which-modality-and-what-it-is-good-for" id="toc-which-modality-and-what-it-is-good-for" class="nav-link" data-scroll-target="#which-modality-and-what-it-is-good-for">Which Modality, and What It Is Good For</a></li>
+  <li><a href="#survival-is-a-head" id="toc-survival-is-a-head" class="nav-link" data-scroll-target="#survival-is-a-head">Survival Is a Head</a></li>
+  <li><a href="#where-the-analogy-leaks" id="toc-where-the-analogy-leaks" class="nav-link" data-scroll-target="#where-the-analogy-leaks">Where the Analogy Leaks</a></li>
+  <li><a href="#leakage-the-imaging-specific-trap" id="toc-leakage-the-imaging-specific-trap" class="nav-link" data-scroll-target="#leakage-the-imaging-specific-trap">Leakage: The Imaging-Specific Trap</a></li>
   </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../03_metrics/3.1_c_index.html">3 · Metrics</a></li><li class="breadcrumb-item"><a href="../03_metrics/3.1_c_index.html">Concordance Index (C-index)</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.6_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav></header>
 
 
 
 
-<section id="concordance-index-c-index" class="level1">
-<h1>Concordance Index (C-index)</h1>
-<p>The C-index is a common <strong>discrimination</strong> metric in survival analysis: it measures how well the model <em>orders</em> patients by risk, without checking whether predicted probabilities are accurate. It is related to rank statistics and ROC-AUC, but its pair definition is adapted to time-to-event outcomes and censoring.</p>
-<section id="definition" class="level2">
-<h2 class="anchored" data-anchor-id="definition">Definition</h2>
-<p>The C-index is the probability that, for a random comparable pair, the patient the model scores as <strong>riskier</strong> is the one who actually <strong>fails first</strong>:</p>
-<p><span class="math display">
-C \;=\; P\big(\,
-\underbrace{r_i &gt; r_j}_{\text{model scores } i \text{ riskier}}
-\;\big|\;
-\underbrace{T_i &lt; T_j}_{i \text{ fails first}},\;
-\underbrace{\delta_i = 1}_{i\text{'s event is observed}}
-\,\big)
-</span></p>
-<p>where <span class="math inline">r_i</span> is subject <span class="math inline">i</span>’s <strong>risk score</strong> (higher = more risk), <span class="math inline">T_i</span> is the observed time, and <span class="math inline">\delta_i</span> the event indicator (the <code>(T, δ)</code> notation from <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>).</p>
-<p>In practice it’s computed by counting <strong>concordant pairs</strong> — pairs the model got in the right order — over all comparable pairs:</p>
-<p><span class="math display">
-\hat{C} \;=\; \frac{\#\{\text{concordant pairs}\} + 0.5\,\#\{\text{risk-score ties}\}}{\#\{\text{comparable pairs}\}}
-</span></p>
+<section id="survival-from-medical-images" class="level1">
+<h1>Survival from Medical Images</h1>
+<p>Everything so far has treated the patient as a row of numbers — a covariate vector <span class="math inline">x</span> of age, stage, biomarker values. In medical image computing the input is a scan instead: a 2D radiograph, a 3D volume, or a 4D time series. This section is about what changes when the covariates <em>are</em> the image, and what does not.</p>
+<p>The short answer: <strong>almost nothing changes except the last layer and the loss.</strong></p>
+<section id="diagnosis-vs.-prognosis" class="level2">
+<h2 class="anchored" data-anchor-id="diagnosis-vs.-prognosis">Diagnosis vs.&nbsp;Prognosis</h2>
+<p>Clinicians read images for two different kinds of question, and the distinction decides which modelling task you are in.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Diagnosis</strong></th>
+<th><strong>Prognosis</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Question</td>
+<td>What is happening <em>now</em>?</td>
+<td>What will happen, and <em>when</em>?</td>
+</tr>
+<tr class="even">
+<td>Example</td>
+<td>“Is this nodule malignant?”</td>
+<td>“How long until this tumour progresses?”</td>
+</tr>
+<tr class="odd">
+<td>Label</td>
+<td>Available at scan time (biopsy, radiologist read)</td>
+<td>Requires <strong>follow-up</strong> — months to years</td>
+</tr>
+<tr class="even">
+<td>ML task</td>
+<td>Classification / segmentation</td>
+<td>Time-to-event (survival)</td>
+</tr>
+<tr class="odd">
+<td>Outcome shape</td>
+<td>A class <span class="math inline">y \in \{0,1\}</span></td>
+<td>A pair <span class="math inline">(T, \delta)</span> — time and event indicator</td>
+</tr>
+</tbody>
+</table>
+<p>That last row is the whole reason this course exists. A diagnostic label is a fact about the image. A prognostic label is a fact about the <em>future</em>, which means:</p>
+<ul>
+<li>Some patients have not had the event yet when the study closes — their labels are <strong>censored</strong>, not missing. See <a href="../01_background/1.2_censored_data.html"><code>1.2</code></a>.</li>
+<li>You must state a <strong>prediction origin</strong>: the clock has to start somewhere, and it is normally the scan date. See <a href="../01_background/1.3_what_is_an_event.html"><code>1.3</code></a>.</li>
+<li>More than one thing can happen first — progression, death, transplant. See <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4</code></a>.</li>
+</ul>
 </section>
-<section id="comparable-pairs" class="level2">
-<h2 class="anchored" data-anchor-id="comparable-pairs">Comparable pairs</h2>
-<p>A pair <span class="math inline">(i, j)</span> is <strong>comparable</strong> when we can actually tell who failed first: subject <span class="math inline">i</span> has an <em>observed event</em> (<span class="math inline">\delta_i = 1</span>) at a time <em>earlier</em> than subject <span class="math inline">j</span>’s observed time (<span class="math inline">T_i &lt; T_j</span>). Crucially, <span class="math inline">j</span> may be <strong>censored</strong> — we still know <span class="math inline">i</span> failed before <span class="math inline">j</span> left the study.</p>
-<p>A pair is <strong>not</strong> comparable when censoring hides the order — e.g.&nbsp;a subject censored at time 3 versus one who fails at time 7: the first might have failed at 4 or at 40, so the pair is dropped.</p>
+<section id="which-modality-and-what-it-is-good-for" class="level2">
+<h2 class="anchored" data-anchor-id="which-modality-and-what-it-is-good-for">Which Modality, and What It Is Good For</h2>
+<p>Modality choice is not a free parameter; it is set by the clinical question, the organ, and what the hospital already acquires as standard of care. A prognostic model is only deployable if its input is a scan that patients actually get.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Modality</th>
+<th>What it measures</th>
+<th>Typical diagnostic use</th>
+<th>Prognostic signal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>CT</strong></td>
+<td>X-ray attenuation, reconstructed as a 3D volume</td>
+<td>Lung nodules, staging, trauma, tumour burden</td>
+<td>Tumour texture and shape; change in burden across serial scans</td>
+</tr>
+<tr class="even">
+<td><strong>MRI</strong></td>
+<td>Tissue magnetic properties; multi-sequence (T1, T2, FLAIR, DWI, contrast-enhanced)</td>
+<td>Brain, prostate, breast, musculoskeletal — best soft-tissue contrast</td>
+<td>Glioma subtype and infiltration; enhancement patterns</td>
+</tr>
+<tr class="odd">
+<td><strong>X-ray (radiography)</strong></td>
+<td>2D projection attenuation</td>
+<td>Chest, fracture, screening — cheap, fast, ubiquitous</td>
+<td>Cardiothoracic and parenchymal findings linked to mortality risk</td>
+</tr>
+<tr class="even">
+<td><strong>Ultrasound</strong></td>
+<td>Reflected sound; real-time, no ionising radiation</td>
+<td>Cardiac, obstetric, thyroid and breast nodules, bedside</td>
+<td>Echocardiographic function (e.g.&nbsp;ejection fraction) → cardiac outcomes</td>
+</tr>
+</tbody>
+</table>
+<p>Two more that MICCAI-adjacent work often uses: <strong>PET</strong> adds metabolic activity (FDG uptake) and is frequently fused with CT, and <strong>digital pathology</strong> (whole-slide images) supplies cellular-level morphology. Both are commonly paired with time-to-event endpoints.</p>
+<p>Practical constraints worth internalising early:</p>
+<ul>
+<li><strong>CT and X-ray</strong> involve ionising radiation, so serial imaging is limited.</li>
+<li><strong>MRI</strong> is slow and expensive, and sequence protocols vary between sites — a major source of distribution shift.</li>
+<li><strong>Ultrasound</strong> is operator-dependent; the same patient can yield different images from different sonographers.</li>
+</ul>
+</section>
+<section id="survival-is-a-head" class="level2">
+<h2 class="anchored" data-anchor-id="survival-is-a-head">Survival Is a Head</h2>
+<p>Here is the unifying idea. A deep imaging model is conventionally split in two:</p>
+<pre><code>image  →  [ backbone ]  →  z ∈ R^d  →  [ head ]  →  prediction</code></pre>
+<p>The <strong>backbone</strong> (ResNet, U-Net encoder, 3D CNN, ViT, or a foundation-model encoder) turns the image into an embedding vector <span class="math inline">z</span>. The <strong>head</strong> is a small final layer that maps <span class="math inline">z</span> to whatever the task needs. Swapping the task means swapping the head and the loss — the backbone is largely indifferent.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Head</th>
+<th>Output</th>
+<th>Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Binary classification</td>
+<td><code>Linear(d, 1)</code></td>
+<td>logit</td>
+<td>binary cross-entropy</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">K</span>-class classification</td>
+<td><code>Linear(d, K)</code></td>
+<td>logits over classes</td>
+<td>cross-entropy</td>
+</tr>
+<tr class="odd">
+<td>Regression</td>
+<td><code>Linear(d, 1)</code></td>
+<td>scalar</td>
+<td>MSE</td>
+</tr>
+<tr class="even">
+<td><strong>Survival (Cox)</strong></td>
+<td><code>Linear(d, 1)</code></td>
+<td>log-relative hazard <span class="math inline">\varphi(x)</span></td>
+<td><a href="../02_loss_functions/2.1_cox_ph_loss.html">Cox partial likelihood</a></td>
+</tr>
+<tr class="odd">
+<td><strong>Survival (discrete-time)</strong></td>
+<td><code>Linear(d, K)</code></td>
+<td>hazard in each of <span class="math inline">K</span> time bins</td>
+<td><a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html">NLL</a></td>
+</tr>
+<tr class="even">
+<td><strong>Survival (competing risks)</strong></td>
+<td><code>Linear(d, K×C)</code></td>
+<td>joint grid over <span class="math inline">C</span> causes × <span class="math inline">K</span> bins</td>
+<td><a href="../02_loss_functions/2.4_deephit_loss.html">DeepHit</a></td>
+</tr>
+</tbody>
+</table>
+<p>Read the middle of that table carefully. A <strong>Cox head is architecturally a regression head</strong> — one output neuron. A <strong>discrete-time survival head is architecturally a <span class="math inline">K</span>-class classifier</strong> — the tensor shapes are identical to predicting one of <span class="math inline">K</span> labels. You could take a working classification model, change nothing but the loss function, and have a survival model.</p>
+<p>So the practical recipe is:</p>
+<ol type="1">
+<li>Take any imaging backbone that works for your modality.</li>
+<li>Replace the classification head with a survival head from the table above.</li>
+<li>Replace cross-entropy with a survival loss — the subject of <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02</code></a>.</li>
+<li>Evaluate with survival metrics, not accuracy — the subject of <a href="../03_metrics/3.1_c_index.html"><code>03</code></a>.</li>
+</ol>
+<p>Transfer learning carries over unchanged: pretrain the backbone on a large labelled or self-supervised corpus, then fine-tune with the survival head attached.</p>
+</section>
+<section id="where-the-analogy-leaks" class="level2">
+<h2 class="anchored" data-anchor-id="where-the-analogy-leaks">Where the Analogy Leaks</h2>
+<p>The head swap is real, but two things genuinely differ from classification, and both bite hardest in 3D imaging.</p>
+<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../06_recipes/6.1_pfs_stratification.html"><code>6.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
+<p><strong>2. Labels are censored, so you cannot shuffle carelessly.</strong> Accuracy is undefined here; a patient censored at 6 months is not a negative. Every metric in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a> exists to handle this.</p>
+</section>
+<section id="leakage-the-imaging-specific-trap" class="level2">
+<h2 class="anchored" data-anchor-id="leakage-the-imaging-specific-trap">Leakage: The Imaging-Specific Trap</h2>
+<p>Because the prediction origin is usually the scan date, everything the model sees must have existed <strong>at or before</strong> that date:</p>
+<ul>
+<li><strong>Acquisition</strong> — no scan taken after the origin.</li>
+<li><strong>Segmentation</strong> — if an ROI was drawn by someone who knew the outcome, that knowledge can leak through the mask.</li>
+<li><strong>Feature extraction and normalisation</strong> — fit intensity normalisation, feature selection, and harmonisation on the training split only.</li>
+<li><strong>Splitting</strong> — split by <em>patient</em>, never by slice or by scan; the same patient’s slices must never straddle train and test. Split by <em>site</em> as well when you intend to claim geographic generalisation.</li>
+</ul>
 <blockquote class="blockquote">
-<p><strong>Worked example — counting concordance.</strong> Three patients: | Patient | Time <span class="math inline">T</span> | Event <span class="math inline">\delta</span> | Risk score <span class="math inline">r</span> | |—|—|—|—| | A | 2 | 1 (event) | 0.9 | | B | 5 | 1 (event) | 0.4 | | C | 8 | 0 (censored) | 0.7 |</p>
-<p>Comparable pairs and whether the model ordered them correctly (riskier patient fails first): - <strong>(A, B):</strong> A fails first; is A riskier? <span class="math inline">0.9 &gt; 0.4</span> ✓ <strong>concordant</strong> - <strong>(A, C):</strong> A fails at 2, before C’s censoring at 8 → comparable; <span class="math inline">0.9 &gt; 0.7</span> ✓ <strong>concordant</strong> - <strong>(B, C):</strong> B fails at 5, before C’s censoring at 8 → comparable; is B riskier? <span class="math inline">0.4 &gt; 0.7</span> ✗ <strong>discordant</strong></p>
-<p><span class="math inline">\hat{C} = 2/3 \approx 0.67</span>. Note (A, C) counts even though C is censored — A’s event time is unambiguously earlier.</p>
+<p><strong>The most common silent failure in imaging survival work is a per-slice split.</strong> A 3D volume contributes hundreds of correlated slices. Splitting on slices puts near-duplicate images in both train and test, and the C-index looks excellent until the model meets a new patient.</p>
 </blockquote>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../assets/figures/3.1_cindex_pairs.svg" class="img-fluid figure-img" alt="Scatter of three patients by time and risk score, with lines connecting comparable pairs colored by concordance."></p>
-<figcaption>The same three patients, plotted as risk score against observed time. Each line joins a comparable pair: teal where the earlier-failing patient is scored riskier (concordant), coral where they aren’t (discordant). C is censored (open marker) but still pairs with A, whose event is unambiguously earlier. Two of three pairs concordant gives <span class="math inline">\hat{C}=0.67</span>.</figcaption>
-</figure>
-</div>
-</section>
-<section id="interpretation" class="level2">
-<h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<ul>
-<li><span class="math inline">0.5</span> is the expected value for an uninformative continuous score.</li>
-<li><span class="math inline">1.0</span> is perfect concordance; <span class="math inline">0.0</span> is perfect reverse ordering.</li>
-<li>There are no universal “moderate” or “good” cutoffs. Achievable concordance depends on endpoint noise, case mix, follow-up, censoring, and the prediction horizon. Compare models on the same held-out cohort and report uncertainty.</li>
-</ul>
-</section>
-<section id="harrell-vs.-uno-ipcw" class="level2">
-<h2 class="anchored" data-anchor-id="harrell-vs.-uno-ipcw">Harrell vs.&nbsp;Uno (IPCW)</h2>
-<p>There are two C-indices in common use:</p>
-<ul>
-<li><strong>Harrell’s C</strong> — counts all comparable pairs equally. Simple, but becomes <em>optimistically biased</em> as censoring increases (it quietly drops the hard-to-order censored pairs).</li>
-<li><strong>Uno’s C (IPCW)</strong> — reweights pairs by the <strong>inverse probability of censoring</strong>, giving a consistent estimate under heavier censoring. Prefer it when censoring is non-trivial; it needs the <em>training</em> survival distribution to estimate the censoring weights.</li>
-</ul>
-</section>
-<section id="key-takeaways-for-applied-ml-scientists" class="level2">
-<h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
-<ul>
-<li><strong>It scores ranking, not probabilities.</strong> A model can have a high C-index yet predict poor survival probabilities. Pair it with the <a href="../03_metrics/3.2_brier_score.html">Brier score</a> for overall probabilistic error and a calibration curve for calibration itself.</li>
-<li><strong>Consider Uno’s C when censoring is substantial or follow-up differs.</strong> Harrell’s C can drift optimistic as censoring rises. Uno’s estimator uses IPCW, but it still relies on a valid censoring model and a supported truncation horizon <span class="math inline">\tau</span>.</li>
-<li><strong>Mind the sign convention.</strong> Some APIs (e.g.&nbsp;lifelines) expect a quantity that <em>increases with survival</em> — pass the <strong>negative</strong> risk score, or you’ll report <span class="math inline">1 - C</span> by mistake.</li>
-<li><strong>It’s a single summary.</strong> It can’t tell you <em>when</em> the model discriminates well. For time-resolved discrimination use the <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>.</li>
-<li><strong>Estimate it out of sample.</strong> Hyperparameter tuning, feature selection, and model fitting must be separated from the test cohort; add a confidence interval when comparing models.</li>
-</ul>
-</section>
-<section id="implementation" class="level2">
-<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>lifelines</strong> — Harrell’s C. Note the sign: it expects a quantity that <em>increases with survival time</em>, so pass the <strong>negative</strong> risk score (see <a href="../04_packages/4.2_lifelines.html"><code>04_packages/4.2_lifelines.md</code></a>):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.utils <span class="im">import</span> concordance_index</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> concordance_index(event_times, <span class="op">-</span>risk_scores, event_observed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>scikit-survival</strong> — both estimators (see <a href="../04_packages/4.4_scikit_survival.html"><code>04_packages/4.4_scikit_survival.md</code></a>):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> concordance_index_censored, concordance_index_ipcw</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>harrell <span class="op">=</span> concordance_index_censored(event_test, time_test, risk_scores)[<span class="dv">0</span>]</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>uno     <span class="op">=</span> concordance_index_ipcw(y_train, y_test, risk_scores, tau<span class="op">=</span>t_max)[<span class="dv">0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>torchsurv</strong> — GPU-compatible, for in-loop monitoring of a PyTorch model (see <a href="../04_packages/4.3_torchsurv.html"><code>04_packages/4.3_torchsurv.md</code></a>):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchsurv.metrics.cindex <span class="im">import</span> ConcordanceIndex</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> ConcordanceIndex()(log_hz, events, times)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<ul>
-<li>Sensitive to censoring patterns (use Uno’s C to mitigate)</li>
-<li>Does not assess calibration</li>
-<li>A single number — does not capture time-varying discrimination</li>
-</ul>
+<p>Next: <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02_loss_functions/</code></a> — the losses that go with these heads.</p>
 
 
 </section>
@@ -938,13 +1008,13 @@ C \;=\; P\big(\,
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../02_loss_functions/2.5_loss_comparison.html" class="pagination-link" aria-label="Loss Functions Compared">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Loss Functions Compared</span>
+      <a href="../01_background/1.5_clinician_goals.html" class="pagination-link" aria-label="Clinician Goals in Survival Analysis">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Clinician Goals in Survival Analysis</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../03_metrics/3.2_brier_score.html" class="pagination-link" aria-label="Brier Score">
-        <span class="nav-page-text">Brier Score</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../02_loss_functions/2.1_cox_ph_loss.html" class="pagination-link" aria-label="Cox Proportional Hazards Loss">
+        <span class="nav-page-text">Cox Proportional Hazards Loss</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
