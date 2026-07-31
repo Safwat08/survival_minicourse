@@ -381,12 +381,6 @@ window.Quarto = {
  <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -590,7 +584,7 @@ window.Quarto = {
 <section id="where-the-analogy-leaks" class="level2">
 <h2 class="anchored" data-anchor-id="where-the-analogy-leaks">Where the Analogy Leaks</h2>
 <p>The head swap is real, but two things genuinely differ from classification, and both bite hardest in 3D imaging.</p>
-<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
+<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
 <p><strong>2. Labels are censored, so you cannot shuffle carelessly.</strong> Accuracy is undefined here; a patient censored at 6 months is not a negative. Every metric in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a> exists to handle this.</p>
 </section>
 <section id="leakage-the-imaging-specific-trap" class="level2">

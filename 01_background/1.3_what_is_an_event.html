@@ -381,12 +381,6 @@ window.Quarto = {
  <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -550,7 +544,7 @@ window.Quarto = {
 </tbody>
 </table>
 <p>Because death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you genuinely need to distinguish event <em>types</em> — that is the competing-risks design in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4_multi_events_and_competing_risks.md</code></a>, and it uses one time plus an event-<em>type</em> label, still never two times per patient.</p>
-<p>For an end-to-end stratification pipeline built on a composite PFS endpoint, see <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a>.</p>
+<p>For choosing and freezing a risk cutpoint on a composite PFS endpoint, see <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a>.</p>
 </section>
 <section id="event-vs.-censoring" class="level2">
 <h2 class="anchored" data-anchor-id="event-vs.-censoring">Event vs.&nbsp;Censoring</h2>

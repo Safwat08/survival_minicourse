@@ -71,7 +71,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../05_medical_imaging/5.3_pfs_stratification.html" rel="next">
 <link href="../05_medical_imaging/5.1_survival_from_medical_images.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -414,12 +413,6 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
   </div>
 </li>
       </ul>
@@ -933,7 +926,7 @@ window.Quarto = {
 <tr class="odd">
 <td><code>soft_logrank</code></td>
 <td>Differentiable group-separation surrogate</td>
-<td>see the caution in <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a></td>
+<td>see the caution below</td>
 </tr>
 <tr class="even">
 <td><code>composite</code></td>
@@ -942,6 +935,19 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span><code>soft_logrank</code> optimises the picture, not the prediction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Don’t reach for it to make a development KM plot look more separated. It optimises the later visualisation rather than the ranking, adds another weight to tune, and can overfit whichever grouping rule you happened to pick. Start with a survival objective, evaluate the continuous score honestly, and choose a cutpoint afterwards as in <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a>.</p>
+</div>
+</div>
 <p>To try a different one, copy the <code>model.survival_loss</code> block from <code>$CFG/data/survival_&lt;name&gt;.yaml</code> into your config. Each block encodes that loss’s own hyperparameters: <code>deephit</code> needs <code>alpha</code> and <code>sigma</code>, <code>composite</code> takes a weighted <code>components</code> list with a <code>primary</code>, and so on. If you want to sanity-check the whole install, <code>fast_dev_run</code> each loss the way step 6b does.</p>
 <p><a href="../02_loss_functions/2.5_loss_comparison.html"><code>2.5</code></a> compares these on assumptions and failure modes, which is the better basis for a first choice than sweeping all ten.</p>
 </section>
@@ -972,7 +978,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a> covers choosing one cutpoint on development data and freezing it — including the failure modes that make a KM plot look better than the model is.</p>
+<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold"><code>3.3</code></a> covers choosing one cutpoint on development data and freezing it — including the multiple-testing trap that makes a KM plot look better than the model is.</p>
 </div>
 </div>
 </section>
@@ -1448,9 +1454,6 @@ window.Quarto = {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="pagination-link" aria-label="Recipe: PFS Risk Stratification">
-        <span class="nav-page-text">Recipe: PFS Risk Stratification</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
