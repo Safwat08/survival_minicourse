@@ -641,16 +641,15 @@ window.Quarto = {
 <section id="key-takeaways-for-applied-ml-scientists" class="level2">
 <h2 class="anchored" data-anchor-id="key-takeaways-for-applied-ml-scientists">Key takeaways for applied ML scientists</h2>
 <ul>
-<li><strong>It is a useful reference prediction.</strong> A covariate-free KM curve is a sensible baseline for the <a href="../03_metrics/3.2_brier_score.html">Brier score</a>; failure to improve on it suggests the model is not adding useful out-of-sample probability information over that window.</li>
-<li><strong>A stratified KM plot is a communication tool, not a complete validation.</strong> Pair it with continuous-score metrics, uncertainty, calibration, and a transparent cutpoint rule.</li>
-<li><strong>Censoring shrinks the at-risk set but never directly drops the curve.</strong> KM is unbiased under its censoring assumptions, not under arbitrary informative loss to follow-up.</li>
-<li><strong>It can’t extrapolate or adjust for covariates.</strong> For individualized, covariate-aware <span class="math inline">S(t)</span> you need a model (see <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>–<a href="../02_loss_functions/2.4_deephit_loss.html">2.4 DeepHit Loss</a>).</li>
+<li><strong>Freeze the cutpoint before the test set.</strong> Every stratified KM plot needs a threshold, and the two outcome-guided rules will manufacture separation if you fit and evaluate them on the same data. Pick <span class="math inline">\tau</span> on development data, state which rule produced it, and never quote a training max-log-rank p-value as a significance result.</li>
+<li><strong>Separation is not validation.</strong> Two cleanly split curves show the score <em>orders</em> patients; they say nothing about whether the predicted probabilities are right. Pair the figure with a continuous-score metric (<a href="../03_metrics/3.1_c_index.html">C-index</a>, <a href="../03_metrics/3.4_time_dependent_auc.html">time-dependent AUC</a>), a calibration check, and confidence bands with numbers at risk.</li>
+<li><strong>The covariate-free KM curve is your floor.</strong> It is the “no model” prediction, so a <a href="../03_metrics/3.2_brier_score.html">Brier score</a> that fails to beat it means the model adds no out-of-sample probability information over that window.</li>
 </ul>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <ul>
-<li>Univariate, so it does not adjust for covariates</li>
+<li>Univariate, so it does not adjust for covariates. For individualized, covariate-aware <span class="math inline">S(t)</span> you need a model (see <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a>–<a href="../02_loss_functions/2.4_deephit_loss.html">2.4 DeepHit Loss</a>)</li>
 <li>Cannot extrapolate beyond the last observed event</li>
 </ul>
 

@@ -512,7 +512,16 @@ BS_{\text{IPCW}}(t) = \frac{1}{n}\sum_{i=1}^{n}
 \frac{\mathbf{1}(T_i &gt; t)}{\hat G(t)}\,\big(1-\hat S(t\mid x_i)\big)^2
 \right]
 </span></p>
-<p>Subjects with an observed event by <span class="math inline">t</span> and subjects known to be event-free at <span class="math inline">t</span> contribute with censoring weights. Subjects censored before <span class="math inline">t</span> have unknown status and contribute neither term. This correction assumes the censoring model is appropriate; the packages estimate it from training follow-up.</p>
+<p>That is a lot of notation for one idea, and you do not need to be able to reproduce it from memory. The idea:</p>
+<blockquote class="blockquote">
+<p><strong>IPCW lets each subject you <em>can</em> score stand in for the similar subjects you lost.</strong></p>
+</blockquote>
+<p>Dropping censored subjects and averaging over whoever is left is not a neutral choice: the remaining cohort is skewed toward people who stayed in the study longest. IPCW corrects for that by counting each scorable subject more than once, in proportion to how much of the cohort has gone missing by their time.</p>
+<p>Everything else in the equation is bookkeeping. The two bracketed terms are the only two ways to know a subject’s status at <span class="math inline">t</span>: their event already happened (left term, truth <span class="math inline">= 0</span>, so the error is <span class="math inline">\hat S</span>), or they are known event-free (right term, truth <span class="math inline">= 1</span>, so the error is <span class="math inline">1 - \hat S</span>). The indicators just select which one applies. Subjects censored before <span class="math inline">t</span> match neither indicator, so they drop out of the sum and are accounted for by the upweighting instead.</p>
+<blockquote class="blockquote">
+<p><strong>Worked example: reading a weight.</strong> Say <span class="math inline">\hat G(12) = 0.8</span>, meaning 20% of the cohort has been lost to follow-up by month 12. A patient known to be event-free at 12 gets weight <span class="math inline">1/0.8 = 1.25</span>: they count as themselves plus a quarter of a censored peer. If follow-up were worse and <span class="math inline">\hat G(12) = 0.5</span>, that same patient would count <em>twice</em>. This is also why late evaluation times are dangerous: as <span class="math inline">\hat G</span> approaches 0, a handful of survivors carry enormous weight and the score becomes unstable (see the pitfall below).</p>
+</blockquote>
+<p>The correction is only as good as <span class="math inline">\hat G</span>, which the packages estimate from training follow-up under the same independent-censoring assumption as everything else here (see <a href="../01_background/1.2_censored_data.html#the-assumption-behind-standard-methods">1.2 Censored Data</a>).</p>
 </section>
 <section id="integrated-brier-score-ibs" class="level2">
 <h2 class="anchored" data-anchor-id="integrated-brier-score-ibs">Integrated Brier Score (IBS)</h2>
@@ -523,10 +532,17 @@ IBS \;=\; \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} BS(t)\, dt
 <p>This is a standard one-number summary of probabilistic prediction error across a specified follow-up window. Always report that window because IBS values from different intervals are not directly comparable.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../assets/figures/3.2_brier_curve.svg" class="img-fluid figure-img" alt="Brier score curves over time: a low model curve with shaded area, a higher dashed KM baseline, and a dotted 0.25 reference line."></p>
-<figcaption><span class="math inline">BS(t)</span> over follow-up: lower is better. The covariate-free Kaplan–Meier prediction is a useful reference. A horizontal 0.25 line corresponds only to predicting 0.5 for everyone; it is not a universal null value. The shaded, averaged area is the integrated Brier score (IBS).</figcaption>
+<p><img src="../assets/figures/3.2_brier_curve.svg" class="img-fluid figure-img" alt="Two error curves rising over 36 months: a lower solid model curve with a shaded band beneath it, a higher dashed curve for the Kaplan-Meier prediction, a double-headed arrow marking the gap between them, and a dotted 0.25 reference line."></p>
+<figcaption>Both lines are error curves, so lower is better for each. The dashed line is the error you get from predicting the same cohort-average survival curve for everyone; the gap below it is what your covariates are worth. The mean height of the shaded band, not its raw area, is the IBS. The 0.25 line marks predicting 0.5 for everyone, which is a landmark, not a pass mark.</figcaption>
 </figure>
 </div>
+<p><strong>How to read it.</strong> The most common misreading is to see “Kaplan–Meier” and expect a survival curve falling from 1 toward 0. There is no survival curve on this plot. Both lines are <em>prediction error</em>, and both rise over time because predicting far into the future is harder than predicting the near term.</p>
+<p>The dashed line answers “how wrong would I be with no model at all?” Take the <a href="../03_metrics/3.3_km_curves.html">KM curve</a> for the whole cohort, hand every patient that same <span class="math inline">\hat S(t)</span> regardless of their covariates, and score it. That is the honest floor: any model that costs you a data pipeline and a training run should sit below it.</p>
+<p>So there are two things to read off the figure, and only the second is a number you report:</p>
+<ul>
+<li><strong>The vertical gap</strong> between the curves is the value your covariates add. A model curve that converges onto the dashed line at long horizons is telling you the covariates stop being informative out there, which no single summary number would reveal.</li>
+<li><strong>The mean height of the shaded band</strong> is the IBS, matching the <span class="math inline">1/(t_{\max}-t_{\min})</span> factor in the equation above. It is a time-average, not an area, which is why it stays on the same 0-to-1 scale as <span class="math inline">BS(t)</span> itself and why the window has to be reported alongside it.</li>
+</ul>
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
