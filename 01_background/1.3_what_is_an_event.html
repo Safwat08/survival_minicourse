@@ -156,8 +156,8 @@ window.Quarto = {
 <span class="menu-text">Packages</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../06_recipes/6.1_pfs_stratification.html"> 
-<span class="menu-text">Recipes</span></a>
+    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -245,12 +245,6 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../01_background/1.5_clinician_goals.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Clinician Goals in Survival Analysis</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../01_background/1.6_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
       </ul>
@@ -369,7 +363,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Recipes</span></a>
+ <span class="menu-text">5 · Medical Image Analysis</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -377,7 +371,19 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../06_recipes/6.1_pfs_stratification.html" class="sidebar-item-text sidebar-link">
+  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
   </div>
 </li>
@@ -544,7 +550,7 @@ window.Quarto = {
 </tbody>
 </table>
 <p>Because death is already inside PFS, modeling “PFS” and “death” as two separate events double-counts death. Only split them apart if you genuinely need to distinguish event <em>types</em> — that is the competing-risks design in <a href="../01_background/1.4_multi_events_and_competing_risks.html"><code>1.4_multi_events_and_competing_risks.md</code></a>, and it uses one time plus an event-<em>type</em> label, still never two times per patient.</p>
-<p>For an end-to-end stratification pipeline built on a composite PFS endpoint, see <a href="../06_recipes/6.1_pfs_stratification.html"><code>06_recipes/6.1_pfs_stratification.md</code></a>.</p>
+<p>For an end-to-end stratification pipeline built on a composite PFS endpoint, see <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a>.</p>
 </section>
 <section id="event-vs.-censoring" class="level2">
 <h2 class="anchored" data-anchor-id="event-vs.-censoring">Event vs.&nbsp;Censoring</h2>

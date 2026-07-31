@@ -36,8 +36,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../02_loss_functions/2.1_cox_ph_loss.html" rel="next">
-<link href="../01_background/1.5_clinician_goals.html" rel="prev">
+<link href="../05_medical_imaging/5.2_3d_mri_survival.html" rel="next">
+<link href="../04_packages/4.5_auton_survival.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -156,8 +156,8 @@ window.Quarto = {
 <span class="menu-text">Packages</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../06_recipes/6.1_pfs_stratification.html"> 
-<span class="menu-text">Recipes</span></a>
+    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -182,7 +182,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.6_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -210,13 +210,13 @@ window.Quarto = {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
  <span class="menu-text">1 · Background</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../01_background/1.1_what_is_survival_analysis.html" class="sidebar-item-text sidebar-link">
@@ -245,12 +245,6 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../01_background/1.5_clinician_goals.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Clinician Goals in Survival Analysis</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../01_background/1.6_survival_from_medical_images.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
       </ul>
@@ -368,16 +362,28 @@ window.Quarto = {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Recipes</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">5 · Medical Image Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../06_recipes/6.1_pfs_stratification.html" class="sidebar-item-text sidebar-link">
+  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Survival from Medical Images</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_medical_imaging/5.3_pfs_stratification.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Recipe: PFS Risk Stratification</span></a>
   </div>
 </li>
@@ -405,7 +411,7 @@ window.Quarto = {
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_background/1.1_what_is_survival_analysis.html">1 · Background</a></li><li class="breadcrumb-item"><a href="../01_background/1.6_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">Survival from Medical Images</a></li></ol></nav></header>
 
 
 
@@ -584,7 +590,7 @@ window.Quarto = {
 <section id="where-the-analogy-leaks" class="level2">
 <h2 class="anchored" data-anchor-id="where-the-analogy-leaks">Where the Analogy Leaks</h2>
 <p>The head swap is real, but two things genuinely differ from classification, and both bite hardest in 3D imaging.</p>
-<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../06_recipes/6.1_pfs_stratification.html"><code>6.1</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
+<p><strong>1. The Cox loss is not per-sample.</strong> Cross-entropy decomposes over examples: each image’s loss is computed independently, so batch size affects only gradient noise. The Cox partial likelihood does not — it compares each patient against the <strong>risk set</strong> of everyone still event-free at that time, so the loss couples samples <em>within a batch</em>. 3D volumes are large, which forces small batches, which means each batch contains a poor approximation of the true risk set. This is a real and frequently underestimated problem; mitigations are discussed in <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>2.1</code></a> and <a href="../05_medical_imaging/5.3_pfs_stratification.html"><code>5.3</code></a>. Discrete-time losses (<a href="../02_loss_functions/2.2_negative_log_likelihood_loss.html"><code>2.2</code></a>) do decompose per-sample, which is one concrete reason to prefer them for imaging.</p>
 <p><strong>2. Labels are censored, so you cannot shuffle carelessly.</strong> Accuracy is undefined here; a patient censored at 6 months is not a negative. Every metric in <a href="../03_metrics/3.1_c_index.html"><code>03</code></a> exists to handle this.</p>
 </section>
 <section id="leakage-the-imaging-specific-trap" class="level2">
@@ -599,7 +605,7 @@ window.Quarto = {
 <blockquote class="blockquote">
 <p><strong>The most common silent failure in imaging survival work is a per-slice split.</strong> A 3D volume contributes hundreds of correlated slices. Splitting on slices puts near-duplicate images in both train and test, and the C-index looks excellent until the model meets a new patient.</p>
 </blockquote>
-<p>Next: <a href="../02_loss_functions/2.1_cox_ph_loss.html"><code>02_loss_functions/</code></a> — the losses that go with these heads.</p>
+<p>Next: <a href="../05_medical_imaging/5.2_3d_mri_survival.html"><code>5.2</code></a> — this picture instantiated, as a full walkthrough of finetuning a self-supervised 3D backbone with a survival head.</p>
 
 
 </section>
@@ -1008,13 +1014,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../01_background/1.5_clinician_goals.html" class="pagination-link" aria-label="Clinician Goals in Survival Analysis">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Clinician Goals in Survival Analysis</span>
+      <a href="../04_packages/4.5_auton_survival.html" class="pagination-link" aria-label="auton-survival">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">auton-survival</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../02_loss_functions/2.1_cox_ph_loss.html" class="pagination-link" aria-label="Cox Proportional Hazards Loss">
-        <span class="nav-page-text">Cox Proportional Hazards Loss</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="pagination-link" aria-label="Training a Survival Model on 3D MRI">
+        <span class="nav-page-text">Training a Survival Model on 3D MRI</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
