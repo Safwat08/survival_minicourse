@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>auton_survival – Survival Analysis Mini-Course</title>
+<title>scikit_survival – Survival Analysis Mini-Course</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../05_medical_imaging/5.1_survival_from_medical_images.html" rel="next">
-<link href="../04_packages/4.4_scikit_survival.html" rel="prev">
+<link href="../05_packages/5.5_auton_survival.html" rel="next">
+<link href="../05_packages/5.3_torchsurv.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -144,12 +144,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Metrics</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../04_packages/4.1_pycox.html"> 
-<span class="menu-text">Packages</span></a>
+    <a class="nav-link" href="../04_medical_imaging/4.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
-<span class="menu-text">Medical Imaging</span></a>
+    <a class="nav-link" href="../05_packages/5.1_pycox.html"> 
+<span class="menu-text">Packages</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -174,7 +174,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_packages/4.1_pycox.html">4 · Packages</a></li><li class="breadcrumb-item"><a href="../04_packages/4.5_auton_survival.html">auton-survival</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">5 · Packages</a></li><li class="breadcrumb-item"><a href="../05_packages/5.4_scikit_survival.html">scikit-survival</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -313,64 +313,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">4 · Packages</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">4 · Medical Image Analysis</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pycox</span></a>
+  <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">lifelines</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">torchsurv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scikit-survival</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">auton-survival</span></a>
+  <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Medical Image Analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">5 · Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
+  <a href="../05_packages/5.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  <a href="../05_packages/5.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.4_scikit_survival.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
   </div>
 </li>
       </ul>
@@ -385,12 +385,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#auton-survival" id="toc-auton-survival" class="nav-link active" data-scroll-target="#auton-survival">auton-survival</a>
+  <li><a href="#scikit-survival" id="toc-scikit-survival" class="nav-link active" data-scroll-target="#scikit-survival">scikit-survival</a>
   <ul class="collapse">
   <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
   <li><a href="#key-features" id="toc-key-features" class="nav-link" data-scroll-target="#key-features">Key Features</a></li>
   <li><a href="#common-usage" id="toc-common-usage" class="nav-link" data-scroll-target="#common-usage">Common Usage</a></li>
-  <li><a href="#cross-validation-experiment" id="toc-cross-validation-experiment" class="nav-link" data-scroll-target="#cross-validation-experiment">Cross-Validation Experiment</a></li>
   <li><a href="#best-for" id="toc-best-for" class="nav-link" data-scroll-target="#best-for">Best For</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a>
   <ul class="collapse">
@@ -401,83 +400,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_packages/4.1_pycox.html">4 · Packages</a></li><li class="breadcrumb-item"><a href="../04_packages/4.5_auton_survival.html">auton-survival</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">5 · Packages</a></li><li class="breadcrumb-item"><a href="../05_packages/5.4_scikit_survival.html">scikit-survival</a></li></ol></nav></header>
 
 
 
 
-<section id="auton-survival" class="level1">
-<h1>auton-survival</h1>
-<p><code>auton-survival</code> (Carnegie Mellon / Auton Lab) is a toolkit for regression, counterfactual estimation, evaluation, and phenotyping with censored time-to-event data.</p>
+<section id="scikit-survival" class="level1">
+<h1>scikit-survival</h1>
+<p><code>scikit-survival</code> extends scikit-learn to support survival analysis, providing sklearn-compatible estimators for survival data.</p>
 <section id="installation" class="level2">
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/autonlab/auton-survival.git</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install scikit-survival</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="key-features" class="level2">
 <h2 class="anchored" data-anchor-id="key-features">Key Features</h2>
 <ul>
-<li><strong>Models</strong>: DeepSurvivalMachines (DSM), DeepCoxPH, DeepCoxMixtures (DCM), DeepCoxMixturesHeterogeneousEffects (CMHE)</li>
-<li><strong>Phenotyping</strong>: unsupervised, supervised, counterfactual, and virtual twins</li>
-<li><strong>Evaluation</strong>: Brier score, IBS, AUC, time-dependent C-index, with bootstrapped confidence intervals</li>
-<li><strong>Treatment effects</strong>: RMST, Risk at Time, Time at Risk between arms</li>
-<li><strong>Preprocessing</strong>: imputation + scaling pipeline</li>
+<li>Cox PH (with elastic net regularization)</li>
+<li>Survival SVM</li>
+<li>Gradient-boosted and component-wise boosted survival models</li>
+<li>Random Survival Forests</li>
+<li>Full sklearn pipeline compatibility (cross-validation, grid search, etc.)</li>
+<li>Evaluation metrics: C-index, Brier score, time-dependent AUC</li>
 </ul>
 </section>
 <section id="common-usage" class="level2">
 <h2 class="anchored" data-anchor-id="common-usage">Common Usage</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival <span class="im">import</span> datasets, estimators</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>outcomes, features <span class="op">=</span> datasets.load_dataset(<span class="st">"SUPPORT"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the package's common estimator interface</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> estimators.SurvivalModel(model<span class="op">=</span><span class="st">"dsm"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>model.fit(features, outcomes)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict risk at time horizons</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict_risk(features, times<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="cross-validation-experiment" class="level2">
-<h2 class="anchored" data-anchor-id="cross-validation-experiment">Cross-Validation Experiment</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival.experiments <span class="im">import</span> SurvivalRegressionCV</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>experiment <span class="op">=</span> SurvivalRegressionCV(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"cph"</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    num_folds<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    hyperparam_grid<span class="op">=</span>{<span class="st">"l2"</span>: [<span class="fl">1e-4</span>, <span class="fl">1e-3</span>, <span class="fl">1e-2</span>]},</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> experiment.fit(</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    features, outcomes, horizons<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">16</span>], metric<span class="op">=</span><span class="st">"ibs"</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.linear_model <span class="im">import</span> CoxPHSurvivalAnalysis</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.ensemble <span class="im">import</span> RandomSurvivalForest</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.util <span class="im">import</span> Surv</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Structured array format required</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> Surv.from_arrays(event<span class="op">=</span>events_train.astype(<span class="bu">bool</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                           time<span class="op">=</span>times_train.astype(<span class="bu">float</span>))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> CoxPHSurvivalAnalysis()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>model.fit(X_train, y_train)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>risk_scores <span class="op">=</span> model.predict(X_test)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>surv_functions <span class="op">=</span> model.predict_survival_function(X_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
 <ul>
-<li>Deep survival models with competing risks (DSM)</li>
-<li>Counterfactual / causal survival analysis</li>
-<li>Treatment effect estimation</li>
-<li>Patient phenotyping and subgroup discovery</li>
+<li>Classical ML survival models (tree-based, regularized Cox)</li>
+<li>sklearn-compatible pipelines and cross-validation</li>
+<li>Censoring-aware evaluation metrics in sklearn-style workflows</li>
+<li>Radiomic feature survival models</li>
 </ul>
-<p>The counterfactual and treatment-effect utilities do not make an observational analysis causal by themselves. Identification still requires a defensible treatment assignment model, measured confounders, positivity, and appropriate sensitivity analysis. The official installation path is currently source-based, so verify its dependency compatibility in a clean environment before committing a project to it.</p>
+<p>For IPCW metrics, pass training outcomes to estimate the censoring distribution and keep test follow-up/evaluation horizons within its supported range. Use pipelines so imputation, encoding, scaling, feature selection, and model fitting are learned inside each training fold rather than on the full dataset.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
-<li><strong>Docs</strong>: <a href="https://autonlab.github.io/auton-survival/">autonlab.github.io/auton-survival</a></li>
-<li><strong>GitHub</strong>: <a href="https://github.com/autonlab/auton-survival">github.com/autonlab/auton-survival</a></li>
-<li><strong>Demo notebooks</strong>: <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">nbviewer.org/github/autonlab/auton-survival/tree/master/examples/</a></li>
-<li><strong>White Paper</strong>: <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">cs.cmu.edu/~chiragn/papers/auton_survival.pdf</a></li>
-<li><strong>Paper</strong>: Nagpal et al.&nbsp;(2022). <em>auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data.</em> arXiv:2204.07276</li>
+<li><strong>Docs</strong>: <a href="https://scikit-survival.readthedocs.io/en/stable/">scikit-survival.readthedocs.io</a></li>
+<li><strong>GitHub</strong>: <a href="https://github.com/sebp/scikit-survival">github.com/sebp/scikit-survival</a></li>
+<li><strong>User Guide</strong>: <a href="https://scikit-survival.readthedocs.io/en/stable/user_guide/index.html">scikit-survival.readthedocs.io/en/stable/user_guide</a></li>
+<li><strong>API Reference</strong>: <a href="https://scikit-survival.readthedocs.io/en/stable/api/index.html">scikit-survival.readthedocs.io/en/stable/api</a></li>
+<li><strong>Paper</strong>: Pölsterl (2020). <em>scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn.</em> JMLR. <a href="https://jmlr.org/papers/v21/20-729.html">jmlr.org/papers/v21/20-729.html</a></li>
 </ul>
 <section id="citation" class="level3">
 <h3 class="anchored" data-anchor-id="citation">Citation</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bibtex code-with-copy"><code class="sourceCode bibtex"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">nagpal2022auton</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>   = {auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>  = {Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span> = {arXiv preprint arXiv:2204.07276},</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>    = {2022}</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bibtex code-with-copy"><code class="sourceCode bibtex"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">polsterl2020scikit</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>  = {P{<span class="ch">\"</span>o}lsterl, Sebastian},</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span> = {Journal of Machine Learning Research},</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>  = {21},</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>  = {212},</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>   = {1--6},</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>    = {2020}</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -887,13 +877,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../04_packages/4.4_scikit_survival.html" class="pagination-link" aria-label="scikit-survival">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">scikit-survival</span>
+      <a href="../05_packages/5.3_torchsurv.html" class="pagination-link" aria-label="torchsurv">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">torchsurv</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="pagination-link" aria-label="Survival from Medical Images">
-        <span class="nav-page-text">Survival from Medical Images</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../05_packages/5.5_auton_survival.html" class="pagination-link" aria-label="auton-survival">
+        <span class="nav-page-text">auton-survival</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

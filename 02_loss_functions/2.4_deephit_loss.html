@@ -187,12 +187,12 @@ window.Quarto = {
 <span class="menu-text">Metrics</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../04_packages/4.1_pycox.html"> 
-<span class="menu-text">Packages</span></a>
+    <a class="nav-link" href="../04_medical_imaging/4.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
-<span class="menu-text">Medical Imaging</span></a>
+    <a class="nav-link" href="../05_packages/5.1_pycox.html"> 
+<span class="menu-text">Packages</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -357,7 +357,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">4 · Packages</span></a>
+ <span class="menu-text">4 · Medical Image Analysis</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -365,32 +365,14 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pycox</span></a>
+  <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">lifelines</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">torchsurv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scikit-survival</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">auton-survival</span></a>
+  <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
       </ul>
@@ -398,7 +380,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Medical Image Analysis</span></a>
+ <span class="menu-text">5 · Packages</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -406,14 +388,32 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
+  <a href="../05_packages/5.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  <a href="../05_packages/5.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
   </div>
 </li>
       </ul>
@@ -570,7 +570,7 @@ L \;=\; a\,L_{\text{likelihood}} \;+\; b\,L_{\text{rank}}
 </section>
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><strong>pycox</strong> is the reference implementation: <code>DeepHitSingle</code> for one event, <code>DeepHit</code> for competing risks (see <a href="../04_packages/4.1_pycox.html">4.1 pycox</a>). Like all discrete-time models it needs a label transform to bin the time axis:</p>
+<p><strong>pycox</strong> is the reference implementation: <code>DeepHitSingle</code> for one event, <code>DeepHit</code> for competing risks (see <a href="../05_packages/5.1_pycox.html">5.1 pycox</a>). Like all discrete-time models it needs a label transform to bin the time axis:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pycox.models <span class="im">import</span> DeepHitSingle</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>labtrans <span class="op">=</span> DeepHitSingle.label_transform(num_durations<span class="op">=</span><span class="dv">20</span>)</span>
@@ -582,7 +582,7 @@ L \;=\; a\,L_{\text{likelihood}} \;+\; b\,L_{\text{rank}}
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>model.fit(x_train, y_train, epochs<span class="op">=</span><span class="dv">100</span>)</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> model.predict_surv_df(x_test)               <span class="co"># full S(t) per subject</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For competing risks, swap in <code>pycox.models.DeepHit</code> and provide event-type labels <span class="math inline">k \in \{1, \dots, K\}</span>.</p>
-<p><strong>auton-survival</strong> offers an alternative deep competing-risks model, Deep Survival Machines (DSM), which mixes parametric distributions instead of a discrete grid (see <a href="../04_packages/4.5_auton_survival.html">4.5 auton-survival</a>):</p>
+<p><strong>auton-survival</strong> offers an alternative deep competing-risks model, Deep Survival Machines (DSM), which mixes parametric distributions instead of a discrete grid (see <a href="../05_packages/5.5_auton_survival.html">5.5 auton-survival</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> auton_survival.models.dsm <span class="im">import</span> DeepSurvivalMachines</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DeepSurvivalMachines(layers<span class="op">=</span>[<span class="dv">100</span>]).fit(features, outcomes.time, outcomes.event)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <blockquote class="blockquote">

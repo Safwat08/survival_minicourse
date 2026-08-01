@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>lifelines – Survival Analysis Mini-Course</title>
+<title>pycox – Survival Analysis Mini-Course</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,8 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../04_packages/4.3_torchsurv.html" rel="next">
-<link href="../04_packages/4.1_pycox.html" rel="prev">
+<link href="../05_packages/5.2_lifelines.html" rel="next">
+<link href="../04_medical_imaging/4.2_3d_mri_survival.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -111,49 +111,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -187,12 +144,12 @@ window.Quarto = {
 <span class="menu-text">Metrics</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../04_packages/4.1_pycox.html"> 
-<span class="menu-text">Packages</span></a>
+    <a class="nav-link" href="../04_medical_imaging/4.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
-<span class="menu-text">Medical Imaging</span></a>
+    <a class="nav-link" href="../05_packages/5.1_pycox.html"> 
+<span class="menu-text">Packages</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -217,7 +174,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_packages/4.1_pycox.html">4 · Packages</a></li><li class="breadcrumb-item"><a href="../04_packages/4.2_lifelines.html">lifelines</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">5 · Packages</a></li><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">pycox</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -356,64 +313,64 @@ window.Quarto = {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
- <span class="menu-text">4 · Packages</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">4 · Medical Image Analysis</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pycox</span></a>
+  <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">lifelines</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">torchsurv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scikit-survival</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">auton-survival</span></a>
+  <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Medical Image Analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">5 · Packages</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
+  <a href="../05_packages/5.1_pycox.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">pycox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  <a href="../05_packages/5.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
   </div>
 </li>
       </ul>
@@ -428,10 +385,10 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#lifelines" id="toc-lifelines" class="nav-link active" data-scroll-target="#lifelines">lifelines</a>
+  <li><a href="#pycox" id="toc-pycox" class="nav-link active" data-scroll-target="#pycox">pycox</a>
   <ul class="collapse">
   <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
-  <li><a href="#key-features" id="toc-key-features" class="nav-link" data-scroll-target="#key-features">Key Features</a></li>
+  <li><a href="#key-models" id="toc-key-models" class="nav-link" data-scroll-target="#key-models">Key Models</a></li>
   <li><a href="#common-usage" id="toc-common-usage" class="nav-link" data-scroll-target="#common-usage">Common Usage</a></li>
   <li><a href="#best-for" id="toc-best-for" class="nav-link" data-scroll-target="#best-for">Best For</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a>
@@ -443,83 +400,125 @@ window.Quarto = {
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_packages/4.1_pycox.html">4 · Packages</a></li><li class="breadcrumb-item"><a href="../04_packages/4.2_lifelines.html">lifelines</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">5 · Packages</a></li><li class="breadcrumb-item"><a href="../05_packages/5.1_pycox.html">pycox</a></li></ol></nav></header>
 
 
 
 
-<section id="lifelines" class="level1">
-<h1>lifelines</h1>
-<p><code>lifelines</code> provides classical survival estimators and regression models through a DataFrame-oriented API. It is especially convenient for exploration, statistical summaries, diagnostics, and publication-style plots.</p>
+<section id="pycox" class="level1">
+<h1>pycox</h1>
+<p><code>pycox</code> is a Python package for deep learning survival models built on top of PyTorch and <code>torchtuples</code>.</p>
 <section id="installation" class="level2">
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install lifelines</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pycox</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="key-features" class="level2">
-<h2 class="anchored" data-anchor-id="key-features">Key Features</h2>
-<ul>
-<li>Kaplan-Meier estimator</li>
-<li>Nelson-Aalen estimator</li>
-<li>Cox Proportional Hazards model (with L1/L2 regularization)</li>
-<li>Parametric models: Weibull, Log-Normal, Log-Logistic, etc.</li>
-<li>Aalen–Johansen cumulative incidence estimator for competing risks</li>
-<li>Log-rank test, statistical comparisons</li>
-<li>Proportional-hazards diagnostics and plotting utilities</li>
-</ul>
+<section id="key-models" class="level2">
+<h2 class="anchored" data-anchor-id="key-models">Key Models</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Loss</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>CoxPH</code> (DeepSurv)</td>
+<td>Cox partial likelihood</td>
+<td>Classic deep Cox</td>
+</tr>
+<tr class="even">
+<td><code>CoxCC</code></td>
+<td>Cox case-control</td>
+<td>Memory-efficient approximation</td>
+</tr>
+<tr class="odd">
+<td><code>CoxTime</code></td>
+<td>Cox-Time</td>
+<td>Non-proportional relative-risk model</td>
+</tr>
+<tr class="even">
+<td><code>PCHazard</code></td>
+<td>Piecewise-constant hazard NLL</td>
+<td>Continuous-time hazard within intervals</td>
+</tr>
+<tr class="odd">
+<td><code>LogisticHazard</code></td>
+<td>Discrete hazard NLL</td>
+<td>Also called Nnet-survival</td>
+</tr>
+<tr class="even">
+<td><code>DeepHitSingle</code></td>
+<td>DeepHit</td>
+<td>Single event, discrete time</td>
+</tr>
+<tr class="odd">
+<td><code>DeepHit</code></td>
+<td>DeepHit</td>
+<td>Competing risks</td>
+</tr>
+<tr class="even">
+<td><code>MTLR</code></td>
+<td>MTLR</td>
+<td>Multi-task logistic regression</td>
+</tr>
+<tr class="odd">
+<td><code>PMF</code></td>
+<td>PMF NLL</td>
+<td>Direct probability mass over time bins</td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="common-usage" class="level2">
 <h2 class="anchored" data-anchor-id="common-usage">Common Usage</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter, CoxPHFitter</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pycox.models <span class="im">as</span> models</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchtuples <span class="im">as</span> tt</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">"T"</span>: [...], <span class="st">"E"</span>: [...], <span class="st">"feature1"</span>: [...]})</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># KM curve</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>kmf <span class="op">=</span> KaplanMeierFitter()</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>kmf.fit(df[<span class="st">"T"</span>], df[<span class="st">"E"</span>])</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>kmf.plot_survival_function()</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Cox PH</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>cph <span class="op">=</span> CoxPHFitter()</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>cph.fit(df, duration_col<span class="op">=</span><span class="st">"T"</span>, event_col<span class="op">=</span><span class="st">"E"</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>cph.print_summary()</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>cph.check_assumptions(df, p_value_threshold<span class="op">=</span><span class="fl">0.05</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Predictions are different objects: relative risk versus absolute survival.</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>risk <span class="op">=</span> cph.predict_partial_hazard(df)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> cph.predict_survival_function(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> tt.practical.MLPVanilla(in_features, [<span class="dv">64</span>, <span class="dv">64</span>], out_features<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> models.CoxPH(net, tt.optim.Adam)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>model.fit(x_train, (durations_train, events_train), epochs<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>model.compute_baseline_hazards()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>surv <span class="op">=</span> model.predict_surv_df(x_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For discrete-time models, use the model’s <code>label_transform()</code> to fit time-bin cuts on the training durations, transform every split with those fixed cuts, and set the network output width to the number of bins. <code>pycox.evaluation.EvalSurv</code> provides time-dependent concordance, IPCW Brier scores, and integrated scores.</p>
 </section>
 <section id="best-for" class="level2">
 <h2 class="anchored" data-anchor-id="best-for">Best For</h2>
 <ul>
-<li>Exploratory survival analysis</li>
-<li>Classical Cox PH on tabular data</li>
-<li>Statistical testing and visualization</li>
-<li>Clinical researchers new to survival analysis</li>
+<li>Deep learning survival models</li>
+<li>Benchmarking multiple architectures</li>
+<li>Discrete-time and competing risk models</li>
+<li>Research workflows where <code>torchtuples</code> owns the training loop</li>
 </ul>
-<p><code>lifelines</code> is not a neural-network framework and its built-in concordance measure does not replace the IPCW evaluation suite in <a href="../04_packages/4.4_scikit_survival.html"><code>scikit-survival</code></a>. For competing risks, use <code>AalenJohansenFitter</code> for descriptive CIFs rather than <span class="math inline">1-\hat S(t)</span>.</p>
+<p>For an entirely custom PyTorch training loop, especially an imaging backbone, compare with <a href="../05_packages/5.3_torchsurv.html"><code>torchsurv</code></a>. Also check the package’s supported dependency versions before starting a new production environment.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
-<li><strong>Docs</strong>: <a href="https://lifelines.readthedocs.io/en/latest/">lifelines.readthedocs.io</a></li>
-<li><strong>GitHub</strong>: <a href="https://github.com/CamDavidsonPilon/lifelines">github.com/CamDavidsonPilon/lifelines</a></li>
-<li><strong>Quickstart</strong>: <a href="https://lifelines.readthedocs.io/en/latest/Quickstart.html">lifelines.readthedocs.io/en/latest/Quickstart.html</a></li>
-<li><strong>API Reference</strong>: <a href="https://lifelines.readthedocs.io/en/latest/References.html">lifelines.readthedocs.io/en/latest/References.html</a></li>
-<li><strong>Paper / Citation</strong>: Davidson-Pilon (2019). <em>lifelines: survival analysis in Python.</em> JOSS. <a href="https://doi.org/10.21105/joss.01317">doi:10.21105/joss.01317</a></li>
+<li><strong>GitHub</strong>: <a href="https://github.com/havakv/pycox">github.com/havakv/pycox</a></li>
+<li><strong>Intro notebook</strong>: <a href="https://nbviewer.jupyter.org/github/havakv/pycox/blob/master/examples/01_introduction.ipynb">01_introduction.ipynb</a></li>
+<li><strong>All examples</strong>: <a href="https://nbviewer.jupyter.org/github/havakv/pycox/tree/master/examples">examples/</a></li>
+<li><strong>Paper (CoxTime / CoxCC)</strong>: Kvamme et al.&nbsp;(2019). <em>Time-to-event prediction with neural networks and Cox regression.</em> JMLR. <a href="http://jmlr.org/papers/v20/18-424.html">jmlr.org/papers/v20/18-424.html</a></li>
+<li><strong>Paper (DeepSurv / CoxPH)</strong>: Katzman et al.&nbsp;(2018). <em>DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network.</em> BMC Medical Research Methodology. <a href="https://doi.org/10.1186/s12874-018-0482-1">doi:10.1186/s12874-018-0482-1</a></li>
+<li><strong>Paper (DeepHit)</strong>: Lee et al.&nbsp;(2018). <em>DeepHit: A deep learning approach to survival analysis with competing risks.</em> AAAI. <a href="http://medianetlab.ee.ucla.edu/papers/AAAI_2018_DeepHit">paper</a></li>
 </ul>
 <section id="citation" class="level3">
 <h3 class="anchored" data-anchor-id="citation">Citation</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bibtex code-with-copy"><code class="sourceCode bibtex"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">davidson2019lifelines</span>,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>   = {lifelines: survival analysis in Python},</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>  = {Davidson-Pilon, Cameron},</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span> = {Journal of Open Source Software},</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>  = {4},</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>  = {40},</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>   = {1317},</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>    = {2019},</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">doi</span>     = {10.21105/joss.01317}</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bibtex code-with-copy"><code class="sourceCode bibtex"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">kvamme2019time</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>   = {Time-to-event prediction with neural networks and Cox regression},</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>  = {Kvamme, H{<span class="ch">\aa</span>}vard and Borgan, {<span class="ch">\O</span>}rnulf and Scheel, Ida},</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span> = {Journal of Machine Learning Research},</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>  = {20},</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>  = {129},</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>   = {1--30},</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>    = {2019}</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -929,13 +928,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../04_packages/4.1_pycox.html" class="pagination-link" aria-label="pycox">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">pycox</span>
+      <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="pagination-link" aria-label="Training a Survival Model on 3D MRI">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Training a Survival Model on 3D MRI</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../04_packages/4.3_torchsurv.html" class="pagination-link" aria-label="torchsurv">
-        <span class="nav-page-text">torchsurv</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../05_packages/5.2_lifelines.html" class="pagination-link" aria-label="lifelines">
+        <span class="nav-page-text">lifelines</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

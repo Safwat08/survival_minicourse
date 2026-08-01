@@ -71,7 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../05_medical_imaging/5.1_survival_from_medical_images.html" rel="prev">
+<link href="../05_packages/5.1_pycox.html" rel="next">
+<link href="../04_medical_imaging/4.1_survival_from_medical_images.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -186,12 +187,12 @@ window.Quarto = {
 <span class="menu-text">Metrics</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../04_packages/4.1_pycox.html"> 
-<span class="menu-text">Packages</span></a>
+    <a class="nav-link" href="../04_medical_imaging/4.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
-<span class="menu-text">Medical Imaging</span></a>
+    <a class="nav-link" href="../05_packages/5.1_pycox.html"> 
+<span class="menu-text">Packages</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -216,7 +217,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../05_medical_imaging/5.2_3d_mri_survival.html">Training a Survival Model on 3D MRI</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../04_medical_imaging/4.2_3d_mri_survival.html">Training a Survival Model on 3D MRI</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -355,64 +356,64 @@ window.Quarto = {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">4 · Packages</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">4 · Medical Image Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pycox</span></a>
+  <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">lifelines</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">torchsurv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scikit-survival</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">auton-survival</span></a>
+  <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
- <span class="menu-text">5 · Medical Image Analysis</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">5 · Packages</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
+  <a href="../05_packages/5.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  <a href="../05_packages/5.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
   </div>
 </li>
       </ul>
@@ -454,19 +455,19 @@ window.Quarto = {
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../05_medical_imaging/5.2_3d_mri_survival.html">Training a Survival Model on 3D MRI</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4 · Medical Image Analysis</a></li><li class="breadcrumb-item"><a href="../04_medical_imaging/4.2_3d_mri_survival.html">Training a Survival Model on 3D MRI</a></li></ol></nav></header>
 
 
 
 
 <section id="training-a-survival-model-on-3d-mri" class="level1">
 <h1>Training a Survival Model on 3D MRI</h1>
-<p><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a> argued that a survival model is an imaging backbone with a different head and a different loss. This section is that claim made concrete: a full walkthrough of taking a cohort of 3D MRI volumes with per-subject survival labels and finetuning a self-supervised backbone on them.</p>
+<p><a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4.1 Survival from Medical Images</a> argued that a survival model is an imaging backbone with a different head and a different loss. This section is that claim made concrete: a full walkthrough of taking a cohort of 3D MRI volumes with per-subject survival labels and finetuning a self-supervised backbone on them.</p>
 <p>Mapped onto the backbone/head picture:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>Abstract (see <a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a>)</th>
+<th>Abstract (see <a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4.1 Survival from Medical Images</a>)</th>
 <th>Concrete (this tutorial)</th>
 </tr>
 </thead>
@@ -521,12 +522,12 @@ window.Quarto = {
 <tr class="odd">
 <td>Backbone + head</td>
 <td>what you are actually assembling in step 6</td>
-<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html">5.1 Survival from Medical Images</a></td>
+<td><a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="even">
 <td>Pretrain then fine-tune</td>
 <td>why step 6 starts from a checkpoint instead of random weights, and when to freeze the backbone instead</td>
-<td><a href="../05_medical_imaging/5.1_survival_from_medical_images.html#transfer-learning">5.1 Survival from Medical Images</a></td>
+<td><a href="../04_medical_imaging/4.1_survival_from_medical_images.html#transfer-learning">4.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="odd">
 <td>The losses</td>
@@ -656,7 +657,7 @@ window.Quarto = {
 <section id="stage-into-nnu-net-raw-layout" class="level2">
 <h2 class="anchored" data-anchor-id="stage-into-nnu-net-raw-layout">3. Stage into nnU-Net “raw” layout</h2>
 <p>The preprocessing tier (<code>src/medsurvival3d/data/preprocessing/datasets/template_brain_preprocessing.py</code>) wants the nnU-Net raw layout: a folder <code>imagesTr/</code> in which each file is named <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index (<code>0000</code>, <code>0001</code>, and so on).</p>
-<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for">5.1 Survival from Medical Images</a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
+<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for">4.1 Survival from Medical Images</a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
 <p>Symlink your chosen modality into the <code>_0000</code> slot. Set <code>MOD</code> to whatever token identifies that modality in your filenames, and adjust the glob and the id derivation to match what step 2 showed you (<code>t1c</code> here is only an example):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">RAW</span><span class="op">=</span><span class="va">$HOME</span>/data/mydataset</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">MOD</span><span class="op">=</span>t1c                                                        <span class="co"># &lt;- the modality token in YOUR filenames</span></span>
@@ -771,7 +772,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#leakage-failures">5.1 Survival from Medical Images</a>.</p>
+<p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#failure-modes">4.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
 <section id="b.-check-what-preprocessing-produced" class="level3">
@@ -793,7 +794,7 @@ window.Quarto = {
 <section id="configure-and-train" class="level2">
 <h2 class="anchored" data-anchor-id="configure-and-train">6. Configure and train</h2>
 <p>Configs ship as package data under <code>src/medsurvival3d/cli_configs/</code>. With the editable install from step 1 you edit them in place and Hydra picks up the changes live. <code>CFG=src/medsurvival3d/cli_configs</code> below just keeps the paths short.</p>
-<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head">5.1 Survival from Medical Images</a>, is the one component that makes this a survival model rather than a classifier.</p>
+<p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#survival-is-a-head">4.1 Survival from Medical Images</a>, is the one component that makes this a survival model rather than a classifier.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="va">CFG</span><span class="op">=</span>src/medsurvival3d/cli_configs</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="va">$CFG</span>/data/survival.yaml <span class="va">$CFG</span>/data/survival_mine.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -865,7 +866,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a> and <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#objective-and-metric-failures">5.1 Survival from Medical Images</a>.</p>
+<p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a> and <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#failure-modes">4.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
 <p>Finally, point Hydra at writable paths. <code>$CFG/env/local.yaml</code> ships as placeholders:</p>
@@ -898,7 +899,7 @@ window.Quarto = {
 </section>
 <section id="swapping-the-loss" class="level2">
 <h2 class="anchored" data-anchor-id="swapping-the-loss">7. Swapping the loss</h2>
-<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../05_medical_imaging/5.1_survival_from_medical_images.html#survival-is-a-head">5.1 Survival from Medical Images</a>, exposed as a single config key:</p>
+<p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#survival-is-a-head">4.1 Survival from Medical Images</a>, exposed as a single config key:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -1454,11 +1455,14 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="pagination-link" aria-label="Survival from Medical Images">
+      <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="pagination-link" aria-label="Survival from Medical Images">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Survival from Medical Images</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../05_packages/5.1_pycox.html" class="pagination-link" aria-label="pycox">
+        <span class="nav-page-text">pycox</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

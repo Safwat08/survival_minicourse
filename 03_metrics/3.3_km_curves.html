@@ -187,12 +187,12 @@ window.Quarto = {
 <span class="menu-text">Metrics</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../04_packages/4.1_pycox.html"> 
-<span class="menu-text">Packages</span></a>
+    <a class="nav-link" href="../04_medical_imaging/4.1_survival_from_medical_images.html"> 
+<span class="menu-text">Medical Imaging</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05_medical_imaging/5.1_survival_from_medical_images.html"> 
-<span class="menu-text">Medical Imaging</span></a>
+    <a class="nav-link" href="../05_packages/5.1_pycox.html"> 
+<span class="menu-text">Packages</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -357,7 +357,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">4 · Packages</span></a>
+ <span class="menu-text">4 · Medical Image Analysis</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -365,32 +365,14 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.1_pycox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pycox</span></a>
+  <a href="../04_medical_imaging/4.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival from Medical Images</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.2_lifelines.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">lifelines</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.3_torchsurv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">torchsurv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">scikit-survival</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../04_packages/4.5_auton_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">auton-survival</span></a>
+  <a href="../04_medical_imaging/4.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
   </div>
 </li>
       </ul>
@@ -398,7 +380,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">5 · Medical Image Analysis</span></a>
+ <span class="menu-text">5 · Packages</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -406,14 +388,32 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.1_survival_from_medical_images.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival from Medical Images</span></a>
+  <a href="../05_packages/5.1_pycox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pycox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../05_medical_imaging/5.2_3d_mri_survival.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Training a Survival Model on 3D MRI</span></a>
+  <a href="../05_packages/5.2_lifelines.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lifelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.3_torchsurv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">torchsurv</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.4_scikit_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">scikit-survival</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../05_packages/5.5_auton_survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">auton-survival</span></a>
   </div>
 </li>
       </ul>
@@ -564,7 +564,7 @@ window.Quarto = {
 </tbody>
 </table>
 <p><strong>Development→test discipline (all three methods).</strong> Fit <span class="math inline">\tau</span> using only development data, freeze the entire procedure, then apply it once to the test set. If the model itself was fit on the training set, prefer a separate validation set or nested cross-validation for outcome-guided cutpoint selection. A median training cutpoint does not use outcomes and is a simpler baseline.</p>
-<p>None of the three ships as a ready-made function. <code>scikit-survival</code> (see <a href="../04_packages/4.4_scikit_survival.html">4.4 scikit-survival</a>) provides the IPCW machinery and <code>lifelines</code> (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>) the log-rank test, but you assemble the cutpoint yourself:</p>
+<p>None of the three ships as a ready-made function. <code>scikit-survival</code> (see <a href="../05_packages/5.4_scikit_survival.html">5.4 scikit-survival</a>) provides the IPCW machinery and <code>lifelines</code> (see <a href="../05_packages/5.2_lifelines.html">5.2 lifelines</a>) the log-rank test, but you assemble the cutpoint yourself:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.util <span class="im">import</span> Surv</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sksurv.metrics <span class="im">import</span> CensoringDistributionEstimator</span>
@@ -617,7 +617,7 @@ window.Quarto = {
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>kmf.plot_survival_function()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="stratified-plot-the-evaluation-use-case" class="level3">
 <h3 class="anchored" data-anchor-id="stratified-plot-the-evaluation-use-case">Stratified plot (the evaluation use case)</h3>
-<p>The clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see <a href="../04_packages/4.2_lifelines.html">4.2 lifelines</a>):</p>
+<p>The clinically meaningful figure overlays the model’s risk groups on one axis, with at-risk counts underneath (see <a href="../05_packages/5.2_lifelines.html">5.2 lifelines</a>):</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines <span class="im">import</span> KaplanMeierFitter</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lifelines.plotting <span class="im">import</span> add_at_risk_counts</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
