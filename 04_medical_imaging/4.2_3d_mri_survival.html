@@ -433,21 +433,25 @@ window.Quarto = {
   <li><a href="#what-you-should-already-know" id="toc-what-you-should-already-know" class="nav-link" data-scroll-target="#what-you-should-already-know">What you should already know</a></li>
   <li><a href="#imaging-vocabulary" id="toc-imaging-vocabulary" class="nav-link" data-scroll-target="#imaging-vocabulary">Imaging vocabulary</a></li>
   <li><a href="#what-the-training-code-actually-reads" id="toc-what-the-training-code-actually-reads" class="nav-link" data-scroll-target="#what-the-training-code-actually-reads">0. What the training code actually reads</a></li>
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">1. Setup</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">1. Setup</a>
+  <ul class="collapse">
+  <li><a href="#docker-recommended" id="toc-docker-recommended" class="nav-link" data-scroll-target="#docker-recommended">Docker (recommended)</a></li>
+  <li><a href="#or-a-local-virtualenv" id="toc-or-a-local-virtualenv" class="nav-link" data-scroll-target="#or-a-local-virtualenv">Or a local virtualenv</a></li>
+  </ul></li>
   <li><a href="#bring-your-data" id="toc-bring-your-data" class="nav-link" data-scroll-target="#bring-your-data">2. Bring your data</a></li>
-  <li><a href="#stage-into-nnu-net-raw-layout" id="toc-stage-into-nnu-net-raw-layout" class="nav-link" data-scroll-target="#stage-into-nnu-net-raw-layout">3. Stage into nnU-Net “raw” layout</a></li>
-  <li><a href="#build-survival_labels.json" id="toc-build-survival_labels.json" class="nav-link" data-scroll-target="#build-survival_labels.json">4. Build <code>survival_labels.json</code></a></li>
-  <li><a href="#preprocess-to-.b2nd" id="toc-preprocess-to-.b2nd" class="nav-link" data-scroll-target="#preprocess-to-.b2nd">5. Preprocess to <code>.b2nd</code></a>
+  <li><a href="#prepare-the-dataset" id="toc-prepare-the-dataset" class="nav-link" data-scroll-target="#prepare-the-dataset">3. Prepare the dataset</a>
   <ul class="collapse">
-  <li><a href="#b.-check-what-preprocessing-produced" id="toc-b.-check-what-preprocessing-produced" class="nav-link" data-scroll-target="#b.-check-what-preprocessing-produced">5b. Check what preprocessing produced</a></li>
+  <li><a href="#the-flags-that-depend-on-your-cohort" id="toc-the-flags-that-depend-on-your-cohort" class="nav-link" data-scroll-target="#the-flags-that-depend-on-your-cohort">The flags that depend on your cohort</a></li>
+  <li><a href="#doing-this-with-rhuh-gbm" id="toc-doing-this-with-rhuh-gbm" class="nav-link" data-scroll-target="#doing-this-with-rhuh-gbm">Doing this with RHUH-GBM</a></li>
+  <li><a href="#b.-check-what-it-produced" id="toc-b.-check-what-it-produced" class="nav-link" data-scroll-target="#b.-check-what-it-produced">3b. Check what it produced</a></li>
   </ul></li>
-  <li><a href="#configure-and-train" id="toc-configure-and-train" class="nav-link" data-scroll-target="#configure-and-train">6. Configure and train</a>
+  <li><a href="#configure-and-train" id="toc-configure-and-train" class="nav-link" data-scroll-target="#configure-and-train">4. Configure and train</a>
   <ul class="collapse">
-  <li><a href="#b.-smoke-test-with-fast_dev_run" id="toc-b.-smoke-test-with-fast_dev_run" class="nav-link" data-scroll-target="#b.-smoke-test-with-fast_dev_run">6b. Smoke test with <code>fast_dev_run</code></a></li>
-  <li><a href="#c.-the-real-run" id="toc-c.-the-real-run" class="nav-link" data-scroll-target="#c.-the-real-run">6c. The real run</a></li>
+  <li><a href="#b.-smoke-test-with-fast_dev_run" id="toc-b.-smoke-test-with-fast_dev_run" class="nav-link" data-scroll-target="#b.-smoke-test-with-fast_dev_run">4b. Smoke test with <code>fast_dev_run</code></a></li>
+  <li><a href="#c.-the-real-run" id="toc-c.-the-real-run" class="nav-link" data-scroll-target="#c.-the-real-run">4c. The real run</a></li>
   </ul></li>
-  <li><a href="#swapping-the-loss" id="toc-swapping-the-loss" class="nav-link" data-scroll-target="#swapping-the-loss">7. Swapping the loss</a></li>
-  <li><a href="#reading-the-results" id="toc-reading-the-results" class="nav-link" data-scroll-target="#reading-the-results">8. Reading the results</a></li>
+  <li><a href="#swapping-the-loss" id="toc-swapping-the-loss" class="nav-link" data-scroll-target="#swapping-the-loss">5. Swapping the loss</a></li>
+  <li><a href="#reading-the-results" id="toc-reading-the-results" class="nav-link" data-scroll-target="#reading-the-results">6. Reading the results</a></li>
   <li><a href="#appendix-where-each-artifact-comes-from" id="toc-appendix-where-each-artifact-comes-from" class="nav-link" data-scroll-target="#appendix-where-each-artifact-comes-from">Appendix: where each artifact comes from</a></li>
   <li><a href="#what-has-and-hasnt-been-run" id="toc-what-has-and-hasnt-been-run" class="nav-link" data-scroll-target="#what-has-and-hasnt-been-run">What has and hasn’t been run</a></li>
   </ul></li>
@@ -482,7 +486,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>Survival head</td>
-<td>whatever <code>model.survival_loss.name</code> selects (step 7)</td>
+<td>whatever <code>model.survival_loss.name</code> selects (step 5)</td>
 </tr>
 <tr class="even">
 <td>Survival loss</td>
@@ -496,7 +500,7 @@ window.Quarto = {
 </table>
 <p>The code lives at <strong><a href="https://github.com/Safwat08/MedSurvival3D" class="uri">https://github.com/Safwat08/MedSurvival3D</a></strong>. Every file path below is relative to a clone of that repository, and step 1 starts by making one.</p>
 <p>It assumes you’re comfortable with Python and a shell but have never seen this codebase. The steps use placeholder names (<code>mydataset</code>, a modality of your choosing, generic column headers) and mark the spots you need to edit. Any cohort of 3D MRI with a clinical table works the same way; substitute your own paths, headers, and filename patterns as you go.</p>
-<p>Steps 3 through 5 (staging, labels, preprocessing) are the work. Everything else is two commands.</p>
+<p>Step 3, turning raw scans and a clinical table into what the trainer reads, is the only part with real decisions in it. Everything else is three commands.</p>
 <section id="what-you-should-already-know" class="level2">
 <h2 class="anchored" data-anchor-id="what-you-should-already-know">What you should already know</h2>
 <p>This tutorial leans on concepts covered earlier in the course. If any of these are unfamiliar, read the linked section first; none take long.</p>
@@ -521,12 +525,12 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>Backbone + head</td>
-<td>what you are actually assembling in step 6</td>
+<td>what you are actually assembling in step 4</td>
 <td><a href="../04_medical_imaging/4.1_survival_from_medical_images.html">4.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="even">
 <td>Pretrain then fine-tune</td>
-<td>why step 6 starts from a checkpoint instead of random weights, and when to freeze the backbone instead</td>
+<td>why step 4 starts from a checkpoint instead of random weights, and when to freeze the backbone instead</td>
 <td><a href="../04_medical_imaging/4.1_survival_from_medical_images.html#transfer-learning">4.1 Survival from Medical Images</a></td>
 </tr>
 <tr class="odd">
@@ -536,7 +540,7 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>C-index</td>
-<td>the checkpoint-selection metric in step 6 and the headline number in step 8</td>
+<td>the checkpoint-selection metric in step 4 and the headline number in step 6</td>
 <td><a href="../03_metrics/3.1_c_index.html">3.1 Concordance Index (C-index)</a></td>
 </tr>
 </tbody>
@@ -567,7 +571,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td><strong>Skull stripping / brain extraction</strong></td>
-<td>Removing non-brain tissue, leaving a <strong>brain mask</strong>. Used both to crop the field of view and to restrict intensity normalisation. <code>HD-BET</code> is the tool used here.</td>
+<td>Removing non-brain tissue, leaving a <strong>brain mask</strong>. Used both to crop the field of view and to restrict intensity normalisation. <code>HD-BET</code> is the tool step 3 can call for this.</td>
 </tr>
 <tr class="even">
 <td><strong>Z-score normalisation</strong></td>
@@ -579,11 +583,11 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td><strong>Blosc2</strong> (<code>.b2nd</code>)</td>
-<td>A compressed chunked array format. Preprocessing writes these once so training does not repeat the expensive resample/crop/normalise work every epoch.</td>
+<td>A compressed chunked array format. Step 3 writes these once so training does not repeat the expensive resample/crop/normalise work every epoch.</td>
 </tr>
 <tr class="odd">
 <td><strong>nnU-Net raw layout</strong></td>
-<td>A filename convention, <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index. The preprocessing tier expects it.</td>
+<td>A filename convention, <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index. Step 3 stages your files into it for you; you only meet it if you go off the beaten path.</td>
 </tr>
 <tr class="even">
 <td><strong>Hydra</strong></td>
@@ -620,32 +624,79 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The same identifier has to appear in three places: the <code>.b2nd</code> filename, the keys of <code>survival_labels.json</code>, and the id lists in <code>splits.json</code>. Step 3 and step 4 must derive it identically. Step 5b gives you a check that catches a mismatch in seconds instead of twenty minutes into a run.</p>
+<p>The same identifier has to appear in three places: the <code>.b2nd</code> filename, the keys of <code>survival_labels.json</code>, and the id lists in <code>splits.json</code>. Step 3 derives all three from one source, so they agree by construction, and its <code>--dry-run</code> shows you the id match against your clinical table before anything is written. Use it. The alternative is a <code>KeyError</code> inside a DataLoader worker thirty minutes into a training run.</p>
 </div>
 </div>
 </section>
 <section id="setup" class="level2">
 <h2 class="anchored" data-anchor-id="setup">1. Setup</h2>
-<p>On the GPU box:</p>
+<p>Two routes. Docker is shorter and needs nothing on the host but an NVIDIA driver.</p>
+<section id="docker-recommended" class="level3">
+<h3 class="anchored" data-anchor-id="docker-recommended">Docker (recommended)</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/Safwat08/MedSurvival3D.git</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> MedSurvival3D</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Everything below runs from that directory. Then:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="va">$HOME</span>/.local/bin:<span class="va">$PATH</span>        <span class="co"># uv on non-interactive shells</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> venv <span class="at">--python</span> 3.12</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> pip install <span class="at">-r</span> requirements.txt</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> pip install <span class="at">-e</span> .                       <span class="co"># gives you medsurvival3d-train / -infer</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> <span class="at">-c</span> <span class="st">"import torch, pycox, torchsurv, blosc2, nnunetv2, HD_BET; </span><span class="dt">\</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">print(torch.__version__, torch.cuda.is_available())"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> MedSurvival3D</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> medsurvival3d:latest .          <span class="co"># ~10 min, ~9 GB image</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/ms3d/ckpt ~/ms3d/exp                 <span class="co"># create these yourself, see below</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Every command later in this tutorial then runs inside the image:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">--gpus</span> all <span class="at">--shm-size</span><span class="op">=</span>16g <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--user</span> <span class="st">"</span><span class="va">$(</span><span class="fu">id</span> <span class="at">-u</span><span class="va">)</span><span class="st">:</span><span class="va">$(</span><span class="fu">id</span> <span class="at">-g</span><span class="va">)</span><span class="st">"</span> <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> ~/ms3d/ckpt:/ckpt <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> ~/ms3d/exp:/exp <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> /path/to/your/data:/data <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  medsurvival3d:latest <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;</span>the command from the step you are on<span class="op">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>The backbone downloads itself.</strong> On the first run the container fetches the S3D ResEnc checkpoint (852 MB) from the CC-BY-4.0 release <a href="https://huggingface.co/MIC-DKFZ/ResEncL-OpenMind-S3D"><code>MIC-DKFZ/ResEncL-OpenMind-S3D</code></a> into <code>/ckpt</code> and verifies its SHA-256. Use <code>model.chpt_path=/ckpt/checkpoint_final.pth</code> at step 4. Already have the file? Mount it at that path and nothing is downloaded.</p>
+<p>Three things about that <code>docker run</code> are load-bearing:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Flag</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-v ~/ms3d/ckpt:/ckpt</code></td>
+<td>Without it the 852 MB re-downloads on every <code>--rm</code> run</td>
+</tr>
+<tr class="even">
+<td><code>--shm-size=16g</code></td>
+<td>Docker defaults <code>/dev/shm</code> to 64 MB; PyTorch DataLoader workers crash on it</td>
+</tr>
+<tr class="odd">
+<td><code>--user "$(id -u):$(id -g)"</code></td>
+<td>Otherwise everything written to <code>/exp</code> is owned by root</td>
+</tr>
+</tbody>
+</table>
+<p>And create the mount directories <em>before</em> the first run, as above: Docker creates missing bind-mount sources as root, which then defeats <code>--user</code>.</p>
+</section>
+<section id="or-a-local-virtualenv" class="level3">
+<h3 class="anchored" data-anchor-id="or-a-local-virtualenv">Or a local virtualenv</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/Safwat08/MedSurvival3D.git</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> MedSurvival3D</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="va">$HOME</span>/.local/bin:<span class="va">$PATH</span>        <span class="co"># uv on non-interactive shells</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> venv <span class="at">--python</span> 3.12</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> pip install <span class="at">-r</span> requirements.txt</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> pip install <span class="at">-e</span> .                       <span class="co"># gives you medsurvival3d-prepare / -train / -infer</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> <span class="at">-c</span> <span class="st">"import torch, pycox, torchsurv, blosc2, nnunetv2, HD_BET; </span><span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">print(torch.__version__, torch.cuda.is_available())"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If that prints <code>False</code>, or a run later dies saying your NVIDIA driver is too old, your torch wheel was built for a newer CUDA than the driver supports. Check <code>nvidia-smi</code> for the driver’s CUDA version and reinstall to match; for 12.8:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">UV_HTTP_TIMEOUT</span><span class="op">=</span>900 <span class="ex">uv</span> pip install torch torchvision <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--index-url</span> https://download.pytorch.org/whl/cu128 <span class="dt">\</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--reinstall-package</span> torch <span class="at">--reinstall-package</span> torchvision</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>You also need the S3D ResEnc backbone checkpoint that training finetunes from, e.g.&nbsp;<code>checkpoint_final.pth</code>. Note its path; it goes in <code>model.chpt_path</code> at step 6.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="va">UV_HTTP_TIMEOUT</span><span class="op">=</span>900 <span class="ex">uv</span> pip install torch torchvision <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--index-url</span> https://download.pytorch.org/whl/cu128 <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--reinstall-package</span> torch <span class="at">--reinstall-package</span> torchvision</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This route does not fetch the backbone for you. Download <code>checkpoint_final.pth</code> from the link above and note its path; it goes in <code>model.chpt_path</code> at step 4.</p>
+<p>The commands from here on are written in the virtualenv form, <code>./.venv/bin/&lt;cmd&gt;</code>. On the Docker route, drop that prefix and wrap the command in the <code>docker run</code> above.</p>
+</section>
 </section>
 <section id="bring-your-data" class="level2">
 <h2 class="anchored" data-anchor-id="bring-your-data">2. Bring your data</h2>
-<p>Per subject you need one or more 3D MRI volumes as NIfTI (<code>.nii.gz</code>), whether T1, T1-contrast, T2, FLAIR, or whatever you have, plus a survival label, meaning a follow-up time and an event/censoring flag, usually sitting in a clinical CSV keyed by subject id. Step 3 is where you decide which modality actually goes into the model.</p>
-<p>If you’re pulling from a public archive such as TCIA and it offers a pre-skull-stripped NIfTI distribution, take that over DICOM. It makes step 5 considerably easier.</p>
+<p>Per subject you need one or more 3D MRI volumes as NIfTI (<code>.nii.gz</code>), whether T1, T1-contrast, T2, FLAIR, or whatever you have, plus a survival label, meaning a follow-up time and an event/censoring flag, usually sitting in a clinical CSV keyed by subject id. Step 3 is where you point the tooling at them.</p>
+<p>If you’re pulling from a public archive such as TCIA and it offers a pre-skull-stripped NIfTI distribution, take that over DICOM. It lets step 3 derive brain masks from nonzero voxels instead of running HD-BET.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -657,18 +708,17 @@ window.Quarto = {
 </div>
 <div class="callout-body-container callout-body">
 <p><a href="https://www.cancerimagingarchive.net/collection/rhuh-gbm/">RHUH-GBM</a> (Río Hortega University Hospital Glioblastoma, on TCIA) fits this walkthrough well: 40 patients with WHO grade 4 astrocytoma, multiparametric MRI, and a clinical table carrying overall survival alongside an explicit right-censoring flag.</p>
-<p>Take the <strong>brain-extracted NIfTI package</strong> (2.9 GB, CC BY 4.0), not the DICOM one. It arrives co-registered to the SRI24 atlas, skull-stripped with SynthStrip, intensity-normalised, and resampled to 1 mm isotropic, which is most of step 5 already done. The DICOM distribution is larger and sits behind an access request. The clinical CSV downloads separately over plain HTTP.</p>
+<p>Take the <strong>brain-extracted NIfTI package</strong> (2.9 GB, CC BY 4.0), not the DICOM one. It arrives co-registered to the SRI24 atlas, skull-stripped with SynthStrip, intensity-normalised, and resampled to 1 mm isotropic, so step 3’s default <code>--brain-mask nonzero</code> is the right setting and HD-BET never has to run. The DICOM distribution is larger and sits behind an access request. The clinical CSV downloads separately over plain HTTP.</p>
 <p>It unpacks as one folder per patient, three timepoint subfolders each:</p>
 <pre><code>clinical_data_TCIA_RHUH-GBM.csv
 RHUH-0001/
 ├── 0/   RHUH-0001_0_{t1,t1ce,t2,flair,adc,segmentations}.nii.gz   # preoperative
 ├── 1/   RHUH-0001_1_...                                           # early postoperative (&lt;72 h)
 └── 2/   RHUH-0001_2_...                                           # recurrence / follow-up</code></pre>
-<p>Three things to get right with it:</p>
+<p>Step 3 has the flags to consume that nesting directly, and the invocation is given there. Two things to know before you get to it:</p>
 <ul>
-<li><strong>Stage timepoint <code>0</code> only.</strong> Your prediction origin is the scan (<a href="../01_background/1.3_what_is_an_event.html">1.3 What is an Event?</a>), and survival here is measured from surgery, so the postoperative and recurrence scans sit <em>after</em> the clock starts: a model trained on them is reading the future. Staging all three also puts one patient in both halves of a fold, which is plain leakage.</li>
-<li><strong>The censoring flag is inverted</strong>, in exactly the way step 4 warns about. <code>yes</code> means the patient was still alive at data cutoff, so <code>event = 0</code>. The <code>CENSORED_TRUE</code> default in step 4 already accepts that spelling; read the literal header names and the survival units off the CSV yourself rather than trusting the ones written here.</li>
-<li><strong>40 subjects, fewer events than that</strong>, makes this a rehearsal cohort, not a result. Expect a wide, noisy C-index; step 8 says what to look for instead.</li>
+<li><strong>Only timepoint <code>0</code> belongs in the cohort.</strong> Your prediction origin is the scan (<a href="../01_background/1.3_what_is_an_event.html">1.3 What is an Event?</a>), and survival here is measured from surgery, so the postoperative and recurrence scans sit <em>after</em> the clock starts: a model trained on them is reading the future. Including all three would also put one patient in both halves of a fold, which is plain leakage.</li>
+<li><strong>40 subjects, fewer events than that</strong>, makes this a rehearsal cohort, not a result. Expect a wide, noisy C-index; step 6 says what to look for instead.</li>
 </ul>
 </div>
 </div>
@@ -677,38 +727,35 @@ RHUH-0001/
 ├── raw_nifti/            # per-subject NIfTI volumes
 └── clinical.csv          # survival labels</code></pre>
 <p>Before you script anything against this, look at what you actually have. Folder nesting and filename conventions vary wildly by source:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> <span class="va">$HOME</span>/data/mydataset/raw_nifti <span class="at">-name</span> <span class="st">'*.nii.gz'</span> <span class="kw">|</span> <span class="fu">head</span> <span class="at">-20</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span> <span class="at">-1</span> <span class="va">$HOME</span>/data/mydataset/clinical.csv        <span class="co"># see the real column headers</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> <span class="va">$HOME</span>/data/mydataset/raw_nifti <span class="at">-name</span> <span class="st">'*.nii.gz'</span> <span class="kw">|</span> <span class="fu">head</span> <span class="at">-20</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span> <span class="at">-1</span> <span class="va">$HOME</span>/data/mydataset/clinical.csv        <span class="co"># see the real column headers</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="stage-into-nnu-net-raw-layout" class="level2">
-<h2 class="anchored" data-anchor-id="stage-into-nnu-net-raw-layout">3. Stage into nnU-Net “raw” layout</h2>
-<p>The preprocessing tier (<code>src/medsurvival3d/data/preprocessing/datasets/template_brain_preprocessing.py</code>) wants the nnU-Net raw layout: a folder <code>imagesTr/</code> in which each file is named <code>&lt;case_id&gt;_&lt;XXXX&gt;.nii.gz</code>, where <code>XXXX</code> is a zero-padded modality index (<code>0000</code>, <code>0001</code>, and so on).</p>
-<p>The simplest thing to do is use one modality as a single channel, with <code>model.input_channels: 1</code>. Pick the sequence most informative for your endpoint; see the modality table in <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#which-modality-and-what-it-is-good-for">4.1 Survival from Medical Images</a>. Multi-channel is a straightforward extension: stage the extra modalities as <code>_0001</code>, <code>_0002</code>, … and set <code>input_channels</code> to match.</p>
-<p>Symlink your chosen modality into the <code>_0000</code> slot. Set <code>MOD</code> to whatever token identifies that modality in your filenames, and adjust the glob and the id derivation to match what step 2 showed you (<code>t1c</code> here is only an example):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="va">RAW</span><span class="op">=</span><span class="va">$HOME</span>/data/mydataset</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="va">MOD</span><span class="op">=</span>t1c                                                        <span class="co"># &lt;- the modality token in YOUR filenames</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$RAW</span>/nnraw/imagesTr</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> <span class="va">$(</span><span class="fu">find</span> <span class="va">$RAW</span>/raw_nifti <span class="at">-iname</span> <span class="st">"*</span><span class="va">${MOD}</span><span class="st">*.nii.gz"</span><span class="va">)</span><span class="kw">;</span> <span class="cf">do</span>   <span class="co"># &lt;- adjust the glob to your files</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">case</span><span class="op">=</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-E</span> <span class="st">"s/[_-]?</span><span class="va">${MOD}</span><span class="st">.*//I"</span><span class="va">)</span>          <span class="co"># &lt;- your id derivation</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ln</span> <span class="at">-sf</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="st">"</span><span class="va">$RAW</span><span class="st">/nnraw/imagesTr/</span><span class="va">${case}</span><span class="st">_0000.nii.gz"</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="va">$RAW</span>/nnraw/imagesTr <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span>     <span class="co"># expect one _0000.nii.gz per subject</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For RHUH-GBM the layout is regular enough that the glob does the filtering, so no <code>sed</code> is needed. T1-contrast is the sequence to reach for first in glioblastoma, since the enhancing tumour is what it shows:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="va">RAW</span><span class="op">=</span><span class="va">$HOME</span>/data/rhuh_gbm</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$RAW</span>/nnraw/imagesTr</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> <span class="va">$RAW</span>/raw_nifti/RHUH-<span class="pp">*</span>/0/<span class="pp">*</span>_0_t1ce.nii.gz<span class="kw">;</span> <span class="cf">do</span>    <span class="co"># the /0/ restricts to preoperative</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">case</span><span class="op">=</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> _0_t1ce.nii.gz<span class="va">)</span>                  <span class="co"># -&gt; RHUH-0001, the CSV's own subject id</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ln</span> <span class="at">-sf</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="st">"</span><span class="va">$RAW</span><span class="st">/nnraw/imagesTr/</span><span class="va">${case}</span><span class="st">_0000.nii.gz"</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="va">$RAW</span>/nnraw/imagesTr <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span>     <span class="co"># expect 40</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Dropping the timepoint from the case id is safe only because you staged one timepoint. Note also that a lazier glob, <code>*t1*</code>, would match <code>t1ce</code> as well and silently give you two files per patient; anchor the suffix.</p>
-<p>Whatever id derivation you use here, step 4 must use the identical one.</p>
-</section>
-<section id="build-survival_labels.json" class="level2">
-<h2 class="anchored" data-anchor-id="build-survival_labels.json">4. Build <code>survival_labels.json</code></h2>
-<p>This is the one artifact the preprocessing tier won’t create for you. You map your table’s columns onto <code>{event, time_years}</code>, which means settling two questions.</p>
-<p>First, units. If your table stores days, divide by 365.25; if months, by 12.</p>
-<p>Second, polarity.</p>
+<section id="prepare-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-the-dataset">3. Prepare the dataset</h2>
+<p>One command turns the folder from step 2 into everything training reads. It derives case ids from your filenames, stages the nnU-Net layout, makes brain masks, resamples to a common spacing, crops a fixed field of view, z-score normalises, writes one <code>.b2nd</code> per case, generates the cross-validation splits, and joins your clinical table into <code>survival_labels.json</code>.</p>
+<p>Start with <code>--dry-run</code>. It does the whole validation pass, meaning id derivation, the CSV join, and the event mapping, and stops before touching a volume, so it takes seconds and needs no GPU:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-prepare</span> <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--nifti-dir</span> <span class="va">$HOME</span>/data/mydataset/raw_nifti <span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--csv</span> <span class="va">$HOME</span>/data/mydataset/clinical.csv <span class="dt">\</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--out</span> <span class="va">$HOME</span>/data/mydataset/survival_dataset <span class="dt">\</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--time-col</span> os_days <span class="at">--time-unit</span> days <span class="dt">\</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--event-col</span> vital_status <span class="at">--event-values</span> Dead <span class="dt">\</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--patch-size</span> 128 128 128 <span class="at">--folds</span> 3 <span class="dt">\</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dry-run</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>  nifti-dir: 40 case ids
+    TCGA-02-0003, TCGA-02-0006, TCGA-02-0009 (+37 more)
+  csv: 43 rows, id column 'subject_id'
+  matched: 40/40 case ids
+  event mapping
+              'Dead' -&gt; 1   (17 cases)
+             'Alive' -&gt; 0   (23 cases)
+  events observed: 17/40 (42.5%)
+  time_years (from days): min 0.21  median 1.84  max 6.03
+
+  dry run: would write 40 .b2nd + labels + 3-fold splits to .../survival_dataset</code></pre>
+<p><strong>Read that report.</strong> It is the whole point of the dry run, and it is checking the two things that otherwise fail silently.</p>
+<p><strong><code>matched: 40/40</code>.</strong> Anything less means your CSV’s id column isn’t written the way your filenames are. Fix it with <code>--id-col</code> or <code>--id-regex</code>. Do not fix it by renaming files, which puts the ids out of step with everything else. Unmatched cases are a hard error precisely because the alternative is a crash deep inside a training run.</p>
+<p><strong>The event mapping.</strong> Every distinct raw value is listed with the label it was given, so a stray <code>'Unknown' -&gt; 0</code> is visible rather than quietly censored.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -719,85 +766,113 @@ RHUH-0001/
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>A column named <code>censored</code> is the <strong>inverse</strong> of the <code>event</code> the model wants. Getting this backwards produces a model that trains happily, reports plausible losses, and means nothing. You will have taught it to rank the censored subjects as the high-risk ones. There is no downstream error that catches this; the only defence is reading the column definition and then checking the output of this step.</p>
+<p><code>--event-values</code> names the raw values meaning <strong>the event was observed</strong>; everything else is treated as censored. The default list is <code>1, true, yes, dead, deceased, event, 1:deceased</code>, which is right for a <code>vital_status</code>-style column and exactly wrong for a <code>censored</code>-style one, where <code>yes</code> means the subject was <em>still alive</em>. For an inverted column, name its falsy values instead: <code>--event-col censored --event-values 0,no,false</code>.</p>
+<p>Getting this backwards produces a model that trains happily, reports plausible losses, and means nothing. You will have taught it to rank the censored subjects as the high-risk ones. The command warns when every case lands on the same label, but a plausible-looking mix of 0s and 1s that happens to be inverted will pass silently. Reading the mapping in the dry-run report is the only real defence.</p>
 </div>
 </div>
-<p>Look at your headers, then fill in the three column names:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># build_survival_labels.py  (run with your venv python, from anywhere)</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json, re</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>RAW       <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"mydataset"</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>IMAGES_TR <span class="op">=</span> RAW <span class="op">/</span> <span class="st">"nnraw"</span> <span class="op">/</span> <span class="st">"imagesTr"</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>CSV       <span class="op">=</span> RAW <span class="op">/</span> <span class="st">"clinical.csv"</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>OUT       <span class="op">=</span> RAW <span class="op">/</span> <span class="st">"survival_dataset"</span> <span class="op">/</span> <span class="st">"survival_labels.json"</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># --- EDIT to your real headers (run `pd.read_csv(CSV).columns` to see them) ---</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>MOD           <span class="op">=</span> <span class="st">"t1c"</span>                           <span class="co"># the SAME modality token used in Step 3</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>COL_ID        <span class="op">=</span> <span class="st">"subject_id"</span>                    <span class="co"># subject identifier column</span></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>COL_TIME      <span class="op">=</span> <span class="st">"os_days"</span>                       <span class="co"># follow-up time column</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>TIME_TO_YEARS <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> <span class="fl">365.25</span>                    <span class="co"># days-&gt;years (use 1/12 for months, 1.0 for years)</span></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>COL_CENSORED  <span class="op">=</span> <span class="st">"censored"</span>                      <span class="co"># flag column; values below mean "censored"</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>CENSORED_TRUE <span class="op">=</span> {<span class="st">"yes"</span>, <span class="st">"1"</span>, <span class="st">"true"</span>}            <span class="co"># values that mean "censored / not observed"</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------------------------</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> norm_id(s: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:                     <span class="co"># must match the ids created in Step 3</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> re.sub(<span class="vs">rf"</span><span class="pp">[_-]</span><span class="op">?</span><span class="sc">{</span>MOD<span class="sc">}</span><span class="dv">.</span><span class="op">*</span><span class="vs">"</span>, <span class="st">""</span>, <span class="bu">str</span>(s), flags<span class="op">=</span>re.I).strip()</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>staged <span class="op">=</span> {p.name[:<span class="op">-</span><span class="bu">len</span>(<span class="st">"_0000.nii.gz"</span>)] <span class="cf">for</span> p <span class="kw">in</span> IMAGES_TR.glob(<span class="st">"*_0000.nii.gz"</span>)}</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(CSV)<span class="op">;</span> df.columns <span class="op">=</span> df.columns.<span class="bu">str</span>.strip()   <span class="co"># headers often have stray spaces</span></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> {}</span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _, row <span class="kw">in</span> df.iterrows():</span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    cid <span class="op">=</span> norm_id(row[COL_ID])</span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cid <span class="kw">not</span> <span class="kw">in</span> staged:</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span>                                             <span class="co"># no image staged -&gt; skip</span></span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    censored <span class="op">=</span> <span class="bu">str</span>(row[COL_CENSORED]).strip().lower() <span class="kw">in</span> CENSORED_TRUE</span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    labels[cid] <span class="op">=</span> {<span class="st">"event"</span>: <span class="dv">0</span> <span class="cf">if</span> censored <span class="cf">else</span> <span class="dv">1</span>,</span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"time_years"</span>: <span class="bu">round</span>(<span class="bu">float</span>(row[COL_TIME]) <span class="op">*</span> TIME_TO_YEARS, <span class="dv">4</span>)}</span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>OUT.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>OUT.write_text(json.dumps(labels, indent<span class="op">=</span><span class="dv">2</span>))</span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"wrote </span><span class="sc">{</span><span class="bu">len</span>(labels)<span class="sc">}</span><span class="ss"> labels -&gt; </span><span class="sc">{</span>OUT<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>missing <span class="op">=</span> staged <span class="op">-</span> <span class="bu">set</span>(labels)</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> missing:</span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"WARNING: </span><span class="sc">{</span><span class="bu">len</span>(missing)<span class="sc">}</span><span class="ss"> staged cases had no clinical row: </span><span class="sc">{</span><span class="bu">sorted</span>(missing)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> build_survival_labels.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For RHUH-GBM, point <code>RAW</code> at <code>rhuh_gbm</code> and <code>CSV</code> at <code>clinical_data_TCIA_RHUH-GBM.csv</code>. Because step 3 already emitted the CSV’s own subject ids, <code>norm_id</code> has nothing to do and becomes <code>return str(s).strip()</code>. That leaves only the three column names, and they are the part you have to read off the file rather than copy from here: open the CSV, find the overall-survival column and its units, and find the right-censored flag. Set <code>COL_CENSORED</code> to that flag and leave <code>CENSORED_TRUE</code> as it is, since <code>yes</code> is already in the set. Get this pairing backwards and you train a model that ranks the survivors as the high-risk group, which is the whole point of the warning above.</p>
-<p>Check three things in the output: the count should be roughly your cohort size, <code>event</code> should be a mix of 0s and 1s (all 1s means you inverted the censoring column), and the <code>time_years</code> values should be physically plausible.</p>
-<p>The proportion of <code>event == 1</code> is worth noting now, because it sets your effective sample size, not your subject count. See <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>.</p>
+<p>The proportion of <code>event == 1</code> in that report is worth noting now, because it sets your effective sample size, not your subject count. See <a href="../01_background/1.2_censored_data.html">1.2 Censored Data</a>.</p>
+<p>Then drop <code>--dry-run</code> and let it run.</p>
+<section id="the-flags-that-depend-on-your-cohort" class="level3">
+<h3 class="anchored" data-anchor-id="the-flags-that-depend-on-your-cohort">The flags that depend on your cohort</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Flag</th>
+<th>Default</th>
+<th>When to change it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>--id-regex</code></td>
+<td>whole filename stem</td>
+<td>ids need extracting from a longer name. First capture group is the id, e.g.&nbsp;<code>--id-regex '(.+?)_t1c'</code> turns <code>sub-04_t1c.nii.gz</code> into <code>sub-04</code>. Files the regex does not match are skipped, which makes it a filter as well as an extractor</td>
+</tr>
+<tr class="even">
+<td><code>--modalities</code></td>
+<td>single channel</td>
+<td>multi-channel input: <code>--modalities t1c,flair</code> in channel order, with <code>model.input_channels</code> set to match</td>
+</tr>
+<tr class="odd">
+<td><code>--id-col</code></td>
+<td>tries <code>subject_id</code>, <code>case_id</code>, <code>patient_id</code>, <code>case</code>, <code>id</code></td>
+<td>your CSV names it something else</td>
+</tr>
+<tr class="even">
+<td><code>--time-unit</code></td>
+<td><code>years</code></td>
+<td><code>days</code> or <code>months</code></td>
+</tr>
+<tr class="odd">
+<td><code>--brain-mask</code></td>
+<td><code>nonzero</code></td>
+<td><code>hdbet</code> runs HD-BET on non-skull-stripped input; <code>none</code> skips masking, which squeezes the volume to <code>--patch-size</code> rather than cropping it, distorting the anatomy</td>
+</tr>
+<tr class="even">
+<td><code>--patch-size</code></td>
+<td><code>128 128 128</code></td>
+<td>must be at least the <code>data.patch_size</code> you train with in step 4</td>
+</tr>
+<tr class="odd">
+<td><code>--folds</code></td>
+<td><code>5</code></td>
+<td>must equal <code>data.cv.k</code> in step 4</td>
+</tr>
+<tr class="even">
+<td><code>--skip-preprocess</code></td>
+<td>off</td>
+<td>rebuild <code>survival_labels.json</code> only, after fixing a CSV, without redoing the volumes</td>
+</tr>
+</tbody>
+</table>
+<p><code>--nifti-dir</code> is searched <strong>recursively</strong>, so a source that nests one folder per subject needs no flattening. That also means every NIfTI under the tree is a candidate, including segmentation masks and modalities you didn’t want, which is what <code>--modalities</code> and <code>--id-regex</code> are for.</p>
+<p>Uncompressed <code>.nii</code> sources are fine: the command symlinks them under <code>.nii.gz</code> names, which the preprocessing filename patterns require while the reader detects gzip from file contents. Nothing is recompressed.</p>
+<p>If your dataset ships a <strong>lesion segmentation</strong> rather than a brain mask, that is the one case this command doesn’t cover: put the segmentation in <code>nnraw/masks/</code> and call <code>load_crop_brainextract_normalize_images(..., brain_extract=False)</code> directly, so the mask picks the crop centre without zeroing everything outside the lesion.</p>
 </section>
-<section id="preprocess-to-.b2nd" class="level2">
-<h2 class="anchored" data-anchor-id="preprocess-to-.b2nd">5. Preprocess to <code>.b2nd</code></h2>
-<p>The repo’s own preprocessing produces the Blosc2 tensors and a cross-validation split file. For each case, <code>load_crop_brainextract_normalize_images</code> in <code>.../datasets/template_brain_preprocessing.py</code> resamples to the target spacing, crops a fixed field of view around the brain-mask centre, z-score normalises, and writes a <code>.b2nd</code>. Then <code>generate_crossval_split</code> (<code>cross_validation.py</code>) writes <code>splits.json</code>.</p>
-<p>You need to adapt two things, both minor.</p>
-<p><code>run_case</code> expects a brain mask at <code>masks/&lt;case&gt;_0000_bet.nii.gz</code>, which it uses for both cropping and masked normalisation. If your NIfTI is already skull-stripped, as RHUH-GBM’s brain-extracted package is, you can derive one from the nonzero voxels, as below. Otherwise call <code>hd_bet_predict(&lt;nnraw&gt;)</code> from the same module; it works on any brain MRI and needs the HD-BET weights.</p>
-<p>The other is field of view: preprocess to a crop size at least as large as the <code>data.patch_size</code> you’ll train with in step 6. Below uses <code>[128,128,128]</code> at 1 mm with a <code>[64,64,64]</code> training patch.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># preprocess.py  (run with your venv python, from anywhere)</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np, SimpleITK <span class="im">as</span> sitk</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> medsurvival3d.data.preprocessing.datasets.template_brain_preprocessing <span class="im">import</span> (</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    load_crop_brainextract_normalize_images)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>RAW   <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"mydataset"</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>NNRAW <span class="op">=</span> RAW <span class="op">/</span> <span class="st">"nnraw"</span>                                   <span class="co"># has imagesTr/&lt;case&gt;_0000.nii.gz</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>OUT   <span class="op">=</span> RAW <span class="op">/</span> <span class="st">"survival_dataset"</span> <span class="op">/</span> <span class="st">"images_b2nd"</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) nonzero brain masks (skip if you use hd_bet_predict instead)</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>masks <span class="op">=</span> NNRAW <span class="op">/</span> <span class="st">"masks"</span><span class="op">;</span> masks.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> <span class="bu">sorted</span>((NNRAW <span class="op">/</span> <span class="st">"imagesTr"</span>).glob(<span class="st">"*_0000.nii.gz"</span>)):</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    img <span class="op">=</span> sitk.ReadImage(<span class="bu">str</span>(p))</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> sitk.GetImageFromArray((sitk.GetArrayFromImage(img) <span class="op">&gt;</span> <span class="dv">0</span>).astype(np.uint8))</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    m.CopyInformation(img)</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    sitk.WriteImage(m, <span class="bu">str</span>(masks <span class="op">/</span> p.name.replace(<span class="st">".nii.gz"</span>, <span class="st">"_bet.nii.gz"</span>)))</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) resample + crop + normalize + save .b2nd, write splits.json</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>load_crop_brainextract_normalize_images(</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    in_folder<span class="op">=</span><span class="bu">str</span>(NNRAW), out_folder<span class="op">=</span><span class="bu">str</span>(OUT),</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    target_spacing<span class="op">=</span>[<span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>], patch_size<span class="op">=</span>[<span class="dv">128</span>, <span class="dv">128</span>, <span class="dv">128</span>],</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    brain_extract<span class="op">=</span><span class="va">True</span>, num_workers<span class="op">=</span><span class="dv">4</span>, n_splits<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> preprocess.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="doing-this-with-rhuh-gbm" class="level3">
+<h3 class="anchored" data-anchor-id="doing-this-with-rhuh-gbm">Doing this with RHUH-GBM</h3>
+<p>The dataset from step 2 needs three flags to consume its nesting, and each one is load-bearing:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-prepare</span> <span class="dt">\</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--nifti-dir</span> <span class="va">$HOME</span>/data/rhuh_gbm <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--csv</span> <span class="va">$HOME</span>/data/rhuh_gbm/clinical_data_TCIA_RHUH-GBM.csv <span class="dt">\</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--out</span> <span class="va">$HOME</span>/data/rhuh_gbm/survival_dataset <span class="dt">\</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--modalities</span> t1ce <span class="dt">\</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--id-regex</span> <span class="st">'(RHUH-\d+)_0_'</span> <span class="dt">\</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--time-col</span> <span class="op">&lt;</span>the survival column<span class="op">&gt;</span> --time-unit <span class="op">&lt;</span>days<span class="kw">|</span><span class="ex">months</span><span class="op">&gt;</span> <span class="dt">\</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--event-col</span> <span class="op">&lt;</span>the right-censored column<span class="op">&gt;</span> --event-values no,0,false <span class="dt">\</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--patch-size</span> 128 128 128 <span class="at">--folds</span> 3 <span class="dt">\</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dry-run</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><strong><code>--modalities t1ce</code></strong> picks which of the six files per timepoint becomes the channel. Drop it and they all reduce to the same case id, so channel 0 goes to whichever sorts first, which is <code>adc</code>, and the other five are counted as skipped. The report does print a skipped count and a three-file sample, but it never names the file that won, so the numbers look reasonable while the dataset holds diffusion maps. T1-contrast is the sequence to reach for first in glioblastoma, since the enhancing tumour is what it shows.</li>
+<li><strong><code>--id-regex '(RHUH-\d+)_0_'</code></strong> does two jobs. The capture group yields <code>RHUH-0001</code>, which is how the clinical CSV keys its rows, and the literal <code>_0_</code> means timepoints 1 and 2 fail to match and are skipped. That is the preoperative filter from step 2, expressed as a regex.</li>
+<li><strong><code>--event-values no,0,false</code></strong> overrides the default, which includes <code>yes</code>. RHUH’s flag marks patients still alive at cutoff as right-censored <code>yes</code>, so leaving the default in place would invert every label in the cohort. This is the polarity trap above, and here it is the <em>default</em> that springs it.</li>
+</ul>
+<p>The two column names are left as placeholders on purpose: read them off the CSV header rather than trusting this page, and confirm whether the survival column is in days or months before setting <code>--time-unit</code>. Then check the dry-run report says <code>matched: 40/40</code> and that the event mapping puts a plausible minority on <code>1</code>.</p>
+</section>
+<section id="b.-check-what-it-produced" class="level3">
+<h3 class="anchored" data-anchor-id="b.-check-what-it-produced">3b. Check what it produced</h3>
+<pre><code>$HOME/data/mydataset/survival_dataset/
+├── images_b2nd/&lt;case&gt;.b2nd     # [C, X, Y, Z], all modalities stacked
+├── splits.json                 # train/val per fold
+├── survival_labels.json        # {"&lt;case&gt;": {"event": 0|1, "time_years": &lt;float&gt;}}
+└── nnraw/                      # staging symlinks and masks; keep or delete</code></pre>
+<p><code>splits.json</code> lands at the dataset root, which is where <code>data/survival.yaml</code> already looks, so step 4 needs no <code>split_file</code> override.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> <span class="at">-</span> <span class="op">&lt;&lt;'PY'</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">import json, pathlib</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">DS = pathlib.Path.home()/"data"/"mydataset"/"survival_dataset"</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">img = {p.stem for p in (DS/"images_b2nd").glob("*.b2nd")}</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="st">lab = set(json.loads((DS/"survival_labels.json").read_text()))</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="st">spl = set().union(*[set(f["train"])|set(f["val"]) for f in json.loads((DS/"splits.json").read_text())])</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="st">print("images", len(img), "labels", len(lab), "split ids", len(spl))</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="st">print("all three id sets identical:", img == lab == spl)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="op">PY</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The command already guarantees this, so it should print <code>True</code>; run it anyway if you edited anything by hand afterwards.</p>
+<p>One thing the command can’t check for you: the folds come from a plain shuffled <code>KFold</code>, not stratified on event status. On a small cohort with few events, look at whether any fold ends up with too few events to compute a meaningful C-index.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -811,28 +886,14 @@ RHUH-0001/
 <p>Resampling, cropping and normalisation are fit per case here, so they are safe. Anything you add that is fit <em>across</em> cases, such as dataset-level intensity harmonisation or feature selection, must be fit on training folds only. See the leakage checklist in <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#failure-modes">4.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
-<section id="b.-check-what-preprocessing-produced" class="level3">
-<h3 class="anchored" data-anchor-id="b.-check-what-preprocessing-produced">5b. Check what preprocessing produced</h3>
-<p>You get one <code>&lt;case&gt;.b2nd</code> per case, with every modality you staged stacked into a single <code>[C, X, Y, Z]</code> array, which is exactly the filename <code>SurvivalData</code> loads. <code>splits.json</code> stays where preprocessing put it, inside <code>images_b2nd/</code>; you point <code>split_file</code> at it in step 6 rather than moving it.</p>
-<p>Now confirm the ids line up. This check saves you from a confusing crash twenty minutes into a run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/python</span> <span class="at">-</span> <span class="op">&lt;&lt;'PY'</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">import json, pathlib</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="st">DS = pathlib.Path.home()/"data"/"mydataset"/"survival_dataset"</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">lab = set(json.load(open(DS/"survival_labels.json")))</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="st">img = {p.stem for p in (DS/"images_b2nd").glob("*.b2nd")}</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="st">spl = set().union(*[set(f["train"])|set(f["val"]) for f in json.load(open(DS/"images_b2nd"/"splits.json"))])</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="st">print("labels:", len(lab), "images:", len(img))</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="st">print("labels == images:", lab == img)</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="st">print("split ids ⊆ images:", spl &lt;= img)</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="op">PY</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="configure-and-train" class="level2">
-<h2 class="anchored" data-anchor-id="configure-and-train">6. Configure and train</h2>
+<h2 class="anchored" data-anchor-id="configure-and-train">4. Configure and train</h2>
 <p>Configs ship as package data under <code>src/medsurvival3d/cli_configs/</code>. With the editable install from step 1 you edit them in place and Hydra picks up the changes live. <code>CFG=src/medsurvival3d/cli_configs</code> below just keeps the paths short.</p>
 <p>Start from <code>survival.yaml</code>. It’s already wired to <code>SurvivalDataModule</code>, already single-channel, already checkpoints on <code>Val/C-index</code>. The only thing it lacks is a loss, which, per <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#survival-is-a-head">4.1 Survival from Medical Images</a>, is the one component that makes this a survival model rather than a classifier.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="va">CFG</span><span class="op">=</span>src/medsurvival3d/cli_configs</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="va">$CFG</span>/data/survival.yaml <span class="va">$CFG</span>/data/survival_mine.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="va">CFG</span><span class="op">=</span>src/medsurvival3d/cli_configs</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="va">$CFG</span>/data/survival.yaml <span class="va">$CFG</span>/data/survival_mine.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -847,9 +908,9 @@ RHUH-0001/
 </div>
 </div>
 <p>Add the loss under <code>model:</code> in <code>survival_mine.yaml</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">survival_loss</span><span class="kw">:</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nll</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Then change five values:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">survival_loss</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nll</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then change four values:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -880,18 +941,15 @@ RHUH-0001/
 <td><code>images_b2nd</code></td>
 </tr>
 <tr class="even">
-<td><code>data.module.split_file</code></td>
-<td><code>${data.module.data_root_dir}/splits.json</code></td>
-<td><code>${data.module.data_root_dir}/images_b2nd/splits.json</code></td>
-</tr>
-<tr class="odd">
 <td><code>data.patch_size</code></td>
 <td><code>[160, 192, 192]</code></td>
 <td><code>[64, 64, 64]</code></td>
 </tr>
 </tbody>
 </table>
-<p>Two more depend on your cohort. <code>data.cv.k</code> has to match the number of folds in your <code>splits.json</code>; step 5 passed <code>n_splits=3</code>, so set <code>data.cv.k</code> to <code>3</code>. (Both default to <code>5</code>; the pair just has to agree, or training walks off the end of the splits list.) And <code>trainer.accumulate_grad_batches</code> ships at <code>48</code>, an effective batch of 96; on a few dozen subjects that’s a wider window than you have batches, so lower it to something like <code>4</code>.</p>
+<p><code>data.module.split_file</code> needs no change: it already points at <code>${data.module.data_root_dir}/splits.json</code>, and that is where step 3 put the file.</p>
+<p>Two more depend on your cohort. <code>data.cv.k</code> has to match the number of folds in your <code>splits.json</code>; step 3 passed <code>--folds 3</code>, so set <code>data.cv.k</code> to <code>3</code>. (Both default to <code>5</code>; the pair just has to agree, or training walks off the end of the splits list.) And <code>trainer.accumulate_grad_batches</code> ships at <code>48</code>, an effective batch of 96; on a few dozen subjects that’s a wider window than you have batches, so lower it to something like <code>4</code>.</p>
+<p><code>data.patch_size</code> must not exceed the <code>--patch-size</code> step 3 preprocessed with. The command prints a <code>medsurvival3d-train</code> line with a matching value, if you’d rather pass these as overrides than edit a config.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -905,36 +963,35 @@ RHUH-0001/
 <p>If you switch the loss to <code>cox</code>, effective batch size stops being a tuning knob and becomes part of the objective: the Cox partial likelihood compares each subject against the risk set of everyone still event-free, so a small batch is a poor approximation of that set. <code>nll</code> and the other discrete-time losses decompose per-sample and do not have this problem, a reason they are the safer default on 3D volumes. See <a href="../02_loss_functions/2.1_cox_ph_loss.html">2.1 Cox Proportional Hazards Loss</a> and <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#failure-modes">4.1 Survival from Medical Images</a>.</p>
 </div>
 </div>
-<p>Finally, point Hydra at writable paths. <code>$CFG/env/local.yaml</code> ships as placeholders:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># @package _global_</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">exp_dir</span><span class="kw">:</span><span class="at"> /home/&lt;you&gt;/experiments/</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data_dir</span><span class="kw">:</span><span class="at"> /home/&lt;you&gt;/data/</span><span class="co">                 # so ${data_dir}/mydataset/... resolves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Finally, point Hydra at writable paths. <code>$CFG/env/local.yaml</code> ships with <code>/path/to/...</code> placeholders; replace both:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># @package _global_</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">exp_dir</span><span class="kw">:</span><span class="at"> /home/&lt;you&gt;/experiments/</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data_dir</span><span class="kw">:</span><span class="at"> /home/&lt;you&gt;/data/</span><span class="co">                 # so ${data_dir}/mydataset/... resolves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="b.-smoke-test-with-fast_dev_run" class="level3">
-<h3 class="anchored" data-anchor-id="b.-smoke-test-with-fast_dev_run">6b. Smoke test with <code>fast_dev_run</code></h3>
+<h3 class="anchored" data-anchor-id="b.-smoke-test-with-fast_dev_run">4b. Smoke test with <code>fast_dev_run</code></h3>
 <p>Do this before any real run. It pushes one train batch and one val batch through the whole graph in about a minute and catches path, shape, and label errors while they’re still cheap.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="va">WANDB_MODE</span><span class="op">=</span>offline <span class="ex">./.venv/bin/medsurvival3d-train</span> <span class="dt">\</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  env=local data=survival_mine <span class="dt">\</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  data.cv.k=1 data.module.fold=0 <span class="dt">\</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  model.chpt_path=/path/to/S3D/checkpoint_final.pth <span class="dt">\</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  model.save_preds=false <span class="dt">\</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$HOME</span>/experiments/smoke <span class="dt">\</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  trainer.logger.offline=true <span class="dt">\</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  +trainer.fast_dev_run=true</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="va">WANDB_MODE</span><span class="op">=</span>offline <span class="ex">./.venv/bin/medsurvival3d-train</span> <span class="dt">\</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  env=local data=survival_mine <span class="dt">\</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  data.cv.k=1 data.module.fold=0 <span class="dt">\</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  model.chpt_path=/path/to/S3D/checkpoint_final.pth <span class="dt">\</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  model.save_preds=false <span class="dt">\</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$HOME</span>/experiments/smoke <span class="dt">\</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  +trainer.fast_dev_run=true</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Don’t set <code>seed</code>. It defaults to <code>False</code>, which keeps <code>deterministic=False</code>, and the <code>avg_pool3d</code> backward has no deterministic CUDA kernel, so setting a seed crashes the run.</p>
 <p>Success looks like <code>`Trainer.fit` stopped: `max_steps=1` reached.</code> and exit 0.</p>
 </section>
 <section id="c.-the-real-run" class="level3">
-<h3 class="anchored" data-anchor-id="c.-the-real-run">6c. The real run</h3>
+<h3 class="anchored" data-anchor-id="c.-the-real-run">4c. The real run</h3>
 <p>Authenticate wandb once with <code>./.venv/bin/wandb login</code>, then drop <code>fast_dev_run</code> and the offline flag and keep <code>cv.k=3</code> to cross-validate:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-train</span> <span class="dt">\</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  env=local data=survival_mine <span class="dt">\</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  model.chpt_path=/path/to/S3D/checkpoint_final.pth <span class="dt">\</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$HOME</span>/experiments/mysurvival</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>medsurvival3d-train</code> loops over the <code>cv.k</code> folds and streams metrics to a wandb project named after <code>data.module.name</code>. Checkpoints land at <code>${exp_dir}/${teamname}/survival/${data.module.name}/checkpoints/&lt;run-id&gt;/&lt;fold&gt;/</code>, so with the command above, under <code>$HOME/experiments/mysurvival/debug/survival/MySurvival/checkpoints/</code>. The best one per fold is selected on <code>Val/C-index</code>. Hydra writes the run’s <code>config.yaml</code> to that same <code>&lt;run-id&gt;</code> directory, which is what step 8 points at.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-train</span> <span class="dt">\</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  env=local data=survival_mine <span class="dt">\</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  model.chpt_path=/path/to/S3D/checkpoint_final.pth <span class="dt">\</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$HOME</span>/experiments/mysurvival</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>medsurvival3d-train</code> loops over the <code>cv.k</code> folds and streams metrics to the wandb project set by <code>trainer.logger.project</code>, which <code>survival.yaml</code> pins to <code>Survival</code>; change it there if you want your own. Checkpoints land at <code>${exp_dir}/${teamname}/survival/${data.module.name}/checkpoints/&lt;run-id&gt;/&lt;fold&gt;/</code>, so with the command above, under <code>$HOME/experiments/mysurvival/debug/survival/MySurvival/checkpoints/</code>. The best one per fold is selected on <code>Val/C-index</code>. Hydra writes the run’s <code>config.yaml</code> to that same <code>&lt;run-id&gt;</code> directory, which is what step 6 points at.</p>
 </section>
 </section>
 <section id="swapping-the-loss" class="level2">
-<h2 class="anchored" data-anchor-id="swapping-the-loss">7. Swapping the loss</h2>
+<h2 class="anchored" data-anchor-id="swapping-the-loss">5. Swapping the loss</h2>
 <p>The loss comes from <code>model.survival_loss.name</code> in your config. Ten are shipped. This is the head swap of <a href="../04_medical_imaging/4.1_survival_from_medical_images.html#survival-is-a-head">4.1 Survival from Medical Images</a>, exposed as a single config key:</p>
 <table class="caption-top table">
 <thead>
@@ -990,26 +1047,27 @@ RHUH-0001/
 <p>Don’t reach for it to make a development KM plot look more separated. It optimises the later visualisation rather than the ranking, adds another weight to tune, and can overfit whichever grouping rule you happened to pick. Start with a survival objective, evaluate the continuous score honestly, and choose a cutpoint afterwards as in <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">3.3 Kaplan-Meier Curves</a>.</p>
 </div>
 </div>
-<p>To try a different one, copy the <code>model.survival_loss</code> block from <code>$CFG/data/survival_&lt;name&gt;.yaml</code> into your config. Each block encodes that loss’s own hyperparameters: <code>deephit</code> needs <code>alpha</code> and <code>sigma</code>, <code>composite</code> takes a weighted <code>components</code> list with a <code>primary</code>, and so on. If you want to sanity-check the whole install, <code>fast_dev_run</code> each loss the way step 6b does.</p>
+<p>To try a different one, copy the <code>model.survival_loss</code> block from <code>$CFG/data/survival_&lt;name&gt;.yaml</code> into your config. Each block encodes that loss’s own hyperparameters: <code>deephit</code> needs <code>alpha</code> and <code>sigma</code>, <code>composite</code> takes a weighted <code>components</code> list with a <code>primary</code>, and so on. If you want to sanity-check the whole install, <code>fast_dev_run</code> each loss the way step 4b does.</p>
 <p><a href="../02_loss_functions/2.5_loss_comparison.html">2.5 Loss Functions Compared</a> compares these on assumptions and failure modes, which is the better basis for a first choice than sweeping all ten.</p>
 </section>
 <section id="reading-the-results" class="level2">
-<h2 class="anchored" data-anchor-id="reading-the-results">8. Reading the results</h2>
+<h2 class="anchored" data-anchor-id="reading-the-results">6. Reading the results</h2>
 <p><code>Val/C-index</code>, the checkpoint monitor, is the survival analogue of AUC: the fraction of comparable subject pairs the model ranks in the correct risk order. 0.5 is chance, 1.0 is perfect ranking. Full treatment in <a href="../03_metrics/3.1_c_index.html">3.1 Concordance Index (C-index)</a>.</p>
 <p>On a small cohort the C-index will be wide and noisy, and a mean near 0.5 usually means too few subjects and events rather than broken code. For a pipeline check, the right success criterion is a stable, reproducible number across folds, not a good one.</p>
 <p>Keep censoring in mind when you interpret anything. The C-index and the <a href="../03_metrics/3.3_km_curves.html">KM</a> and <a href="../03_metrics/3.2_brier_score.html">Brier</a> curves the trainer logs all account for right-censoring, but your effective sample size is the number of observed events, not the number of subjects.</p>
 <p>For per-subject risk predictions from a trained checkpoint, use the other console command, <code>medsurvival3d-infer</code> (<code>src/medsurvival3d/inference/survival.py</code>, config <code>$CFG/inference_survival.yaml</code>).</p>
 <p>Its <code>exp_dir</code> is the run’s <code>&lt;run-id&gt;</code> directory, which holds both <code>config.yaml</code> and one subdirectory per fold containing the <code>.ckpt</code> files:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN</span><span class="op">=</span><span class="va">$HOME</span>/experiments/mysurvival</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="va">UID_DIR</span><span class="op">=</span><span class="va">$(</span><span class="fu">ls</span> <span class="at">-d</span> <span class="va">$RUN</span>/debug/survival/MySurvival/checkpoints/<span class="pp">*</span>/ <span class="kw">|</span> <span class="fu">head</span> <span class="at">-1</span><span class="va">)</span>   <span class="co"># the &lt;run-id&gt; dir</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-infer</span> <span class="dt">\</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$UID_DIR</span> <span class="dt">\</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  splits_json=<span class="va">$HOME</span>/data/mydataset/survival_dataset/images_b2nd/splits.json <span class="dt">\</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  pred_dir=<span class="va">$RUN</span>/preds <span class="dt">\</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  folds=<span class="pp">[</span><span class="ss">0,1,2</span><span class="pp">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If <code>select_best_checkpoint</code> reports finding no checkpoints, <code>exp_dir</code> is pointing one level off from the fold directories.</p>
-<p>Alongside the per-fold predictions you get <code>preds/ensemble/</code>. Because each fold predicts on its own held-out subjects, that table is the pooled out-of-fold result: every subject scored exactly once, by the one model that did not train on them. It covers the whole cohort, so it is the number to quote, though it is still cross-validated, not a held-out test set.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN</span><span class="op">=</span><span class="va">$HOME</span>/experiments/mysurvival</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="va">UID_DIR</span><span class="op">=</span><span class="va">$(</span><span class="fu">ls</span> <span class="at">-d</span> <span class="va">$RUN</span>/debug/survival/MySurvival/checkpoints/<span class="pp">*</span>/ <span class="kw">|</span> <span class="fu">head</span> <span class="at">-1</span><span class="va">)</span>   <span class="co"># the &lt;run-id&gt; dir</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./.venv/bin/medsurvival3d-infer</span> <span class="dt">\</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  exp_dir=<span class="va">$UID_DIR</span> <span class="dt">\</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  splits_json=<span class="va">$HOME</span>/data/mydataset/survival_dataset/splits.json <span class="dt">\</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  pred_dir=<span class="va">$RUN</span>/preds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It picks up whichever fold directories are under <code>exp_dir</code>, your three, so you don’t pass a fold list. Add <code>folds=[0,2]</code> to run a subset.</p>
+<p>If it reports finding no fold directories, or <code>select_best_checkpoint</code> reports no checkpoints, <code>exp_dir</code> is pointing one level off from the fold directories.</p>
+<p>Alongside the per-fold predictions you get <code>preds/ensemble/test/</code>. Because each fold predicts on its own held-out subjects, that table is the pooled out-of-fold result: every subject scored exactly once, by the one model that did not train on them. It covers the whole cohort, so it is the number to quote, though it is still cross-validated, not a held-out test set, which is why its rows are labelled <code>split=oof</code> in <code>metrics.csv</code>.</p>
+<p>Your <code>splits.json</code> has only <code>train</code> and <code>val</code>, so a request for <code>test</code> falls back to that fold’s <code>val</code> set. <code>fold_&lt;k&gt;/val/</code> and <code>fold_&lt;k&gt;/test/</code> therefore hold the same rows.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1020,7 +1078,7 @@ RHUH-0001/
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <code>preds/ensemble/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">3.3 Kaplan-Meier Curves</a> covers choosing one cutpoint on development data and freezing it, including the multiple-testing trap that makes a KM plot look better than the model is.</p>
+<p>The <code>preds/ensemble/test/</code> table is a continuous risk score per subject. If your clinical use case needs high/low groups, <a href="../03_metrics/3.3_km_curves.html#choosing-a-risk-threshold">3.3 Kaplan-Meier Curves</a> covers choosing one cutpoint on development data and freezing it, including the multiple-testing trap that makes a KM plot look better than the model is.</p>
 </div>
 </div>
 </section>
@@ -1039,24 +1097,24 @@ RHUH-0001/
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>imagesTr/&lt;case&gt;_0000.nii.gz</code></td>
-<td>you (step 3), symlink chosen modality</td>
+<td><code>nnraw/imagesTr/&lt;case&gt;_0000.nii.gz</code></td>
+<td><code>medsurvival3d-prepare</code>, staging symlinks</td>
 </tr>
 <tr class="even">
-<td><code>masks/&lt;case&gt;_0000_bet.nii.gz</code></td>
-<td>you (step 5), nonzero mask or <code>hd_bet_predict</code></td>
+<td><code>nnraw/masks/&lt;case&gt;_0000_bet.nii.gz</code></td>
+<td><code>medsurvival3d-prepare --brain-mask</code></td>
 </tr>
 <tr class="odd">
-<td><code>&lt;case&gt;.b2nd</code></td>
-<td><code>load_crop_brainextract_normalize_images</code> (all modalities stacked)</td>
+<td><code>images_b2nd/&lt;case&gt;.b2nd</code></td>
+<td><code>medsurvival3d-prepare</code>, via <code>load_crop_brainextract_normalize_images</code> (all modalities stacked)</td>
 </tr>
 <tr class="even">
 <td><code>splits.json</code></td>
-<td><code>generate_crossval_split</code> (train/val folds only)</td>
+<td><code>medsurvival3d-prepare</code>, via <code>generate_crossval_split</code> (train/val only)</td>
 </tr>
 <tr class="odd">
 <td><code>survival_labels.json</code></td>
-<td>you (step 4), the one survival-specific artifact</td>
+<td><code>medsurvival3d-prepare</code>, joined from your CSV, keyed by the ids in <code>splits.json</code></td>
 </tr>
 <tr class="even">
 <td>trained checkpoint</td>
@@ -1078,9 +1136,10 @@ RHUH-0001/
 </div>
 <div class="callout-body-container callout-body">
 <p><strong>Verified end to end</strong> on the target workstation: the environment install, the <code>SurvivalDataModule</code> data contract, and all ten losses via <code>fast_dev_run</code> on the S3D checkpoint (torch 2.11+cu128, torchsurv 0.2.0, Python 3.12, RTX 6000 Ada).</p>
-<p><strong>Verified against a real run tree:</strong> the directory layout step 8 depends on, namely <code>config.yaml</code> and the per-fold checkpoint directories together under a single <code>&lt;run-id&gt;</code>. They used to land in sibling directories, so if you have seen this pipeline before and remember copying <code>config.yaml</code> by hand, that step is gone.</p>
-<p><strong>Not run:</strong> the step-6 recipe builds on <code>survival.yaml</code> rather than the <code>survival_&lt;loss&gt;.yaml</code> configs the loss sweep used, so the specific edits in that table are read off the configs, not executed. And <code>medsurvival3d-infer</code> has never been run to completion; the layout it consumes is confirmed, the command is not.</p>
-<p><strong>Yours to run:</strong> anything depending on your data: the download, staging (step 3), the label build (step 4), preprocessing (step 5). The checks at each step are there to catch what goes wrong. The RHUH-GBM variants are in the same category, and its clinical-CSV column names in particular are described rather than quoted, because they were not read off the file.</p>
+<p><strong>Verified against a real run tree:</strong> the directory layout step 6 depends on, namely <code>config.yaml</code> and the per-fold checkpoint directories together under a single <code>&lt;run-id&gt;</code>.</p>
+<p><strong>Covered by unit tests in the repository, but not run for this write-up:</strong> the step-3 logic that decides everything downstream, meaning id derivation, the recursive scan and modality filter, the CSV join, and the event mapping.</p>
+<p><strong>Not run:</strong> the step-4 recipe builds on <code>survival.yaml</code> rather than the <code>survival_&lt;loss&gt;.yaml</code> configs the loss sweep used, so the specific edits in that table are read off the configs, not executed. And <code>medsurvival3d-infer</code> has never been run to completion; the layout it consumes is confirmed, the command is not.</p>
+<p><strong>Yours to run:</strong> anything depending on your data, meaning the download and the step-3 prepare call. The RHUH-GBM variant is in the same category, and its clinical-CSV column names in particular are described rather than quoted, because they were not read off the file.</p>
 </div>
 </div>
 
