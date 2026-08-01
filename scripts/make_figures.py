@@ -92,34 +92,48 @@ def fig_hazard_vs_cumhazard():
     Post-surgery shape from 1.1: hazard spikes early (complications), falls as
     the patient recovers, then drifts up slowly with age.
     """
-    t = np.linspace(0, 24, 600)  # months
+    # 240 samples (dt = 0.1 month) renders these smooth shapes indistinguishably
+    # from a denser grid while keeping the three filled polygons — the bulk of
+    # the SVG's byte count — to a reasonable size.
+    t = np.linspace(0, 24, 240)  # months
     h = 0.18 * np.exp(-t / 2.5) + 0.012 + 0.0016 * t  # early spike + slow rise
     H = np.cumsum(h) * (t[1] - t[0])  # discrete integral of h
     S = np.exp(-H)
 
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.3))
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3.6))
 
-    axes[0].plot(t, h, color=ACCENT, lw=2.2)
-    axes[0].fill_between(t, h, color=ACCENT, alpha=0.10)
-    axes[0].set_title("Hazard $h(t)$")
-    axes[0].text(0.5, 0.92, "speedometer\n(rate right now)", transform=axes[0].transAxes,
-                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
+    # One object viewed three ways -> one colour and one fill treatment for all
+    # three panels. Colour here would encode a difference that does not exist;
+    # the titles and glosses carry the distinction instead.
+    #
+    # Titles stay free of tall mathtext (\int, nested superscripts): savefig's
+    # tight bbox under-measures those ascenders and crops them at the figure
+    # edge. The defining formulae sit in the prose immediately above the figure
+    # in 1.1, so the panels only carry the plain-language gloss.
+    #
+    # Gloss anchors follow each panel's whitespace: h decays so its clear space
+    # is upper-right, H rises so its clear space is upper-left, S decays so its
+    # clear space is again upper-right.
+    panels = [
+        (h, "Hazard $h(t)$", "speedometer\n(rate right now)", (0.58, 0.93)),
+        (H, "Cumulative hazard $H(t)$", "odometer\n(total so far)", (0.35, 0.93)),
+        (S, "Survival $S(t)$", "fraction still\nevent-free", (0.68, 0.90)),
+    ]
 
-    axes[1].plot(t, H, color=ACCENT_DARK, lw=2.2)
-    axes[1].set_title(r"Cumulative hazard $H(t)=\int_0^t h$")
-    axes[1].text(0.5, 0.18, "odometer\n(total so far)", transform=axes[1].transAxes,
-                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
-
-    axes[2].plot(t, S, color=PRIMARY, lw=2.2)
-    axes[2].set_ylim(0, 1.02)
-    axes[2].set_title(r"Survival $S(t)=e^{-H(t)}$")
-    axes[2].text(0.5, 0.40, "fraction still\nevent-free", transform=axes[2].transAxes,
-                 ha="center", va="top", fontsize=12, color=MUTED, style="italic")
-
-    for ax in axes:
+    for ax, (y, title, gloss, (gx, gy)) in zip(axes, panels):
+        ax.plot(t, y, color=ACCENT, lw=2.2)
+        ax.fill_between(t, y, color=ACCENT, alpha=0.10)
+        ax.set_title(title, pad=10)
+        ax.text(gx, gy, gloss, transform=ax.transAxes, ha="center",
+                va="top", fontsize=12, color=MUTED, style="italic")
         ax.set_xlabel("time (months)")
         ax.set_xlim(0, 24)
-        ax.margins(y=0.05)
+        ax.set_ylim(bottom=0)  # fill sits flush on the axis, no gap below zero
+        # Anchoring at zero widens the range enough that the default locator
+        # goes to five ticks; these panels are read for shape, not values.
+        ax.locator_params(axis="y", nbins=3)
+
+    axes[2].set_ylim(0, 1.02)
     fig.tight_layout()
     _save(fig, "1.1_hazard_to_survival")
 
@@ -205,8 +219,10 @@ def fig_censoring_timeline():
         ax.text(-0.6, y, lab, ha="right", va="center", fontsize=12, color=BODY)
 
     ax.axvline(study_end, color=OXBLOOD, ls="--", lw=1.6)
-    ax.text(study_end, len(subjects) + 0.7, "study ends", color=OXBLOOD,
-            ha="center", fontsize=12)
+    # Right-aligned just left of the rule: centring the label on study_end puts
+    # the dashed line straight through the text.
+    ax.text(study_end - 0.5, len(subjects) + 0.55, "study ends", color=OXBLOOD,
+            ha="right", va="center", fontsize=12)
 
     # legend proxies
     ax.plot([], [], "o", color=PRIMARY, markersize=9, label="event observed ($\\delta=1$)")
