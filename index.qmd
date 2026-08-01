@@ -52,7 +52,7 @@ Start at the top and follow the cross-links. Notation is introduced once, where
 the concept lives, and referenced everywhere else, so if a symbol is unfamiliar,
 the link beside it points to its definition.
 
-Figures throughout are generated deterministically from
-[`scripts/make_figures.py`](scripts/make_figures.py); the synthetic examples are
-chosen for clarity, and the runnable model code targets the built-in GBSG2
-dataset.
+## Disclaimer
+
+Generative AI was used to iteratively improve sentence structure and visual
+designs.
