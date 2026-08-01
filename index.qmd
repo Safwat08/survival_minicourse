@@ -35,13 +35,13 @@ toc: false
   </tr>
   <tr>
     <td class="hx-num">04</td>
-    <td class="hx-what"><strong>Packages</strong><span>pycox, lifelines, torchsurv, scikit-survival, auton-survival, routed by how much of the training loop you own.</span></td>
-    <td class="hx-go"><a href="04_packages/4.1_pycox.html">Jump &rarr;</a></td>
+    <td class="hx-what"><strong>Medical Image Analysis</strong><span>How survival attaches to an imaging backbone, a full 3D-MRI training walkthrough, and end-to-end risk stratification.</span></td>
+    <td class="hx-go"><a href="04_medical_imaging/4.1_survival_from_medical_images.html">Jump &rarr;</a></td>
   </tr>
   <tr>
     <td class="hx-num">05</td>
-    <td class="hx-what"><strong>Medical Image Analysis</strong><span>How survival attaches to an imaging backbone, a full 3D-MRI training walkthrough, and end-to-end risk stratification.</span></td>
-    <td class="hx-go"><a href="05_medical_imaging/5.1_survival_from_medical_images.html">Jump &rarr;</a></td>
+    <td class="hx-what"><strong>Packages</strong><span>pycox, lifelines, torchsurv, scikit-survival, auton-survival, routed by how much of the training loop you own.</span></td>
+    <td class="hx-go"><a href="05_packages/5.1_pycox.html">Jump &rarr;</a></td>
   </tr>
 </table>
 ```
